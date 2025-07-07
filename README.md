@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 50K Trail Training Plan
 
-## Getting Started
+A comprehensive 12-week training plan for a 50K trail race with 10,000ft of vertical gain, built with Next.js and Tailwind CSS.
 
-First, run the development server:
+## 🏃‍♂️ Overview
+
+This website provides a structured training plan designed for an experienced runner preparing for a 50K mountain trail race. The plan includes:
+
+- **12-week progressive program** targeting September 14th race day
+- **Weekly mileage:** 45-55 miles with 8,000-12,000ft vertical
+- **Training phases:** Base building, intensity introduction, race specificity, and taper
+- **Comprehensive guidance** on strength training, nutrition, and recovery
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone [your-repo-url]
+
+# Navigate to the project
+cd trail-training-plan
+
+# Install dependencies
+npm install
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the site.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Building for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Build the project
+npm run build
 
-## Learn More
+# Start the production server
+npm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 📱 Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Responsive design** - Works on all devices
+- **Interactive training log templates** - Copy-paste templates for tracking
+- **Detailed weekly schedules** - Day-by-day workout plans
+- **Training zone calculator** - Heart rate and pace zones
+- **Nutrition guidelines** - Race and training fueling strategies
+- **Strength program** - Progressive strength and power development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🗺️ Site Structure
 
-## Deploy on Vercel
+- `/` - Homepage with navigation to all sections
+- `/overview` - Training zones and phase breakdown
+- `/phase/base` - Weeks 1-4 base building phase
+- `/phase/intensity` - Weeks 5-8 intensity introduction
+- `/phase/race-specific` - Weeks 9-10 race preparation
+- `/phase/taper` - Week 11 taper protocol
+- `/phase/race-week` - Week 12 final preparation
+- `/strength` - Detailed strength training program
+- `/nutrition-recovery` - Nutrition and recovery guidelines
+- `/training-log` - Training log templates and tracking guide
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Framework:** Next.js 15 with App Router
+- **Styling:** Tailwind CSS 4
+- **Language:** TypeScript
+- **Deployment:** Ready for Vercel, Netlify, or any Node.js host
+
+## 📄 License
+
+This project is for personal use. Feel free to adapt it for your own training needs.
+
+## 🙏 Acknowledgments
+
+Training philosophy based on principles from "Training for the Uphill Athlete" and proven ultrarunning methodologies.
+
+---
+
+**Good luck with your 50K! Train smart, finish strong 🏔️**
