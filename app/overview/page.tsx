@@ -1,202 +1,324 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { User, Target, TrendingUp, Mountain, Quote } from "lucide-react";
+
 export default function Overview() {
+  const trainingZones = [
+    {
+      zone: "Zone 1",
+      heartRate: "<130 HR",
+      pace: "~9:30-10:00/mi",
+      description: "Very Easy/Recovery - Feels almost too easy",
+      color: "bg-slate-100 text-slate-700 border-slate-200",
+    },
+    {
+      zone: "Zone 2",
+      heartRate: "130-140 HR",
+      pace: "~8:30-9:00/mi",
+      description: "Aerobic Capacity - Comfortable, conversational",
+      color: "bg-blue-50 text-blue-700 border-blue-200",
+    },
+    {
+      zone: "Zone 3",
+      heartRate: "140-165 HR",
+      pace: "~7:00-8:00/mi",
+      description: "Threshold - Comfortably hard, sustainable",
+      color: "bg-amber-50 text-amber-700 border-amber-200",
+    },
+    {
+      zone: "Zone 4",
+      heartRate: "165-180 HR",
+      pace: "~6:30-7:00/mi",
+      description: "Above Threshold - Hard, challenging effort",
+      color: "bg-orange-50 text-orange-700 border-orange-200",
+    },
+    {
+      zone: "Zone 5",
+      heartRate: "180+ HR",
+      pace: "Sprint",
+      description: "Max/Sprint - Very hard, unsustainable",
+      color: "bg-red-50 text-red-700 border-red-200",
+    },
+  ];
+
+  const trainingPhases = [
+    {
+      weeks: "1-4",
+      phase: "Base + Strength",
+      miles: "45-50",
+      vertical: "8,000-10,000 ft",
+      focus:
+        "Z1/Z2 aerobic work, strength foundation (strong base from skiing)",
+    },
+    {
+      weeks: "5-8",
+      phase: "Intensity Introduction",
+      miles: "50-55",
+      vertical: "10,000-12,000 ft",
+      focus: "Add Zone 3 threshold work (140-165 HR), muscular endurance",
+    },
+    {
+      weeks: "9-10",
+      phase: "Race Specificity",
+      miles: "50-55",
+      vertical: "12,000+ ft",
+      focus: "Zone 4 intervals (165-180 HR), race simulation",
+    },
+    {
+      weeks: "11",
+      phase: "Taper",
+      miles: "30-35",
+      vertical: "7,000 ft",
+      focus: "Reduce volume, maintain sharpness",
+    },
+    {
+      weeks: "12",
+      phase: "Race Week",
+      miles: "15-20",
+      vertical: "2,000-3,000 ft",
+      focus: "Final prep and race",
+    },
+  ];
+
+  const athleteProfile = [
+    {
+      label: "Background",
+      value: "Former D1 Nordic skier (excellent aerobic base)",
+    },
+    { label: "Current Volume", value: "30-50 miles/week" },
+    { label: "Longest Run", value: "50 miles" },
+    { label: "Marathon PR", value: "2:57 (current fitness ~3:20)" },
+    { label: "Easy Z2 Pace", value: "~9:00/mi at 137 HR" },
+    { label: "Threshold Feel", value: "155-170 HR (from skiing background)" },
+    { label: "Aerobic Development", value: "Strong - small AeT-LT gap" },
+  ];
+
+  const backToBackBenefits = [
+    "Reduced injury risk vs single 20+ mile runs",
+    "Faster recovery (1-2 days vs 3-4 days)",
+    "Glycogen depletion training for fat adaptation",
+    "Simulates cumulative fatigue of ultra racing",
+    "Better time management vs 4+ hour single runs",
+  ];
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Training Overview</h1>
-
-      {/* Athlete Profile */}
-      <div className="section-card mb-6">
-        <h2 className="text-2xl font-bold mb-4 text-green-700">
-          Athlete Profile
-        </h2>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <p className="mb-2">
-              <span className="font-semibold">Background:</span> Former D1
-              Nordic skier (excellent aerobic base)
-            </p>
-            <p className="mb-2">
-              <span className="font-semibold">Current Volume:</span> 30-50
-              miles/week
-            </p>
-            <p className="mb-2">
-              <span className="font-semibold">Longest Run:</span> 50 miles
-            </p>
-          </div>
-          <div>
-            <p className="mb-2">
-              <span className="font-semibold">Marathon PR:</span> 2:57 (current
-              fitness ~3:20)
-            </p>
-            <p className="mb-2">
-              <span className="font-semibold">Easy Z1 Pace:</span> ~9:00/mi at
-              137 HR
-            </p>
-            <p className="mb-2">
-              <span className="font-semibold">Category:</span> Strong Category 2
-              athlete
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Training Zones */}
-      <div className="section-card mb-6">
-        <h2 className="text-2xl font-bold mb-4 text-green-700">
-          Training Zones
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="training-table">
-            <thead>
-              <tr>
-                <th>Zone</th>
-                <th>Heart Rate</th>
-                <th>Pace</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>
-                  <span className="zone-badge bg-blue-100 text-blue-800">
-                    Zone 1
-                  </span>
-                </td>
-                <td>0-138 HR</td>
-                <td>~9:00/mi</td>
-                <td>Conversational pace</td>
-              </tr>
-              <tr>
-                <td>
-                  <span className="zone-badge bg-green-100 text-green-800">
-                    Zone 2
-                  </span>
-                </td>
-                <td>138-160 HR</td>
-                <td>~8:00-8:30/mi</td>
-                <td>Moderate effort</td>
-              </tr>
-              <tr>
-                <td>
-                  <span className="zone-badge bg-yellow-100 text-yellow-800">
-                    Zone 3
-                  </span>
-                </td>
-                <td>161-180 HR</td>
-                <td>~7:00-7:30/mi</td>
-                <td>Comfortably hard</td>
-              </tr>
-              <tr>
-                <td>
-                  <span className="zone-badge bg-orange-100 text-orange-800">
-                    Zone 4
-                  </span>
-                </td>
-                <td>181-190 HR</td>
-                <td>~6:30-7:00/mi</td>
-                <td>Hard effort</td>
-              </tr>
-              <tr>
-                <td>
-                  <span className="zone-badge bg-red-100 text-red-800">
-                    Zone 5
-                  </span>
-                </td>
-                <td>&gt;190 HR</td>
-                <td>Sprint</td>
-                <td>Very hard/sprint</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Training Phase Overview */}
-      <div className="section-card">
-        <h2 className="text-2xl font-bold mb-4 text-green-700">
-          Training Phase Overview
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="training-table">
-            <thead>
-              <tr>
-                <th>Weeks</th>
-                <th>Phase</th>
-                <th>Weekly Miles</th>
-                <th>Vertical</th>
-                <th>Focus</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1-4</td>
-                <td className="font-semibold">Base + Strength</td>
-                <td>45-50</td>
-                <td>8,000-10,000 ft</td>
-                <td>Aerobic base, strength foundation</td>
-              </tr>
-              <tr>
-                <td>5-8</td>
-                <td className="font-semibold">Intensity Introduction</td>
-                <td>50-55</td>
-                <td>10,000-12,000 ft</td>
-                <td>Add Zone 3, muscular endurance</td>
-              </tr>
-              <tr>
-                <td>9-10</td>
-                <td className="font-semibold">Race Specificity</td>
-                <td>50-55</td>
-                <td>12,000+ ft</td>
-                <td>Zone 4 intervals, race simulation</td>
-              </tr>
-              <tr>
-                <td>11</td>
-                <td className="font-semibold">Taper</td>
-                <td>30-35</td>
-                <td>7,000 ft</td>
-                <td>Reduce volume, maintain sharpness</td>
-              </tr>
-              <tr>
-                <td>12</td>
-                <td className="font-semibold">Race Week</td>
-                <td>15-20</td>
-                <td>2,000-3,000 ft</td>
-                <td>Final prep and race</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Back-to-Back Long Runs Explanation */}
-      <div className="section-card mt-6">
-        <h3 className="text-xl font-bold mb-3 text-green-700">
-          Why Back-to-Back Long Runs?
-        </h3>
-        <blockquote className="border-l-4 border-green-600 pl-4 italic text-gray-700 mb-4">
-          &ldquo;This gives you a similar training effect as doing one very long
-          day by mimicking some of the demands of your event, but it reduces the
-          stress and shortens the recovery time significantly.&rdquo;
-          <cite className="block text-sm mt-2 not-italic">
-            - Training for the Uphill Athlete
-          </cite>
-        </blockquote>
-        <div className="space-y-2">
-          <p>
-            • <strong>Reduced injury risk</strong> vs single 20+ mile runs
-          </p>
-          <p>
-            • <strong>Faster recovery</strong> (1-2 days vs 3-4 days)
-          </p>
-          <p>
-            • <strong>Glycogen depletion training</strong> for fat adaptation
-          </p>
-          <p>
-            • <strong>Simulates cumulative fatigue</strong> of ultra racing
-          </p>
-          <p>
-            • <strong>Better time management</strong> vs 4+ hour single runs
+    <div className="min-h-screen bg-white">
+      <div className="max-w-6xl mx-auto p-6 space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4 py-8">
+          <h1 className="text-5xl font-bold text-gray-900">
+            Training Overview
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Comprehensive 12-week trail running program tailored for your 50K
+            race
           </p>
         </div>
+
+        {/* Athlete Profile */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900 flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Athlete Profile
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Your background and current fitness level
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {athleteProfile.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex justify-between items-start py-2 border-b border-gray-100"
+                >
+                  <span className="font-medium text-gray-900">
+                    {item.label}:
+                  </span>
+                  <span className="text-gray-700 text-right max-w-[60%]">
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Coaching Note */}
+        <Card className="border shadow-sm bg-blue-50 border-blue-200">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <Target className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-blue-900 mb-2">
+                  🏃‍♂️ Zones Adjusted for Your Background
+                </p>
+                <p className="text-blue-800 text-sm">
+                  Based on your Nordic skiing background and threshold feel of
+                  155-170 HR, these zones reflect your actual physiological
+                  thresholds. Your strong aerobic development means Z1 will feel
+                  &ldquo;stupidly easy&rdquo; but is still valuable for
+                  recovery.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Training Zones */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900 flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Training Zones
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Customized heart rate zones based on your skiing background and
+              threshold feel
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Zone
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Heart Rate
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Pace
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Description
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {trainingZones.map((zone, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50">
+                      <td className="py-4 px-4">
+                        <Badge
+                          variant="outline"
+                          className={`${zone.color} border text-sm`}
+                        >
+                          {zone.zone}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4 font-medium text-gray-900">
+                        {zone.heartRate}
+                      </td>
+                      <td className="py-4 px-4 text-gray-700">{zone.pace}</td>
+                      <td className="py-4 px-4 text-gray-600">
+                        {zone.description}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Training Phase Overview */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900 flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Training Phase Overview
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              12-week progression from base building to race day
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Weeks
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Phase
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Weekly Miles
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Vertical
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Focus
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {trainingPhases.map((phase, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50">
+                      <td className="py-4 px-4 font-medium text-gray-900">
+                        {phase.weeks}
+                      </td>
+                      <td className="py-4 px-4 font-semibold text-gray-900">
+                        {phase.phase}
+                      </td>
+                      <td className="py-4 px-4 text-gray-700">{phase.miles}</td>
+                      <td className="py-4 px-4 text-gray-700">
+                        {phase.vertical}
+                      </td>
+                      <td className="py-4 px-4 text-gray-600">{phase.focus}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Back-to-Back Long Runs */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900 flex items-center gap-2">
+              <Mountain className="h-5 w-5" />
+              Why Back-to-Back Long Runs?
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              The science behind this training approach
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+              <Quote className="h-5 w-5 text-blue-600 mb-2" />
+              <blockquote className="text-blue-800 italic mb-3">
+                &ldquo;This gives you a similar training effect as doing one
+                very long day by mimicking some of the demands of your event,
+                but it reduces the stress and shortens the recovery time
+                significantly.&rdquo;
+              </blockquote>
+              <cite className="text-blue-700 text-sm">
+                - Training for the Uphill Athlete
+              </cite>
+            </div>
+
+            <div className="space-y-3">
+              {backToBackBenefits.map((benefit, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-700">{benefit}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -1,268 +1,522 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Dumbbell, Target, Clock, Zap, AlertTriangle } from "lucide-react";
+
 export default function StrengthTraining() {
+  const strengthExercises = [
+    {
+      exercise: "Box Step-ups",
+      sets: "4 × 6 each leg",
+      progression: "Start bodyweight → +10-15% BW",
+      rest: "2 min",
+      notes: "Focus on control and knee tracking",
+    },
+    {
+      exercise: "Front Lunges",
+      sets: "4 × 6 each leg",
+      progression: "Start bodyweight → +10-15% BW",
+      rest: "2 min",
+      notes: "Step forward dynamically",
+    },
+    {
+      exercise: "Split Jump Squats",
+      sets: "4 × 6 each leg",
+      progression: "Bodyweight or +5-10% BW",
+      rest: "2 min",
+      notes: "Explosive movement, soft landing",
+    },
+    {
+      exercise: "Squat Jumps",
+      sets: "4 × 6",
+      progression: "Bodyweight",
+      rest: "2 min",
+      notes: "Maximum height, quiet landing",
+    },
+  ];
+
+  const coreProgression = [
+    {
+      exercise: "Plank",
+      week12: "5 × 30 sec",
+      week34: "5 × 45 sec",
+      week5plus: "5 × 60 sec",
+      notes: "Add weight if too easy",
+    },
+    {
+      exercise: "Windshield Wipers",
+      week12: "3 × 8 each side",
+      week34: "3 × 10 each side",
+      week5plus: "3 × 12 each side",
+      notes: "Control the movement",
+    },
+    {
+      exercise: "Marching Plank",
+      week12: "3 × 30 sec",
+      week34: "3 × 45 sec",
+      week5plus: "3 × 60 sec",
+      notes: "Alternate limbs smoothly",
+    },
+  ];
+
+  const exerciseGuides = [
+    {
+      name: "Box Step-ups",
+      steps: [
+        "Use a box height where thigh is parallel to ground when foot is on box",
+        "Place entire foot on box, drive through heel",
+        "Fully extend hip at top, pause briefly",
+        "Control the descent, don't drop down",
+        "Keep torso upright throughout movement",
+      ],
+    },
+    {
+      name: "Front Lunges",
+      steps: [
+        "Step forward with control, landing heel first",
+        "Lower until both knees at 90 degrees",
+        "Front knee tracks over toes, not caving inward",
+        "Drive through front heel to return to start",
+        "Keep core engaged and chest proud",
+      ],
+    },
+    {
+      name: "Split Jump Squats",
+      steps: [
+        "Start in lunge position",
+        "Jump explosively, switching legs in air",
+        "Land softly in opposite lunge position",
+        "Immediately jump again",
+        "Focus on height and control, not speed",
+      ],
+    },
+  ];
+
+  const phases = [
+    {
+      title: "Weeks 1-6: Building Phase",
+      frequency: "2× per week strength training (Tuesday PM, Thursday PM)",
+      notes: "Allow 4-6 hours between running and strength sessions",
+      color: "bg-blue-50 border-blue-200",
+    },
+    {
+      title: "Weeks 7-10: Maintenance Phase",
+      frequency: "1× per week strength training (Wednesday PM)",
+      notes: "Reduce volume but maintain intensity",
+      color: "bg-green-50 border-green-200",
+    },
+    {
+      title: "Weeks 11-12: Taper",
+      frequency: "Optional light strength work",
+      notes: "Focus on mobility and activation only",
+      color: "bg-yellow-50 border-yellow-200",
+    },
+  ];
+
   return (
-    <div className="max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Strength Training Program</h1>
-
-      {/* Stage 3 Strength Program */}
-      <div className="section-card">
-        <h2 className="text-2xl font-bold mb-4 text-green-700">
-          Stage 3 Strength Program
-        </h2>
-        <p className="text-gray-600 mb-4">
-          Frequency: 2×/week (Weeks 1-6), then 1×/week maintenance
-        </p>
-
-        <div className="overflow-x-auto">
-          <table className="training-table">
-            <thead>
-              <tr>
-                <th>Exercise</th>
-                <th>Sets × Reps</th>
-                <th>Weight Progression</th>
-                <th>Rest</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="font-semibold">Box Step-ups</td>
-                <td>4 × 6 each leg</td>
-                <td>Start bodyweight → +10-15% BW</td>
-                <td>2 min</td>
-                <td>Focus on control and knee tracking</td>
-              </tr>
-              <tr>
-                <td className="font-semibold">Front Lunges</td>
-                <td>4 × 6 each leg</td>
-                <td>Start bodyweight → +10-15% BW</td>
-                <td>2 min</td>
-                <td>Step forward dynamically</td>
-              </tr>
-              <tr>
-                <td className="font-semibold">Split Jump Squats</td>
-                <td>4 × 6 each leg</td>
-                <td>Bodyweight or +5-10% BW</td>
-                <td>2 min</td>
-                <td>Explosive movement, soft landing</td>
-              </tr>
-              <tr>
-                <td className="font-semibold">Squat Jumps</td>
-                <td>4 × 6</td>
-                <td>Bodyweight</td>
-                <td>2 min</td>
-                <td>Maximum height, quiet landing</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Core Strength Progression */}
-      <div className="section-card mt-6">
-        <h2 className="text-2xl font-bold mb-4 text-green-700">
-          Core Strength Progression
-        </h2>
-
-        <div className="overflow-x-auto">
-          <table className="training-table">
-            <thead>
-              <tr>
-                <th>Exercise</th>
-                <th>Week 1-2</th>
-                <th>Week 3-4</th>
-                <th>Week 5+</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="font-semibold">Plank</td>
-                <td>5 × 30 sec</td>
-                <td>5 × 45 sec</td>
-                <td>5 × 60 sec</td>
-                <td>Add weight if too easy</td>
-              </tr>
-              <tr>
-                <td className="font-semibold">Windshield Wipers</td>
-                <td>3 × 8 each side</td>
-                <td>3 × 10 each side</td>
-                <td>3 × 12 each side</td>
-                <td>Control the movement</td>
-              </tr>
-              <tr>
-                <td className="font-semibold">Marching Plank</td>
-                <td>3 × 30 sec</td>
-                <td>3 × 45 sec</td>
-                <td>3 × 60 sec</td>
-                <td>Alternate limbs smoothly</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Hill Sprint Protocol */}
-      <div className="section-card mt-6">
-        <h2 className="text-2xl font-bold mb-4 text-green-700">
-          Hill Sprint Protocol
-        </h2>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="font-semibold mb-3">Specifications</h3>
-            <ul className="space-y-2">
-              <li>
-                <span className="font-semibold">Gradient:</span> 20-30% grade
-                minimum
-              </li>
-              <li>
-                <span className="font-semibold">Duration:</span> 8-10 seconds
-                maximum effort
-              </li>
-              <li>
-                <span className="font-semibold">Recovery:</span> 2-3 minutes
-                complete rest (walk down)
-              </li>
-              <li>
-                <span className="font-semibold">Volume:</span> Start 6 reps →
-                build to 10 reps
-              </li>
-              <li>
-                <span className="font-semibold">Frequency:</span> 1×/week
-                throughout entire plan
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-3">Execution Tips</h3>
-            <ul className="space-y-2 text-sm">
-              <li>• Find the steepest hill available</li>
-              <li>• Focus on explosive power, not speed</li>
-              <li>• Drive knees high and pump arms</li>
-              <li>• Full recovery between reps is crucial</li>
-              <li>• Quality over quantity always</li>
-              <li>• Stop if form deteriorates</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mt-4">
-          <p className="font-semibold">⚡ Purpose:</p>
-          <p className="text-sm">
-            Hill sprints develop explosive power, improve running economy, and
-            build fatigue-resistant muscle fibers crucial for mountain running.
+    <div className="min-h-screen bg-white">
+      <div className="max-w-6xl mx-auto p-6 space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4 py-8">
+          <h1 className="text-5xl font-bold text-gray-900">
+            Strength Training Program
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Mountain-specific strength training to enhance power, stability, and
+            injury prevention
           </p>
         </div>
-      </div>
 
-      {/* Exercise Descriptions */}
-      <div className="section-card mt-6">
-        <h2 className="text-2xl font-bold mb-4 text-green-700">
-          Exercise Technique Guide
-        </h2>
+        {/* Stage 3 Strength Program */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900">
+              Stage 3 Strength Program
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Frequency: 2×/week (Weeks 1-6), then 1×/week maintenance
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Exercise
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Sets × Reps
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Weight Progression
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Rest
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Notes
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {strengthExercises.map((exercise, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50">
+                      <td className="py-4 px-4 font-medium text-gray-900">
+                        {exercise.exercise}
+                      </td>
+                      <td className="py-4 px-4 text-gray-700">
+                        {exercise.sets}
+                      </td>
+                      <td className="py-4 px-4 text-gray-700">
+                        {exercise.progression}
+                      </td>
+                      <td className="py-4 px-4 text-gray-700">
+                        {exercise.rest}
+                      </td>
+                      <td className="py-4 px-4 text-gray-600 text-sm">
+                        {exercise.notes}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Box Step-ups</h3>
-            <ol className="list-decimal ml-6 space-y-1 text-sm">
-              <li>
-                Use a box height where thigh is parallel to ground when foot is
-                on box
-              </li>
-              <li>Place entire foot on box, drive through heel</li>
-              <li>Fully extend hip at top, pause briefly</li>
-              <li>Control the descent, don&apos;t drop down</li>
-              <li>Keep torso upright throughout movement</li>
-            </ol>
-          </div>
+        {/* Core Strength Progression */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900">
+              Core Strength Progression
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Progressive core strengthening throughout the program
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Exercise
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Week 1-2
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Week 3-4
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Week 5+
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                      Notes
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {coreProgression.map((exercise, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50">
+                      <td className="py-4 px-4 font-medium text-gray-900">
+                        {exercise.exercise}
+                      </td>
+                      <td className="py-4 px-4 text-gray-700">
+                        {exercise.week12}
+                      </td>
+                      <td className="py-4 px-4 text-gray-700">
+                        {exercise.week34}
+                      </td>
+                      <td className="py-4 px-4 text-gray-700">
+                        {exercise.week5plus}
+                      </td>
+                      <td className="py-4 px-4 text-gray-600 text-sm">
+                        {exercise.notes}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Front Lunges</h3>
-            <ol className="list-decimal ml-6 space-y-1 text-sm">
-              <li>Step forward with control, landing heel first</li>
-              <li>Lower until both knees at 90 degrees</li>
-              <li>Front knee tracks over toes, not caving inward</li>
-              <li>Drive through front heel to return to start</li>
-              <li>Keep core engaged and chest proud</li>
-            </ol>
-          </div>
+        {/* Hill Sprint Protocol */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900">
+              Hill Sprint Protocol
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Power development for mountain running
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-semibold text-lg mb-4 text-gray-900 flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Specifications
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="font-medium text-gray-900">Gradient:</span>
+                    <span className="text-gray-700">20-30% grade minimum</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="font-medium text-gray-900">Duration:</span>
+                    <span className="text-gray-700">
+                      8-10 seconds maximum effort
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="font-medium text-gray-900">Recovery:</span>
+                    <span className="text-gray-700">
+                      2-3 minutes complete rest
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="font-medium text-gray-900">Volume:</span>
+                    <span className="text-gray-700">
+                      Start 6 reps → build to 10 reps
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="font-medium text-gray-900">
+                      Frequency:
+                    </span>
+                    <span className="text-gray-700">
+                      1×/week throughout plan
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-          <div>
-            <h3 className="font-semibold text-lg mb-2">Split Jump Squats</h3>
-            <ol className="list-decimal ml-6 space-y-1 text-sm">
-              <li>Start in lunge position</li>
-              <li>Jump explosively, switching legs in air</li>
-              <li>Land softly in opposite lunge position</li>
-              <li>Immediately jump again</li>
-              <li>Focus on height and control, not speed</li>
-            </ol>
-          </div>
-        </div>
-      </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-4 text-gray-900 flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
+                  Execution Tips
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Find the steepest hill available
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Focus on explosive power, not speed
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Drive knees high and pump arms
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Full recovery between reps is crucial
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Quality over quantity always
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Stop if form deteriorates
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-      {/* Progression Guidelines */}
-      <div className="section-card mt-6">
-        <h2 className="text-2xl font-bold mb-4 text-green-700">
-          Progression Guidelines
-        </h2>
+            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Zap className="h-5 w-5 text-yellow-600 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-yellow-800 mb-1">Purpose:</p>
+                  <p className="text-yellow-700 text-sm">
+                    Hill sprints develop explosive power, improve running
+                    economy, and build fatigue-resistant muscle fibers crucial
+                    for mountain running.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="font-semibold mb-3">Weight Progression</h3>
-            <ul className="space-y-2 text-sm">
-              <li>• Week 1-2: Master form with bodyweight</li>
-              <li>• Week 3-4: Add 5-10% body weight</li>
-              <li>• Week 5-6: Progress to 10-15% body weight</li>
-              <li>• Use dumbbells, weighted vest, or barbell</li>
-              <li>• Never sacrifice form for weight</li>
-            </ul>
-          </div>
+        {/* Exercise Technique Guide */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900">
+              Exercise Technique Guide
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Proper form and execution for maximum benefit
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-8">
+              {exerciseGuides.map((guide, idx) => (
+                <div key={idx}>
+                  <h3 className="font-semibold text-lg mb-3 text-gray-900 flex items-center gap-2">
+                    <Dumbbell className="h-5 w-5" />
+                    {guide.name}
+                  </h3>
+                  <ol className="space-y-2">
+                    {guide.steps.map((step, stepIdx) => (
+                      <li key={stepIdx} className="flex items-start gap-3">
+                        <span className="bg-gray-100 text-gray-700 text-sm font-medium px-2 py-1 rounded-full min-w-[24px] text-center">
+                          {stepIdx + 1}
+                        </span>
+                        <p className="text-gray-700 text-sm">{step}</p>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-          <div>
-            <h3 className="font-semibold mb-3">When to Progress</h3>
-            <ul className="space-y-2 text-sm">
-              <li>• Can complete all sets with perfect form</li>
-              <li>• No excessive soreness lasting more than 48 hours</li>
-              <li>• Feel recovered between sessions</li>
-              <li>• Movement feels controlled and stable</li>
-              <li>• Ready for increased challenge</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+        {/* Integration with Running Schedule */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900">
+              Integration with Running Schedule
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              How strength training fits into your overall program
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              {phases.map((phase, idx) => (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-lg border ${phase.color}`}
+                >
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {phase.title}
+                  </h4>
+                  <p className="text-gray-700 text-sm mb-1">
+                    {phase.frequency}
+                  </p>
+                  <p className="text-gray-600 text-sm">{phase.notes}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Integration with Running */}
-      <div className="section-card mt-6">
-        <h2 className="text-2xl font-bold mb-4 text-green-700">
-          Integration with Running Schedule
-        </h2>
+        {/* Progression Guidelines */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900">
+              Progression Guidelines
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              How and when to advance your training
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="font-semibold text-lg mb-4 text-gray-900 flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Weight Progression
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Week 1-2: Master form with bodyweight
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Week 3-4: Add 5-10% body weight
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Week 5-6: Progress to 10-15% body weight
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Use dumbbells, weighted vest, or barbell
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Never sacrifice form for weight
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-        <div className="space-y-4">
-          <div className="bg-blue-50 p-4 rounded">
-            <h4 className="font-semibold">Weeks 1-6: Building Phase</h4>
-            <p className="text-sm">
-              2× per week strength training (Tuesday PM, Thursday PM)
-            </p>
-            <p className="text-sm">
-              Allow 4-6 hours between running and strength sessions
-            </p>
-          </div>
-
-          <div className="bg-green-50 p-4 rounded">
-            <h4 className="font-semibold">Weeks 7-10: Maintenance Phase</h4>
-            <p className="text-sm">
-              1× per week strength training (Wednesday PM)
-            </p>
-            <p className="text-sm">Reduce volume but maintain intensity</p>
-          </div>
-
-          <div className="bg-yellow-50 p-4 rounded">
-            <h4 className="font-semibold">Weeks 11-12: Taper</h4>
-            <p className="text-sm">Optional light strength work</p>
-            <p className="text-sm">Focus on mobility and activation only</p>
-          </div>
-        </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-4 text-gray-900 flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  When to Progress
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Can complete all sets with perfect form
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      No excessive soreness lasting more than 48 hours
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Feel recovered between sessions
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Movement feels controlled and stable
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-gray-700 text-sm">
+                      Ready for increased challenge
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

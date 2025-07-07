@@ -816,55 +816,43 @@ const trainingSchedule: DailyWorkout[] = [
 export default function Home() {
   const [selectedWeek, setSelectedWeek] = useState("1");
   const [currentTrainingDay, setCurrentTrainingDay] = useState("");
-  const [currentTrainingWeek, setCurrentTrainingWeek] = useState(0);
-  const [planStarted, setPlanStarted] = useState(false);
+  const [tomorrowTrainingDay, setTomorrowTrainingDay] = useState("");
 
   useEffect(() => {
     const today = new Date();
-    const planStartDate = new Date(today);
-    planStartDate.setDate(today.getDate() + 1); // Plan starts tomorrow
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
 
-    const daysSincePlanStart = Math.floor(
-      (today.getTime() - planStartDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const days = [
+      "Sunday", // 0
+      "Monday", // 1
+      "Tuesday", // 2
+      "Wednesday", // 3
+      "Thursday", // 4
+      "Friday", // 5
+      "Saturday", // 6
+    ];
 
-    if (daysSincePlanStart >= 0) {
-      // Plan has started
-      setPlanStarted(true);
-      const trainingDayIndex = daysSincePlanStart % 7;
-      const weekNumber = Math.floor(daysSincePlanStart / 7) + 1;
+    const todayName = days[dayOfWeek];
+    const tomorrowIndex = (dayOfWeek + 1) % 7;
+    const tomorrowName = days[tomorrowIndex];
 
-      const days = [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ];
-      setCurrentTrainingDay(days[trainingDayIndex]);
-      setCurrentTrainingWeek(Math.min(weekNumber, 12)); // Cap at 12 weeks
-    } else {
-      // Plan hasn't started yet
-      setPlanStarted(false);
-
-      // Show tomorrow's workout (first day of plan)
-      setCurrentTrainingDay("Monday");
-      setCurrentTrainingWeek(1);
-    }
+    setCurrentTrainingDay(todayName);
+    setTomorrowTrainingDay(tomorrowName);
   }, []);
 
   const currentWeekWorkouts = trainingSchedule.filter(
     (w) => w.week === parseInt(selectedWeek)
   );
 
-  // Get the workout for the current training day
-  const currentWorkout = planStarted
-    ? trainingSchedule.find(
-        (w) => w.week === currentTrainingWeek && w.day === currentTrainingDay
-      )
-    : trainingSchedule.find((w) => w.week === 1 && w.day === "Monday"); // Tomorrow's workout
+  // Get today's workout (default to week 1 for display)
+  const todaysWorkout = trainingSchedule.find(
+    (w) => w.week === 1 && w.day === currentTrainingDay
+  );
+
+  // Get tomorrow's workout
+  const tomorrowsWorkout = trainingSchedule.find(
+    (w) => w.week === 1 && w.day === tomorrowTrainingDay
+  );
 
   const getZoneColor = (zone: string) => {
     if (zone.includes("1"))
@@ -910,63 +898,26 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Plan Status Card */}
-        {!planStarted && (
-          <Card className="border shadow-sm bg-blue-50 border-blue-200">
-            <CardHeader className="bg-blue-100 border-b border-blue-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl text-blue-900">
-                    Training Starts Tomorrow!
-                  </CardTitle>
-                  <CardDescription className="text-lg text-blue-700">
-                    Get ready for your 12-week journey
-                  </CardDescription>
-                </div>
-                <Badge className="bg-blue-600 text-white text-sm px-3 py-1">
-                  Ready to start
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <p className="text-blue-800 mb-4">
-                Your training plan begins tomorrow with Week 1 of the Base
-                Phase. Make sure you&apos;re prepared with:
-              </p>
-              <ul className="list-disc list-inside space-y-2 text-blue-800">
-                <li>Proper running gear and trail shoes</li>
-                <li>Heart rate monitor or fitness watch</li>
-                <li>Nutrition and hydration plan</li>
-                <li>Recovery tools and strategy</li>
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Current/Tomorrow's Workout */}
-        {currentWorkout && (
+        {/* Today's Workout */}
+        {todaysWorkout && (
           <Card className="border shadow-sm">
             <CardHeader className="bg-slate-50 border-b">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-2xl text-gray-900">
-                    {planStarted
-                      ? "Today&apos;s Workout"
-                      : "Tomorrow&apos;s Workout"}
+                    Today&apos;s Workout
                   </CardTitle>
                   <CardDescription className="text-lg text-gray-600">
-                    {currentTrainingDay} • Week{" "}
-                    {planStarted ? currentTrainingWeek : 1}
-                    {!planStarted && " (Starting tomorrow)"}
+                    {currentTrainingDay} • Week 1 - Base Phase
                   </CardDescription>
                 </div>
                 <Badge
                   variant="outline"
                   className={`${getZoneColor(
-                    currentWorkout.zone
+                    todaysWorkout.zone
                   )} text-sm px-3 py-1 border`}
                 >
-                  {currentWorkout.zone}
+                  {todaysWorkout.zone}
                 </Badge>
               </div>
             </CardHeader>
@@ -976,17 +927,17 @@ export default function Home() {
                   <div className="flex items-center gap-3">
                     <Activity className="h-5 w-5 text-gray-600" />
                     <span className="font-semibold text-lg text-gray-900">
-                      {currentWorkout.type}
+                      {todaysWorkout.type}
                     </span>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-3 text-gray-700">
                       <TrendingUp className="h-4 w-4" />
-                      <span>{currentWorkout.distance}</span>
+                      <span>{todaysWorkout.distance}</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-700">
                       <Mountain className="h-4 w-4" />
-                      <span>{currentWorkout.vertical} vertical</span>
+                      <span>{todaysWorkout.vertical} vertical</span>
                     </div>
                   </div>
                 </div>
@@ -995,13 +946,53 @@ export default function Home() {
                     Workout Details:
                   </p>
                   <p className="text-gray-700 leading-relaxed">
-                    {currentWorkout.details}
+                    {todaysWorkout.details}
                   </p>
-                  {currentWorkout.notes && (
+                  {todaysWorkout.notes && (
                     <p className="text-gray-600 mt-3 text-sm">
-                      {currentWorkout.notes}
+                      {todaysWorkout.notes}
                     </p>
                   )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Tomorrow's Workout */}
+        {tomorrowsWorkout && (
+          <Card className="border shadow-sm">
+            <CardHeader className="bg-blue-50 border-b border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl text-blue-900">
+                    Tomorrow&apos;s Workout
+                  </CardTitle>
+                  <CardDescription className="text-blue-700">
+                    {tomorrowTrainingDay} • Week 1 - Base Phase
+                  </CardDescription>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={`${getZoneColor(
+                    tomorrowsWorkout.zone
+                  )} text-sm px-3 py-1 border`}
+                >
+                  {tomorrowsWorkout.zone}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Activity className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-blue-900">
+                    {tomorrowsWorkout.type}
+                  </span>
+                  <span className="text-blue-700 text-sm">
+                    {tomorrowsWorkout.distance} • {tomorrowsWorkout.vertical}{" "}
+                    vert
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -1038,33 +1029,24 @@ export default function Home() {
             <CardContent className="p-0">
               <div className="divide-y">
                 {currentWeekWorkouts.map((workout, idx) => {
-                  const isCurrentDay =
-                    planStarted &&
-                    parseInt(selectedWeek) === currentTrainingWeek &&
-                    workout.day === currentTrainingDay;
-                  const isUpcoming =
-                    !planStarted &&
-                    parseInt(selectedWeek) === 1 &&
-                    workout.day === "Monday";
+                  const isToday =
+                    workout.day === currentTrainingDay &&
+                    parseInt(selectedWeek) === 1;
 
                   return (
                     <div
                       key={idx}
                       className={`flex items-center justify-between p-6 hover:bg-gray-50 transition-colors ${
-                        isCurrentDay
-                          ? "bg-blue-50 border-l-4 border-l-blue-500"
-                          : isUpcoming
-                          ? "bg-green-50 border-l-4 border-l-green-500"
-                          : ""
+                        isToday ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
                       }`}
                     >
                       <div className="flex items-center gap-6">
                         <div className="min-w-[100px]">
                           <p className="font-semibold text-gray-900">
                             {workout.day}
-                            {isUpcoming && (
-                              <span className="text-xs text-green-600 block">
-                                Starts tomorrow
+                            {isToday && (
+                              <span className="text-xs text-blue-600 block">
+                                Today
                               </span>
                             )}
                           </p>
@@ -1167,7 +1149,7 @@ export default function Home() {
                 <p className="text-sm font-medium text-gray-900">
                   Easy/Recovery
                 </p>
-                <p className="text-xs text-gray-600 mt-1">&lt;150 HR</p>
+                <p className="text-xs text-gray-600 mt-1">&lt;130 HR</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-blue-50 border border-blue-200">
                 <Badge
@@ -1177,7 +1159,7 @@ export default function Home() {
                   Zone 2
                 </Badge>
                 <p className="text-sm font-medium text-gray-900">Aerobic</p>
-                <p className="text-xs text-gray-600 mt-1">150-160 HR</p>
+                <p className="text-xs text-gray-600 mt-1">130-140 HR</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-amber-50 border border-amber-200">
                 <Badge
@@ -1186,8 +1168,8 @@ export default function Home() {
                 >
                   Zone 3
                 </Badge>
-                <p className="text-sm font-medium text-gray-900">Tempo</p>
-                <p className="text-xs text-gray-600 mt-1">165-175 HR</p>
+                <p className="text-sm font-medium text-gray-900">Threshold</p>
+                <p className="text-xs text-gray-600 mt-1">140-165 HR</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-orange-50 border border-orange-200">
                 <Badge
@@ -1196,8 +1178,10 @@ export default function Home() {
                 >
                   Zone 4
                 </Badge>
-                <p className="text-sm font-medium text-gray-900">Threshold</p>
-                <p className="text-xs text-gray-600 mt-1">175-185 HR</p>
+                <p className="text-sm font-medium text-gray-900">
+                  Above Threshold
+                </p>
+                <p className="text-xs text-gray-600 mt-1">165-180 HR</p>
               </div>
               <div className="text-center p-4 rounded-lg bg-red-50 border border-red-200">
                 <Badge
@@ -1207,7 +1191,7 @@ export default function Home() {
                   Zone 5
                 </Badge>
                 <p className="text-sm font-medium text-gray-900">Max/Sprint</p>
-                <p className="text-xs text-gray-600 mt-1">185+ HR</p>
+                <p className="text-xs text-gray-600 mt-1">180+ HR</p>
               </div>
             </div>
           </CardContent>

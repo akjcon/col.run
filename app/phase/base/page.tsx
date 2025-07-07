@@ -1,183 +1,300 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Mountain, TrendingUp, Activity } from "lucide-react";
+
 export default function BasePhase() {
+  const getZoneColor = (zone: string) => {
+    if (zone.includes("1") || zone === "Recovery")
+      return "bg-slate-100 text-slate-700 border-slate-200";
+    if (zone.includes("2")) return "bg-blue-50 text-blue-700 border-blue-200";
+    if (zone.includes("3"))
+      return "bg-amber-50 text-amber-700 border-amber-200";
+    if (zone.includes("4"))
+      return "bg-orange-50 text-orange-700 border-orange-200";
+    if (zone.includes("5")) return "bg-red-50 text-red-700 border-red-200";
+    return "bg-gray-50 text-gray-600 border-gray-200";
+  };
+
+  const workouts = [
+    {
+      day: "Monday",
+      type: "Rest/Active Recovery",
+      zone: "Recovery",
+      description: "Complete rest or 20-30 min easy walk/bike",
+      notes: "Full recovery after weekend long runs",
+    },
+    {
+      day: "Tuesday",
+      type: "Zone 1-2 Run + Strength",
+      zone: "Zone 1-2",
+      description: "6-8 miles Z1/Z2 with 8×15 sec pickups",
+      details: [
+        "Vertical: 1,000-1,500 ft",
+        "Mix Z1 (<130 HR) and Z2 (130-140 HR) running",
+        "Pickups: 8×15 sec @ Z4 effort (165-180 HR, 2 min recovery)",
+        "PM: Stage 3 Strength Program",
+      ],
+      notes: "Use Z2 for base building given strong aerobic development",
+    },
+    {
+      day: "Wednesday",
+      type: "Zone 2 Sustained",
+      zone: "Zone 2",
+      description: "60-75 minutes sustained effort",
+      details: ["Zone: Z2 (130-140 HR)", "Vertical: 1,500-2,000 ft"],
+      notes: "Focus on maintaining steady effort, practice race nutrition",
+    },
+    {
+      day: "Thursday",
+      type: "Recovery + Hill Sprints",
+      zone: "Zone 1/5",
+      description: "4-5 miles recovery run + hill sprints",
+      details: [
+        "AM: Zone 1 recovery run (<130 HR), 500 ft vertical",
+        "PM: 8×10 sec maximum effort uphill (180+ HR, 2-3 min recovery)",
+        "Core: 6 exercises × max reps",
+      ],
+      notes: "Focus on explosive power, full recovery between efforts",
+    },
+    {
+      day: "Friday",
+      type: "Easy Run",
+      zone: "Zone 1",
+      description: "5-6 miles easy pace",
+      details: ["Vertical: 800 ft"],
+      notes: "Keep it comfortable, prepare for weekend",
+    },
+    {
+      day: "Saturday",
+      type: "Long Run #1",
+      zone: "Zone 1-2",
+      description: "10-12 miles mountain-specific",
+      details: ["Vertical: 2,500-3,000 ft", "Include some Z2 sections"],
+      notes: "Practice nutrition, focus on consistent effort",
+    },
+    {
+      day: "Sunday",
+      type: "Long Run #2",
+      zone: "Zone 1",
+      description: "8-10 miles back-to-back",
+      details: ["Vertical: 2,000 ft", "Run on partially depleted glycogen"],
+      notes: "Stay aerobic, build aerobic capacity",
+    },
+  ];
+
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="phase-header">
-        <h1 className="text-3xl font-bold">Weeks 1-4: Base + Strength Phase</h1>
-        <p className="text-green-100 mt-2">
-          Target: 45-50 miles/week, 8,000-10,000 ft vertical
-        </p>
-      </div>
-
-      {/* Weekly Schedule */}
-      <div className="section-card">
-        <h2 className="text-2xl font-bold mb-4 text-green-700">
-          Weekly Schedule Template
-        </h2>
-
-        {/* Monday */}
-        <div className="workout-card border-l-gray-400 mb-4">
-          <h3 className="font-bold text-lg mb-2">
-            Monday: Rest/Active Recovery
-          </h3>
-          <p>
-            <span className="font-semibold">Workout:</span> Complete rest or
-            20-30 min easy walk/bike
+    <div className="min-h-screen bg-white">
+      <div className="max-w-6xl mx-auto p-6 space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4 py-8">
+          <h1 className="text-5xl font-bold text-gray-900">
+            Weeks 1-4: Base + Strength Phase
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Leveraging your strong aerobic base from skiing with Z1/Z2 mix and
+            strength training
           </p>
-          <p>
-            <span className="font-semibold">Zone:</span> Recovery
-          </p>
-          <p className="text-gray-600 text-sm mt-1">
-            Notes: Full recovery after weekend long runs
-          </p>
-        </div>
-
-        {/* Tuesday */}
-        <div className="workout-card border-l-blue-500 mb-4">
-          <h3 className="font-bold text-lg mb-2">
-            Tuesday: Zone 1 Run + Strength
-          </h3>
-          <div className="space-y-2">
-            <div>
-              <p className="font-semibold">AM Workout:</p>
-              <p>• 6-8 miles Zone 1 with 8×15 sec pickups</p>
-              <p>• Vertical: 1,000-1,500 ft</p>
-              <p>• Pickups: 8×15 sec @ Z4 effort (2 min recovery between)</p>
-            </div>
-            <div className="mt-3">
-              <p className="font-semibold">
-                PM Workout: Stage 3 Strength Program
-              </p>
-              <ul className="ml-4 text-sm">
-                <li>• Box step-ups: 4×6 reps each leg (weighted)</li>
-                <li>• Front lunges: 4×6 reps each leg (weighted)</li>
-                <li>• Split jump squats: 4×6 reps each leg</li>
-                <li>• Core: 5×30-45 sec planks</li>
-              </ul>
-            </div>
+          <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
+            <span className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              45-50 miles/week
+            </span>
+            <span className="flex items-center gap-2">
+              <Mountain className="h-4 w-4" />
+              8,000-10,000 ft vertical
+            </span>
           </div>
         </div>
 
-        {/* Wednesday */}
-        <div className="workout-card border-l-green-500 mb-4">
-          <h3 className="font-bold text-lg mb-2">
-            Wednesday: Zone 2 Sustained
-          </h3>
-          <p>
-            <span className="font-semibold">Duration:</span> 60-75 minutes
-          </p>
-          <p>
-            <span className="font-semibold">Zone:</span> Z2 (155-160 HR)
-          </p>
-          <p>
-            <span className="font-semibold">Vertical:</span> 1,500-2,000 ft
-          </p>
-          <p className="text-gray-600 text-sm mt-1">
-            Notes: Focus on maintaining steady effort, practice race nutrition
-          </p>
-        </div>
+        {/* Weekly Schedule */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900">
+              Weekly Schedule Template
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Optimized for athletes with strong aerobic development - more Z2
+              work and early intensity
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y">
+              {workouts.map((workout, idx) => (
+                <div
+                  key={idx}
+                  className="p-6 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-3">
+                        <div className="min-w-[80px]">
+                          <p className="font-semibold text-gray-900">
+                            {workout.day}
+                          </p>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`${getZoneColor(
+                            workout.zone
+                          )} border text-xs`}
+                        >
+                          {workout.zone}
+                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Activity className="h-4 w-4 text-gray-600" />
+                          <span className="font-medium text-gray-900">
+                            {workout.type}
+                          </span>
+                        </div>
+                      </div>
 
-        {/* Thursday */}
-        <div className="workout-card border-l-blue-500 mb-4">
-          <h3 className="font-bold text-lg mb-2">
-            Thursday: Recovery + Hill Sprints
-          </h3>
-          <div className="space-y-2">
-            <div>
-              <p className="font-semibold">AM Workout:</p>
-              <p>• 4-5 miles recovery run</p>
-              <p>• Zone: Z1</p>
-              <p>• Vertical: 500 ft</p>
+                      <p className="text-gray-700 mb-2">
+                        {workout.description}
+                      </p>
+
+                      {workout.details && (
+                        <ul className="space-y-1 text-sm text-gray-600 mb-2">
+                          {workout.details.map((detail, detailIdx) => (
+                            <li key={detailIdx}>• {detail}</li>
+                          ))}
+                        </ul>
+                      )}
+
+                      {workout.notes && (
+                        <p className="text-sm text-gray-500 italic">
+                          {workout.notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="mt-3">
-              <p className="font-semibold">PM Workout:</p>
-              <p>
-                • Hill Sprints: 8×10 sec maximum effort uphill (2-3 min
-                recovery)
-              </p>
-              <p>• Core: 6 exercises × max reps</p>
+          </CardContent>
+        </Card>
+
+        {/* Weekly Totals */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card className="border shadow-sm">
+            <CardHeader className="text-center">
+              <CardTitle className="text-3xl font-bold text-gray-900">
+                45-50
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                Miles per week
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="border shadow-sm">
+            <CardHeader className="text-center">
+              <CardTitle className="text-3xl font-bold text-gray-900">
+                8,000-10,000
+              </CardTitle>
+              <CardDescription className="text-gray-600">
+                Feet of vertical per week
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+
+        {/* Coaching Adjustments */}
+        <Card className="border shadow-sm bg-green-50 border-green-200">
+          <CardHeader className="border-b border-green-200">
+            <CardTitle className="text-green-900">
+              🎯 Coaching Adjustments Made
+            </CardTitle>
+            <CardDescription className="text-green-700">
+              Plan customized based on your Nordic skiing background and
+              threshold feel
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-green-800">
+                  <strong>Heart Rate Zones Adjusted:</strong> Based on your
+                  threshold feel of 155-170 HR from skiing
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-green-800">
+                  <strong>More Z2 Work:</strong> Your strong aerobic base allows
+                  for more 130-140 HR training
+                </p>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                <p className="text-green-800">
+                  <strong>Small AeT-LT Gap:</strong> Good aerobic development
+                  means you can handle intensity earlier
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Friday */}
-        <div className="workout-card border-l-blue-500 mb-4">
-          <h3 className="font-bold text-lg mb-2">Friday: Easy Run</h3>
-          <p>
-            <span className="font-semibold">Distance:</span> 5-6 miles
-          </p>
-          <p>
-            <span className="font-semibold">Zone:</span> Z1
-          </p>
-          <p>
-            <span className="font-semibold">Vertical:</span> 800 ft
-          </p>
-          <p className="text-gray-600 text-sm mt-1">
-            Notes: Keep it comfortable, prepare for weekend
-          </p>
-        </div>
-
-        {/* Saturday */}
-        <div className="workout-card border-l-orange-500 mb-4">
-          <h3 className="font-bold text-lg mb-2">Saturday: Long Run #1</h3>
-          <p>
-            <span className="font-semibold">Distance:</span> 10-12 miles
-          </p>
-          <p>
-            <span className="font-semibold">Zone:</span> Z1-Z2
-          </p>
-          <p>
-            <span className="font-semibold">Vertical:</span> 2,500-3,000 ft
-          </p>
-          <p className="text-gray-600 text-sm mt-1">
-            Notes: Practice nutrition, include some Z2 sections
-          </p>
-        </div>
-
-        {/* Sunday */}
-        <div className="workout-card border-l-orange-500 mb-4">
-          <h3 className="font-bold text-lg mb-2">Sunday: Long Run #2</h3>
-          <p>
-            <span className="font-semibold">Distance:</span> 8-10 miles
-          </p>
-          <p>
-            <span className="font-semibold">Zone:</span> Z1
-          </p>
-          <p>
-            <span className="font-semibold">Vertical:</span> 2,000 ft
-          </p>
-          <p className="text-gray-600 text-sm mt-1">
-            Notes: Run on partially depleted glycogen, stay aerobic
-          </p>
-        </div>
-      </div>
-
-      {/* Weekly Totals */}
-      <div className="section-card mt-6">
-        <h3 className="text-xl font-bold mb-3 text-green-700">Weekly Totals</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="bg-gray-50 p-4 rounded">
-            <p className="font-semibold">Total Distance:</p>
-            <p className="text-2xl">45-50 miles</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded">
-            <p className="font-semibold">Total Vertical:</p>
-            <p className="text-2xl">8,000-10,000 ft</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Key Focus Points */}
-      <div className="section-card mt-6">
-        <h3 className="text-xl font-bold mb-3 text-green-700">
-          Key Focus Points
-        </h3>
-        <ul className="space-y-2">
-          <li>• Build consistent aerobic base with primarily Zone 1 running</li>
-          <li>• Establish strength training routine 2x per week</li>
-          <li>• Practice nutrition strategies during longer runs</li>
-          <li>• Focus on running form and efficiency</li>
-          <li>• Listen to your body and prioritize recovery</li>
-        </ul>
+        {/* Key Focus Points */}
+        <Card className="border shadow-sm">
+          <CardHeader className="border-b bg-slate-50">
+            <CardTitle className="text-gray-900">Key Focus Points</CardTitle>
+            <CardDescription className="text-gray-600">
+              Essential principles for this phase
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-700">
+                    Build aerobic base with Z1/Z2 mix (strong aerobic
+                    development from skiing)
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-700">
+                    Establish strength training routine 2x per week
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-700">
+                    Practice nutrition strategies during longer runs
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-700">
+                    Focus on running form and efficiency
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-700">
+                    Listen to your body and prioritize recovery
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <p className="text-gray-700">
+                    Build consistent training habits and routines
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

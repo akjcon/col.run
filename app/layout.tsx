@@ -24,7 +24,7 @@ export default function RootLayout({
                 50K Training Plan
               </span>
             </Link>
-            <div className="flex flex-1 items-center justify-end space-x-4 text-sm">
+            <div className="flex flex-1 items-center justify-end space-x-6 text-sm">
               <Link
                 href="/overview"
                 className="text-foreground hover:text-primary transition-colors"
@@ -48,12 +48,6 @@ export default function RootLayout({
                 className="text-foreground hover:text-primary transition-colors"
               >
                 Nutrition
-              </Link>
-              <Link
-                href="/training-log"
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                Log
               </Link>
             </div>
           </div>
