@@ -78,7 +78,7 @@ interface TrainingPlan {
 }
 
 interface ChatMessage {
-  role: string;
+  role: "user" | "assistant";
   content: string;
 }
 
