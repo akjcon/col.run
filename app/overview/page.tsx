@@ -109,13 +109,13 @@ export default function Overview() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto p-6 space-y-8">
+      <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6 md:space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4 py-8">
-          <h1 className="text-5xl font-bold text-gray-900">
+        <div className="text-center space-y-4 py-4 md:py-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
             Training Overview
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
             Comprehensive 12-week trail running program tailored for your 50K
             race
           </p>
@@ -133,7 +133,7 @@ export default function Overview() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {athleteProfile.map((item, idx) => (
                 <div
                   key={idx}

@@ -905,7 +905,7 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-2xl text-gray-900">
-                    Today&apos;s Workout
+                    Today&#39;s Workout
                   </CardTitle>
                   <CardDescription className="text-lg text-gray-600">
                     {currentTrainingDay} • Week 1 - Base Phase
@@ -966,7 +966,7 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-xl text-blue-900">
-                    Tomorrow&apos;s Workout
+                    Tomorrow&#39;s Workout
                   </CardTitle>
                   <CardDescription className="text-blue-700">
                     {tomorrowTrainingDay} • Week 1 - Base Phase
@@ -1082,49 +1082,55 @@ export default function Home() {
         {/* Quick Links */}
         <div className="grid md:grid-cols-3 gap-6">
           <Link href="/phase/base">
-            <Card className="hover:shadow-md transition-all cursor-pointer border hover:border-gray-300">
-              <CardHeader>
-                <CardTitle className="text-lg text-gray-900">
-                  Training Phases
-                </CardTitle>
-                <CardDescription className="text-gray-600">
-                  Detailed weekly schedules
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex justify-end">
-                <ChevronRight className="h-5 w-5 text-gray-400" />
+            <Card className="hover:shadow-md transition-all cursor-pointer border hover:border-gray-300 pb-0">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      Training Phases
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Detailed weekly schedules
+                    </p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 ml-4" />
+                </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link href="/strength">
-            <Card className="hover:shadow-md transition-all cursor-pointer border hover:border-gray-300">
-              <CardHeader>
-                <CardTitle className="text-lg text-gray-900">
-                  Strength Training
-                </CardTitle>
-                <CardDescription className="text-gray-600">
-                  Exercises & progressions
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex justify-end">
-                <ChevronRight className="h-5 w-5 text-gray-400" />
+            <Card className="hover:shadow-md transition-all cursor-pointer border hover:border-gray-300 pb-0">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      Strength Training
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Exercises & progressions
+                    </p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 ml-4" />
+                </div>
               </CardContent>
             </Card>
           </Link>
 
-          <Link href="/nutrition-recovery">
-            <Card className="hover:shadow-md transition-all cursor-pointer border hover:border-gray-300">
-              <CardHeader>
-                <CardTitle className="text-lg text-gray-900">
-                  Nutrition & Recovery
-                </CardTitle>
-                <CardDescription className="text-gray-600">
-                  Fueling & recovery protocols
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex justify-end">
-                <ChevronRight className="h-5 w-5 text-gray-400" />
+          <Link href="/chat">
+            <Card className="hover:shadow-md transition-all cursor-pointer border hover:border-gray-300 pb-0">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      Training Coach Chat
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Ask your AI coach anything about training
+                    </p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 ml-4" />
+                </div>
               </CardContent>
             </Card>
           </Link>

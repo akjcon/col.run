@@ -231,7 +231,7 @@ export default function RaceWeekPhase() {
               <li>• Focus on current mile only</li>
               <li>• Use positive self-talk</li>
               <li>• Smile at aid stations</li>
-              <li>• Remember: You&apos;ve done the work!</li>
+              <li>• Remember: You&#39;ve done the work!</li>
             </ul>
           </div>
         </div>
@@ -304,14 +304,14 @@ export default function RaceWeekPhase() {
       {/* Final Thoughts */}
       <div className="section-card mt-6 bg-gradient-to-r from-green-50 to-blue-50">
         <h3 className="text-xl font-bold mb-3 text-green-700">
-          You&apos;re Ready!
+          You&#39;re Ready!
         </h3>
         <p className="mb-2">
-          You&apos;ve put in 12 weeks of dedicated training. Trust your fitness,
+          You&#39;ve put in 12 weeks of dedicated training. Trust your fitness,
           execute your plan, and enjoy the journey.
         </p>
         <p className="font-semibold text-green-700">
-          Good luck - you&apos;ve got this! 🏔️✨
+          Good luck - you&#39;ve got this! 🏔️✨
         </p>
       </div>
     </div>
