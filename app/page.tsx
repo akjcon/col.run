@@ -1126,7 +1126,7 @@ export default function Home() {
                       Training Coach Chat
                     </h3>
                     <p className="text-gray-600 text-sm">
-                      Ask your AI coach anything about training
+                      Ask your AI coach anything
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 ml-4" />
