@@ -30,7 +30,7 @@ import { formatRaceCountdown } from "@/lib/plan-utils";
 
 export default function HomePage() {
   const { userData, isLoading } = useUser();
-  const { userId } = useAuth();
+  const { userId, isSignedIn } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWorkoutDone, setIsWorkoutDone] = useState(false);
 
@@ -59,31 +59,39 @@ export default function HomePage() {
   // Check if today's workout is already completed
   useEffect(() => {
     const checkWorkoutCompletion = async () => {
-      if (userId && todaysWorkout && currentWeek) {
+      if (isSignedIn && userId && todaysWorkout && currentWeek) {
+        // Simple approach: just try the call, handle gracefully if it fails
         const completed = await isWorkoutCompleted(
           userId,
           todaysWorkout.day,
           currentWeek
         );
         setIsWorkoutDone(completed);
+      } else {
+        setIsWorkoutDone(false);
       }
     };
 
     checkWorkoutCompletion();
-  }, [userId, todaysWorkout, currentWeek]);
+  }, [isSignedIn, userId, todaysWorkout, currentWeek]);
 
   const handleWorkoutCompletion = async (rating: number, notes?: string) => {
     if (!userId || !todaysWorkout) return;
 
-    await saveWorkoutCompletion(userId, {
-      workoutDay: todaysWorkout.day,
-      workoutType: todaysWorkout.type,
-      weekNumber: currentWeek,
-      feelingRating: rating,
-      feelingNotes: notes,
-    });
+    try {
+      await saveWorkoutCompletion(userId, {
+        workoutDay: todaysWorkout.day,
+        workoutType: todaysWorkout.type,
+        weekNumber: currentWeek,
+        feelingRating: rating,
+        feelingNotes: notes,
+      });
 
-    setIsWorkoutDone(true);
+      setIsWorkoutDone(true);
+    } catch (error) {
+      console.error("Failed to save workout completion:", error);
+      throw error;
+    }
   };
 
   if (isLoading || !userData) {

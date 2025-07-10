@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
+import Image from "next/image";
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -54,7 +55,7 @@ export function Navigation() {
     },
     {
       href: "/chat",
-      label: "Coach Chat",
+      label: "AI Chat",
       icon: MessageCircle,
       description: "AI training assistant",
     },
@@ -91,12 +92,9 @@ export function Navigation() {
           </button>
 
           {/* Logo */}
-          <Link
-            href={isSignedIn ? "/home" : "/"}
-            className="flex items-center space-x-2"
-          >
-            <Mountain className="h-6 w-6" />
-            <span className="font-bold text-sm sm:text-base">Spruce</span>
+          <Link href={isSignedIn ? "/home" : "/"} className="flex items-center">
+            <Image src="/col_logo.svg" alt="col" width={70} height={70} />
+            <span className="font-normal text-sm sm:text-base">col</span>
           </Link>
 
           {/* Desktop navigation */}
@@ -106,7 +104,7 @@ export function Navigation() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-foreground hover:text-primary transition-colors font-medium"
+                  className="text-foreground hover:text-primary transition-colors font-normal"
                 >
                   {link.label}
                 </Link>

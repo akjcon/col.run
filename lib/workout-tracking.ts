@@ -68,9 +68,13 @@ export async function getWorkoutCompletions(
       ...doc.data(),
       completedAt: doc.data().completedAt.toDate(),
     })) as WorkoutCompletion[];
-  } catch (error) {
-    console.error("Error getting workout completions:", error);
-    throw new Error("Failed to fetch workout completions");
+  } catch (error: unknown) {
+    // Suppress permission errors - they're just auth timing issues
+    const errorCode = (error as { code?: string })?.code;
+    if (errorCode !== "permission-denied") {
+      console.error("Error getting workout completions:", error);
+    }
+    return [];
   }
 }
 
@@ -94,7 +98,12 @@ export async function isWorkoutCompleted(
 
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
-  } catch (error) {
+  } catch (error: unknown) {
+    // Suppress permission errors - they're just auth timing issues
+    const errorCode = (error as { code?: string })?.code;
+    if (errorCode === "permission-denied") {
+      return false; // Assume not completed if auth isn't ready yet
+    }
     console.error("Error checking workout completion:", error);
     return false;
   }

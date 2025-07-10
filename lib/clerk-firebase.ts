@@ -1,9 +1,11 @@
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
+import { signInWithCustomToken, signOut } from "firebase/auth";
+import { auth } from "./firebase";
 import { initializeNewUser, getUserData } from "./firestore";
 import { UserData } from "./types";
 
-// Hook to handle Clerk + Firebase integration (simplified - no Firebase Auth)
+// Hook to handle Clerk + Firebase Auth integration
 export function useClerkFirebase() {
   const { userId, isSignedIn } = useAuth();
   const { user } = useUser();
@@ -11,13 +13,40 @@ export function useClerkFirebase() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const initializeFirebase = async () => {
+    const authenticateWithFirebase = async () => {
       if (!isSignedIn || !userId) {
+        // Sign out of Firebase if user is not signed in to Clerk
+        if (auth.currentUser) {
+          await signOut(auth);
+        }
         setIsFirebaseReady(false);
         return;
       }
 
       try {
+        // If already authenticated with Firebase with the same user, skip
+        if (auth.currentUser && auth.currentUser.uid === userId) {
+          setIsFirebaseReady(true);
+          return;
+        }
+
+        // Get Firebase custom token from our API
+        const response = await fetch("/api/auth/firebase-token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to get Firebase token");
+        }
+
+        const { firebaseToken } = await response.json();
+
+        // Sign in to Firebase with the custom token
+        await signInWithCustomToken(auth, firebaseToken);
+
         // Check if this is a new user and initialize if needed
         const existingUserData = await getUserData(userId);
         if (!existingUserData && user) {
@@ -31,15 +60,17 @@ export function useClerkFirebase() {
         setIsFirebaseReady(true);
         setError(null);
       } catch (err) {
-        console.error("Error initializing Firebase user:", err);
+        console.error("Error authenticating with Firebase:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to initialize user data"
+          err instanceof Error
+            ? err.message
+            : "Failed to authenticate with Firebase"
         );
         setIsFirebaseReady(false);
       }
     };
 
-    initializeFirebase();
+    authenticateWithFirebase();
   }, [isSignedIn, userId, user]);
 
   return {
