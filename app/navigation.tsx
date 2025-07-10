@@ -6,15 +6,18 @@ import {
   Mountain,
   Menu,
   X,
+  Home,
   Target,
   Dumbbell,
   MessageCircle,
   Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
 
 export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isSignedIn, user } = useUser();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -25,6 +28,12 @@ export function Navigation() {
   };
 
   const navLinks = [
+    {
+      href: "/home",
+      label: "Dashboard",
+      icon: Home,
+      description: "Your training dashboard",
+    },
     {
       href: "/overview",
       label: "Overview",
@@ -82,24 +91,44 @@ export function Navigation() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
+          <Link
+            href={isSignedIn ? "/home" : "/"}
+            className="flex items-center space-x-2"
+          >
             <Mountain className="h-6 w-6" />
-            <span className="font-bold text-sm sm:text-base">
-              50K Training Plan
-            </span>
+            <span className="font-bold text-sm sm:text-base">Spruce</span>
           </Link>
 
           {/* Desktop navigation */}
           <div className="hidden md:flex flex-1 items-center justify-end space-x-6 text-sm">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-foreground hover:text-primary transition-colors font-medium"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {isSignedIn &&
+              navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-foreground hover:text-primary transition-colors font-medium"
+                >
+                  {link.label}
+                </Link>
+              ))}
+
+            {/* Authentication */}
+            {isSignedIn ? (
+              <div className="flex items-center space-x-3">
+                {user?.firstName && (
+                  <span className="text-sm text-gray-600 hidden lg:block">
+                    Welcome, {user?.firstName}
+                  </span>
+                )}
+                <UserButton />
+              </div>
+            ) : (
+              <SignInButton mode="modal">
+                <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium">
+                  Sign In
+                </button>
+              </SignInButton>
+            )}
           </div>
         </div>
       </nav>
@@ -145,39 +174,71 @@ export function Navigation() {
 
         {/* Mobile menu links */}
         <div className="flex flex-col p-6 space-y-2">
-          {navLinks.map((link, index) => {
-            const IconComponent = link.icon;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={closeMobileMenu}
-                className={cn(
-                  "group flex items-center space-x-4 p-4 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm border border-transparent hover:border-gray-200",
-                  "transform hover:scale-[1.01] active:scale-[0.99]",
-                  isMobileMenuOpen ? "animate-in slide-in-from-left" : ""
-                )}
-                style={{
-                  transitionDelay: `${index * 50}ms`,
-                }}
-              >
-                <div className="flex-shrink-0 p-2 bg-gray-100 rounded-lg group-hover:bg-blue-100 transition-all duration-200">
-                  <IconComponent className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors duration-200" />
+          {/* Authentication for mobile */}
+          {!isSignedIn ? (
+            <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-800 mb-3">
+                Sign in to access your training plan
+              </p>
+              <SignInButton mode="modal">
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium">
+                  Sign In
+                </button>
+              </SignInButton>
+            </div>
+          ) : (
+            <>
+              {/* User info */}
+              <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
+                <div className="flex items-center space-x-3">
+                  <UserButton />
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {user?.firstName} {user?.lastName}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {user?.emailAddresses[0]?.emailAddress}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 group-hover:text-blue-900 transition-colors duration-200">
-                    {link.label}
-                  </p>
-                  <p className="text-sm text-gray-500 group-hover:text-blue-600 transition-colors duration-200">
-                    {link.description}
-                  </p>
-                </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                </div>
-              </Link>
-            );
-          })}
+              </div>
+
+              {/* Navigation links */}
+              {navLinks.map((link, index) => {
+                const IconComponent = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={closeMobileMenu}
+                    className={cn(
+                      "group flex items-center space-x-4 p-4 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm border border-transparent hover:border-gray-200",
+                      "transform hover:scale-[1.01] active:scale-[0.99]",
+                      isMobileMenuOpen ? "animate-in slide-in-from-left" : ""
+                    )}
+                    style={{
+                      transitionDelay: `${index * 50}ms`,
+                    }}
+                  >
+                    <div className="flex-shrink-0 p-2 bg-gray-100 rounded-lg group-hover:bg-blue-100 transition-all duration-200">
+                      <IconComponent className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors duration-200" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 group-hover:text-blue-900 transition-colors duration-200">
+                        {link.label}
+                      </p>
+                      <p className="text-sm text-gray-500 group-hover:text-blue-600 transition-colors duration-200">
+                        {link.description}
+                      </p>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </>
+          )}
         </div>
 
         {/* Footer */}

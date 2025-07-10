@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Navigation } from "./navigation";
+import { UserProvider } from "@/lib/user-context";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "50K Trail Training Plan",
@@ -13,11 +15,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-background font-sans antialiased">
-        <Navigation />
-        <main className="flex-1 container mx-auto px-4 py-6">{children}</main>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className="min-h-screen bg-background font-sans antialiased">
+          <UserProvider>
+            <Navigation />
+            <main className="flex-1 container mx-auto px-4 py-6">
+              {children}
+            </main>
+          </UserProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

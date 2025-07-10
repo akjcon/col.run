@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -7,8 +9,19 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Mountain, TrendingUp, Activity } from "lucide-react";
+import { useUser } from "@/lib/user-context";
 
 export default function BasePhase() {
+  const { userData, isLoading } = useUser();
+
+  if (isLoading || !userData) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
   const getZoneColor = (zone: string) => {
     if (zone.includes("1") || zone === "Recovery")
       return "bg-slate-100 text-slate-700 border-slate-200";
@@ -21,72 +34,9 @@ export default function BasePhase() {
     return "bg-gray-50 text-gray-600 border-gray-200";
   };
 
-  const workouts = [
-    {
-      day: "Monday",
-      type: "Rest/Active Recovery",
-      zone: "Recovery",
-      description: "Complete rest or 20-30 min easy walk/bike",
-      notes: "Full recovery after weekend long runs",
-    },
-    {
-      day: "Tuesday",
-      type: "Zone 1-2 Run + Strength",
-      zone: "Zone 1-2",
-      description: "6-8 miles Z1/Z2 with 8×15 sec pickups",
-      details: [
-        "Vertical: 1,000-1,500 ft",
-        "Mix Z1 (<130 HR) and Z2 (130-140 HR) running",
-        "Pickups: 8×15 sec @ Z4 effort (165-180 HR, 2 min recovery)",
-        "PM: Stage 3 Strength Program",
-      ],
-      notes: "Use Z2 for base building given strong aerobic development",
-    },
-    {
-      day: "Wednesday",
-      type: "Zone 2 Sustained",
-      zone: "Zone 2",
-      description: "60-75 minutes sustained effort",
-      details: ["Zone: Z2 (130-140 HR)", "Vertical: 1,500-2,000 ft"],
-      notes: "Focus on maintaining steady effort, practice race nutrition",
-    },
-    {
-      day: "Thursday",
-      type: "Recovery + Hill Sprints",
-      zone: "Zone 1/5",
-      description: "4-5 miles recovery run + hill sprints",
-      details: [
-        "AM: Zone 1 recovery run (<130 HR), 500 ft vertical",
-        "PM: 8×10 sec maximum effort uphill (180+ HR, 2-3 min recovery)",
-        "Core: 6 exercises × max reps",
-      ],
-      notes: "Focus on explosive power, full recovery between efforts",
-    },
-    {
-      day: "Friday",
-      type: "Easy Run",
-      zone: "Zone 1",
-      description: "5-6 miles easy pace",
-      details: ["Vertical: 800 ft"],
-      notes: "Keep it comfortable, prepare for weekend",
-    },
-    {
-      day: "Saturday",
-      type: "Long Run #1",
-      zone: "Zone 1-2",
-      description: "10-12 miles mountain-specific",
-      details: ["Vertical: 2,500-3,000 ft", "Include some Z2 sections"],
-      notes: "Practice nutrition, focus on consistent effort",
-    },
-    {
-      day: "Sunday",
-      type: "Long Run #2",
-      zone: "Zone 1",
-      description: "8-10 miles back-to-back",
-      details: ["Vertical: 2,000 ft", "Run on partially depleted glycogen"],
-      notes: "Stay aerobic, build aerobic capacity",
-    },
-  ];
+  // Get the first week's workouts (Base phase)
+  const basePhaseWeek = userData.generatedProfile?.recommendedPlan?.weeks?.[0];
+  const workouts = basePhaseWeek?.workouts || [];
 
   return (
     <div className="min-h-screen bg-white">
@@ -94,20 +44,22 @@ export default function BasePhase() {
         {/* Header */}
         <div className="text-center space-y-4 py-8">
           <h1 className="text-5xl font-bold text-gray-900">
-            Weeks 1-4: Base + Strength Phase
+            {basePhaseWeek
+              ? `Week ${basePhaseWeek.weekNumber}: ${basePhaseWeek.phase} Phase`
+              : "Base Phase"}
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Leveraging your strong aerobic base from skiing with Z1/Z2 mix and
-            strength training
+            {userData.generatedProfile?.aiAnalysis ||
+              "Customized training based on your background and goals"}
           </p>
           <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
             <span className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              45-50 miles/week
+              {basePhaseWeek?.targetMiles || "TBD"} miles/week
             </span>
             <span className="flex items-center gap-2">
               <Mountain className="h-4 w-4" />
-              8,000-10,000 ft vertical
+              {basePhaseWeek?.targetVertical || "TBD"} vertical
             </span>
           </div>
         </div>
@@ -184,7 +136,7 @@ export default function BasePhase() {
           <Card className="border shadow-sm">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-bold text-gray-900">
-                45-50
+                {basePhaseWeek?.targetMiles || "TBD"}
               </CardTitle>
               <CardDescription className="text-gray-600">
                 Miles per week
@@ -194,52 +146,42 @@ export default function BasePhase() {
           <Card className="border shadow-sm">
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-bold text-gray-900">
-                8,000-10,000
+                {basePhaseWeek?.targetVertical || "TBD"}
               </CardTitle>
               <CardDescription className="text-gray-600">
-                Feet of vertical per week
+                Vertical per week
               </CardDescription>
             </CardHeader>
           </Card>
         </div>
 
-        {/* Coaching Adjustments */}
-        <Card className="border shadow-sm bg-green-50 border-green-200">
-          <CardHeader className="border-b border-green-200">
-            <CardTitle className="text-green-900">
-              🎯 Coaching Adjustments Made
-            </CardTitle>
-            <CardDescription className="text-green-700">
-              Plan customized based on your Nordic skiing background and
-              threshold feel
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-green-800">
-                  <strong>Heart Rate Zones Adjusted:</strong> Based on your
-                  threshold feel of 155-170 HR from skiing
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-green-800">
-                  <strong>More Z2 Work:</strong> Your strong aerobic base allows
-                  for more 130-140 HR training
-                </p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
-                <p className="text-green-800">
-                  <strong>Small AeT-LT Gap:</strong> Good aerobic development
-                  means you can handle intensity earlier
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Coaching Notes */}
+        {userData.generatedProfile?.recommendedPlan?.coachingNotes &&
+          userData.generatedProfile.recommendedPlan.coachingNotes.length >
+            0 && (
+            <Card className="border shadow-sm bg-green-50 border-green-200">
+              <CardHeader className="border-b border-green-200">
+                <CardTitle className="text-green-900">
+                  🎯 Personalized Coaching Notes
+                </CardTitle>
+                <CardDescription className="text-green-700">
+                  Plan customized based on your background and goals
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-3">
+                  {userData.generatedProfile.recommendedPlan.coachingNotes.map(
+                    (note, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-green-800">{note}</p>
+                      </div>
+                    )
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
         {/* Key Focus Points */}
         <Card className="border shadow-sm">

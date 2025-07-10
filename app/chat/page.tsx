@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Send, Bot, User, Loader2 } from "lucide-react";
+import { useUser } from "@/lib/user-context";
 
 interface Message {
   id: string;
@@ -19,15 +20,31 @@ interface Message {
 }
 
 export default function TrainingChat() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content:
-        "Hi! I'm your training plan assistant. I have access to the full Training for the Uphill Athlete book, your customized 12-week 50K plan, and know what day you're on. Ask me anything about your training, nutrition, recovery, specific workouts, or race strategy!",
-      timestamp: new Date(),
-    },
-  ]);
+  const { userData, isLoading: userLoading, userId } = useUser();
+
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    const getWelcomeMessage = () => {
+      if (!userData?.generatedProfile?.recommendedPlan) {
+        return "Hi! I'm your training plan assistant. I have access to the full Training for the Uphill Athlete book. Ask me anything about training, nutrition, recovery, or race strategy!";
+      }
+
+      const plan = userData.generatedProfile.recommendedPlan;
+      return `Hi! I'm your training plan assistant. I have access to the full Training for the Uphill Athlete book, your customized ${plan.planType} plan, and know you're currently on week ${plan.currentWeek} of ${plan.totalWeeks}. Ask me anything about your training, nutrition, recovery, specific workouts, or race strategy!`;
+    };
+
+    if (!userLoading) {
+      setMessages([
+        {
+          id: "welcome",
+          role: "assistant",
+          content: getWelcomeMessage(),
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  }, [userData, userLoading]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -57,6 +74,7 @@ export default function TrainingChat() {
             role: m.role,
             content: m.content,
           })),
+          userId: userId, // Include userId for personalized responses
         }),
       });
 
@@ -217,7 +235,9 @@ export default function TrainingChat() {
                 className="text-xs h-auto p-2 bg-white"
                 onClick={() =>
                   setInput(
-                    "What's the race strategy for my 50K based on my training?"
+                    userData?.trainingBackground?.goals.raceDistance
+                      ? `What's the race strategy for my ${userData.trainingBackground.goals.raceDistance} based on my training?`
+                      : "What's the race strategy based on my training?"
                   )
                 }
               >
