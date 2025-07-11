@@ -63,7 +63,7 @@ export function Navigation() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">
+      <nav className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur">
         <div className="container mx-auto flex h-14 items-center px-4">
           {/* Mobile hamburger menu */}
           <button
@@ -131,19 +131,26 @@ export function Navigation() {
       </nav>
 
       {/* Mobile menu overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 z-40 md:hidden transition-opacity duration-300"
-          onClick={closeMobileMenu}
-        />
-      )}
+      <div
+        className={cn(
+          "fixed inset-0 bg-black/60 z-50 md:hidden",
+          isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        style={{
+          transition: "opacity 0.2s cubic-bezier(0.165, 0.84, 0.44, 1)",
+        }}
+        onClick={closeMobileMenu}
+      />
 
       {/* Mobile menu drawer */}
       <div
         className={cn(
-          "fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-all duration-300 ease-out md:hidden border-r border-gray-200",
+          "fixed top-0 left-0 h-full w-80 bg-white z-[60] transform md:hidden border-r border-gray-200",
           isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         )}
+        style={{
+          transition: "transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1)",
+        }}
       >
         {/* Mobile menu header */}
         <div className="bg-gray-50 border-b border-gray-200 p-6">
