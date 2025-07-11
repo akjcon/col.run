@@ -68,7 +68,7 @@ export function Navigation() {
           {/* Mobile hamburger menu */}
           <button
             onClick={toggleMobileMenu}
-            className="mr-4 p-2 md:hidden rounded-lg hover:bg-gray-100 transition-colors relative group"
+            className="p-2 md:hidden rounded-lg hover:bg-gray-100 transition-colors relative group"
             aria-label="Toggle menu"
           >
             <div className="relative">
@@ -153,10 +153,8 @@ export function Navigation() {
                 <Mountain className="h-6 w-6 text-gray-700" />
               </div>
               <div>
-                <h2 className="font-bold text-lg text-gray-900">
-                  50K Training
-                </h2>
-                <p className="text-gray-500 text-sm">Trail Running Plan</p>
+                <h2 className="font-bold text-lg text-gray-900">col</h2>
+                <p className="text-gray-500 text-sm">Navigation</p>
               </div>
             </div>
             <button

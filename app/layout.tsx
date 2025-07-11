@@ -5,8 +5,8 @@ import { UserProvider } from "@/lib/user-context";
 import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
-  title: "50K Trail Training Plan",
-  description: "12-week training plan for September 14th race",
+  title: "col",
+  description: "simply training",
 };
 
 export default function RootLayout({
@@ -20,9 +20,7 @@ export default function RootLayout({
         <body className="min-h-screen bg-background font-sans antialiased">
           <UserProvider>
             <Navigation />
-            <main className="flex-1 container mx-auto">
-              {children}
-            </main>
+            <main className="flex-1 container mx-auto">{children}</main>
           </UserProvider>
         </body>
       </html>
