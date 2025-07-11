@@ -39,7 +39,10 @@ export function useClerkFirebase() {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to get Firebase token");
+          const errorText = await response.text();
+          throw new Error(
+            `Failed to get Firebase token: ${response.status} ${errorText}`
+          );
         }
 
         const { firebaseToken } = await response.json();

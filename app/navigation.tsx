@@ -94,7 +94,6 @@ export function Navigation() {
           {/* Logo */}
           <Link href={isSignedIn ? "/home" : "/"} className="flex items-center">
             <Image src="/col_logo.svg" alt="col" width={70} height={70} />
-            <span className="font-normal text-sm sm:text-base">col</span>
           </Link>
 
           {/* Desktop navigation */}

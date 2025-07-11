@@ -10,6 +10,16 @@ import {
 } from "firebase/firestore";
 import { WorkoutCompletion } from "./types";
 
+interface WorkoutCompletionDoc {
+  workoutDay: string;
+  workoutType: string;
+  weekNumber: number;
+  feelingRating: number;
+  userId: string;
+  completedAt: Timestamp;
+  feelingNotes?: string;
+}
+
 export async function saveWorkoutCompletion(
   userId: string,
   workoutData: {
@@ -21,11 +31,19 @@ export async function saveWorkoutCompletion(
   }
 ): Promise<string> {
   try {
-    const workoutCompletion = {
-      ...workoutData,
+    const baseCompletion = {
+      workoutDay: workoutData.workoutDay,
+      workoutType: workoutData.workoutType,
+      weekNumber: workoutData.weekNumber,
+      feelingRating: workoutData.feelingRating,
       userId,
       completedAt: Timestamp.now(),
     };
+
+    // Only include feelingNotes if it has a value (Firestore doesn't accept undefined)
+    const workoutCompletion: WorkoutCompletionDoc = workoutData.feelingNotes
+      ? { ...baseCompletion, feelingNotes: workoutData.feelingNotes }
+      : baseCompletion;
 
     const docRef = await addDoc(
       collection(db, "users", userId, "workoutCompletions"),
