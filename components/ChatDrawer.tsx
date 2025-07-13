@@ -50,7 +50,7 @@ const ChatInterface = ({
   chatInput: string;
   setChatInput: (value: string) => void;
   isChatLoading: boolean;
-  messagesEndRef: React.RefObject<HTMLDivElement>;
+  messagesEndRef: React.RefObject<HTMLDivElement | null>;
   handleKeyPress: (e: React.KeyboardEvent) => void;
   sendMessage: () => void;
   setQuickQuestion: (question: string) => void;
@@ -178,7 +178,7 @@ const ChatInterface = ({
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Ask about your training..."
-            className="w-full min-h-[40px] max-h-[80px] p-2 pr-12 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-0 focus:border-gray-300 text-sm"
+            className="w-full min-h-[100px] p-2 pr-12 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-0 focus:border-gray-300 text-base"
             disabled={isChatLoading}
             rows={2}
             autoComplete="off"
@@ -189,7 +189,7 @@ const ChatInterface = ({
           <Button
             onClick={sendMessage}
             disabled={!chatInput.trim() || isChatLoading}
-            className="absolute bottom-2 right-2 p-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg"
+            className="absolute bottom-[18px] right-3 p-4 bg-gray-600 hover:bg-gray-800 text-white rounded-lg h-9 w-9"
             size="sm"
           >
             {isChatLoading ? (

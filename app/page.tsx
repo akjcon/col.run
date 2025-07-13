@@ -3,22 +3,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Mountain,
-  Target,
-  TrendingUp,
-  MessageCircle,
-  ArrowRight,
-  Check,
-} from "lucide-react";
+import { Play } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
@@ -35,10 +21,10 @@ export default function Home() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <Mountain className="h-12 w-12 mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600">Loading...</p>
+          <div className="w-6 h-6 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-neutral-600 text-sm">Loading...</p>
         </div>
       </div>
     );
@@ -47,191 +33,160 @@ export default function Home() {
   if (isSignedIn) {
     // Will redirect via useEffect, but show loading state
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <Mountain className="h-12 w-12 mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600">Redirecting to your dashboard...</p>
+          <div className="w-6 h-6 border-2 border-neutral-900 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-neutral-600 text-sm">
+            Redirecting to your dashboard...
+          </p>
         </div>
       </div>
     );
   }
 
-  // Landing page for non-authenticated users
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        {/* Hero Section */}
-        <div className="text-center mb-16">
-          <div className="flex items-center justify-center mb-6">
-            <Mountain className="h-16 w-16 text-blue-600" />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            AI-Powered Trail Running
-            <span className="text-blue-600 block">Training Plans</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Get a personalized training plan based on the Training for the
-            Uphill Athlete book, tailored to your experience, goals, and current
-            fitness level.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="px-8 py-4 text-lg" asChild>
-              <Link href="/sign-up">
-                Get Started <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="px-8 py-4 text-lg"
-              asChild
-            >
-              <Link href="/sign-in">Sign In</Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* Features */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <Card className="border shadow-sm">
-            <CardHeader className="text-center">
-              <Target className="h-12 w-12 mx-auto mb-4 text-blue-600" />
-              <CardTitle>Personalized Plans</CardTitle>
-              <CardDescription>
-                AI-generated training plans based on your running experience,
-                weekly mileage, and race goals
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border shadow-sm">
-            <CardHeader className="text-center">
-              <MessageCircle className="h-12 w-12 mx-auto mb-4 text-green-600" />
-              <CardTitle>AI Coach Chat</CardTitle>
-              <CardDescription>
-                Get instant answers about your training, nutrition, recovery,
-                and race strategy
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card className="border shadow-sm">
-            <CardHeader className="text-center">
-              <TrendingUp className="h-12 w-12 mx-auto mb-4 text-purple-600" />
-              <CardTitle>Expert Knowledge</CardTitle>
-              <CardDescription>
-                Based on Training for the Uphill Athlete - proven methods for
-                endurance athletes
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-
-        {/* How it Works */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            How It Works
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 font-bold text-xl">1</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">
-                Tell Us About Yourself
-              </h3>
-              <p className="text-gray-600">
-                Share your running experience, current fitness level, and race
-                goals
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-green-600 font-bold text-xl">2</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Get Your Plan</h3>
-              <p className="text-gray-600">
-                Our AI creates a personalized training plan with daily workouts
-                and progression
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-purple-600 font-bold text-xl">3</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Train & Chat</h3>
-              <p className="text-gray-600">
-                Follow your plan and get coaching guidance through our AI
-                assistant
-              </p>
+    <div className="h-full bg-neutral-50">
+      <div className="px-8 sm:px-6 py-8 sm:py-20">
+        <div className="max-w-7xl mx-auto">
+          {/* Main Header */}
+          <div className="text-center mb-8 sm:mb-20">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-medium text-neutral-900 mb-2 sm:mb-4 tracking-tight">
+              col
+            </h1>
+            <div className="text-neutral-500 text-sm tracking-[0.2em] font-serif">
+              /kɒl/
             </div>
           </div>
-        </div>
 
-        {/* What's Included */}
-        <Card className="border shadow-sm mb-16">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">What&apos;s Included</CardTitle>
-            <CardDescription>
-              Everything you need for successful trail running
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Check className="h-5 w-5 text-green-600" />
-                  <span>Personalized 12-week training plan</span>
+          {/* Layout */}
+          <div className="grid lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-start mb-8 sm:mb-20">
+            {/* Dictionary Sidebar */}
+            <div className="lg:col-span-4">
+              {/* Mobile: No card styling */}
+              <div className="block sm:hidden">
+                <div className="text-neutral-500 text-xs font-serif italic mb-3">
+                  noun
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-5 w-5 text-green-600" />
-                  <span>Daily workout details with zones and targets</span>
+                <div className="text-neutral-900 text-sm leading-relaxed mb-2 font-serif">
+                  <span className="text-lg font-light">1.</span> A mountain pass
+                  between peaks.
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-5 w-5 text-green-600" />
-                  <span>Strength training integration</span>
+                <div className="text-neutral-900 text-sm leading-relaxed mb-4 font-serif">
+                  <span className="text-lg font-light">2.</span> A structured
+                  training methodology that guides athletes through progressive
+                  phases, building from base fitness to peak mountain
+                  performance.
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-5 w-5 text-green-600" />
-                  <span>Recovery and injury prevention guidance</span>
+                <div className="text-neutral-400 text-xs italic font-serif mb-6">
+                  &ldquo;Every great ascent begins with understanding the col
+                  ahead.&rdquo;
                 </div>
               </div>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Check className="h-5 w-5 text-green-600" />
-                  <span>AI coach chat for instant guidance</span>
+
+              {/* Desktop: Full card styling */}
+              <div className="hidden sm:block bg-white p-6 lg:p-10 shadow-sm border border-neutral-200 rounded-xl lg:sticky lg:top-20">
+                <div className="text-neutral-500 text-xs font-serif italic mb-6">
+                  noun
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-5 w-5 text-green-600" />
-                  <span>Nutrition and fueling strategies</span>
+                <div className="text-neutral-900 text-base leading-relaxed mb-4 font-serif">
+                  <span className="text-xl lg:text-2xl font-light">1.</span> A
+                  mountain pass or saddle between peaks.
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-5 w-5 text-green-600" />
-                  <span>Race strategy development</span>
+                <div className="text-neutral-900 text-base leading-relaxed mb-8 font-serif">
+                  <span className="text-xl lg:text-2xl font-light">2.</span> A
+                  structured training methodology that guides athletes through
+                  progressive phases, elevating performance from base fitness to
+                  peak condition.
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Check className="h-5 w-5 text-green-600" />
-                  <span>Progress tracking and plan adjustments</span>
+                <div className="text-neutral-500 text-sm italic font-serif pl-4 border-l-2 border-neutral-200">
+                  &ldquo;Every great ascent begins with understanding the col
+                  ahead.&rdquo;
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* CTA */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Ready to Transform Your Trail Running?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Join runners who are achieving their goals with science-based
-            training
-          </p>
-          <Button size="lg" className="px-8 py-4 text-lg" asChild>
-            <Link href="/sign-up">
-              Start Your Free Plan <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
+            {/* Main Content */}
+            <div className="lg:col-span-8">
+              <div className="bg-white p-6 sm:p-6 lg:p-12 shadow-sm border border-neutral-200 rounded-xl">
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-serif font-light text-neutral-900 mb-3 sm:mb-4 lg:mb-8 tracking-tight leading-tight">
+                  Personalized trail running plans for every level
+                </h2>
+
+                {/* Mobile: Moderately simplified description */}
+                <div className="block sm:hidden">
+                  <p className="text-neutral-700 text-sm mb-4 leading-relaxed font-serif">
+                    AI-powered training based on{" "}
+                    <em className="font-medium">
+                      Training for the Uphill Athlete
+                    </em>
+                    . Get structured plans that adapt to your experience and
+                    mountain running goals.
+                  </p>
+                </div>
+
+                {/* Desktop: Full description */}
+                <div className="hidden sm:block">
+                  <p className="text-neutral-700 text-base lg:text-lg mb-6 lg:mb-8 leading-relaxed font-serif">
+                    AI-powered training based on{" "}
+                    <em className="font-medium">
+                      Training for the Uphill Athlete
+                    </em>
+                    . Get a structured plan that adapts to your experience,
+                    goals, and current fitness level.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-10">
+                  <Link href="/sign-up">
+                    <Button
+                      size="lg"
+                      className="bg-neutral-900 hover:bg-neutral-800 text-white border-0 rounded-full px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-serif font-medium transition-all duration-200 w-full sm:w-auto"
+                    >
+                      Start Training
+                      <Play className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+
+                  <div className="text-xs sm:text-sm text-neutral-600 font-serif text-center sm:text-left">
+                    <Link
+                      href="/sign-in"
+                      className="hover:text-neutral-900 transition-colors"
+                    >
+                      Already have an account?
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Features Grid - Hidden on mobile */}
+                <div className="hidden sm:grid grid-cols-3 gap-4 pt-6 lg:pt-8 border-t border-neutral-100">
+                  <div className="text-left">
+                    <h3 className="font-serif font-medium text-neutral-900 mb-1">
+                      Trail-Specific
+                    </h3>
+                    <p className="text-xs text-neutral-600 font-serif">
+                      Mountain focused
+                    </p>
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-serif font-medium text-neutral-900 mb-1">
+                      Personalized
+                    </h3>
+                    <p className="text-xs text-neutral-600 font-serif">
+                      Adaptive plans
+                    </p>
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-serif font-medium text-neutral-900 mb-1">
+                      Progressive
+                    </h3>
+                    <p className="text-xs text-neutral-600 font-serif">
+                      Structured phases
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
