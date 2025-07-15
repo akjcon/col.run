@@ -1,3 +1,5 @@
+import tailwindcssAnimate from "tailwindcss-animate";
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
@@ -22,5 +24,8 @@ module.exports = {
             },
         },
     },
-    plugins: [],
-} 
+    plugins: [tailwindcssAnimate],
+    future: {
+        hoverOnlyWhenSupported: true,
+    },
+};

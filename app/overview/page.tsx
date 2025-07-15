@@ -8,17 +8,21 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Target, TrendingUp, Mountain, Quote } from "lucide-react";
-import { useUser } from "@/lib/user-context";
-import OnboardingGuard from "@/components/OnboardingGuard";
+import { User, Target, TrendingUp, Loader2 } from "lucide-react";
+import { useUser } from "@/lib/user-context-redux";
 
 export default function Overview() {
   const { userData, isLoading } = useUser();
 
   if (isLoading || !userData) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        Loading...
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="flex items-center gap-3">
+          <Loader2 className="h-6 w-6 animate-spin text-neutral-600" />
+          <span className="text-neutral-700">
+            Loading your training overview...
+          </span>
+        </div>
       </div>
     );
   }
@@ -73,242 +77,206 @@ export default function Overview() {
       : []),
   ];
 
-  const backToBackBenefits = [
-    "Reduced injury risk vs single 20+ mile runs",
-    "Faster recovery (1-2 days vs 3-4 days)",
-    "Glycogen depletion training for fat adaptation",
-    "Simulates cumulative fatigue of ultra racing",
-    "Better time management vs 4+ hour single runs",
-  ];
-
   return (
-    <OnboardingGuard>
-      <div className="min-h-screen bg-white">
-        <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6 md:space-y-8">
-          {/* Header */}
-          <div className="text-center space-y-4 py-4 md:py-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
-              Training Overview
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-              Comprehensive{" "}
-              {userData.generatedProfile?.recommendedPlan?.planType ||
-                "training"}{" "}
-              program tailored for your{" "}
-              {userData.trainingBackground?.goals.raceDistance || "race"}
-            </p>
-          </div>
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto max-w-6xl space-y-6 p-4 md:space-y-8 md:p-6">
+        {/* Header */}
+        <div className="space-y-4 py-4 text-center md:py-8">
+          <h1 className="text-2xl font-bold text-neutral-900 sm:text-3xl md:text-4xl lg:text-5xl">
+            Training Overview
+          </h1>
+          <p className="mx-auto max-w-2xl px-4 text-base text-neutral-600 sm:text-lg md:text-xl">
+            Comprehensive{" "}
+            {userData.generatedProfile?.recommendedPlan?.planType || "training"}{" "}
+            program tailored for your{" "}
+            {userData.trainingBackground?.goals.raceDistance || "race"}
+          </p>
+        </div>
 
-          {/* Athlete Profile */}
-          <Card className="border shadow-sm">
-            <CardHeader className="border-b bg-slate-50">
-              <CardTitle className="text-gray-900 flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Athlete Profile
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                Your background and current fitness level
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                {athleteProfile.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-start py-2 border-b border-gray-100"
-                  >
-                    <span className="font-medium text-gray-900">
-                      {item.label}:
-                    </span>
-                    <span className="text-gray-700 text-right max-w-[60%]">
-                      {item.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Athlete Profile */}
+        <Card className="border-neutral-200 shadow-sm">
+          <CardHeader className="border-b border-neutral-100 bg-neutral-50">
+            <CardTitle className="flex items-center gap-2 text-neutral-900">
+              <User className="h-5 w-5" />
+              Athlete Profile
+            </CardTitle>
+            <CardDescription className="text-neutral-600">
+              Your background and current fitness level
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+              {athleteProfile.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start justify-between border-b border-neutral-100 py-3 last:border-b-0"
+                >
+                  <span className="font-medium text-neutral-800">
+                    {item.label}:
+                  </span>
+                  <span className="max-w-[60%] text-right text-neutral-700">
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Coaching Notes */}
-          {userData.generatedProfile?.recommendedPlan?.coachingNotes &&
-            userData.generatedProfile.recommendedPlan.coachingNotes.length >
-              0 && (
-              <Card className="border shadow-sm bg-blue-50 border-blue-200">
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-3">
-                    <Target className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-blue-900 mb-2">
-                        🏃‍♂️ Personalized Coaching Notes
-                      </p>
-                      <div className="space-y-2">
-                        {userData.generatedProfile.recommendedPlan.coachingNotes.map(
-                          (note, idx) => (
-                            <p key={idx} className="text-blue-800 text-sm">
-                              {note}
-                            </p>
-                          )
-                        )}
-                      </div>
+        {/* Coaching Notes */}
+        {userData.generatedProfile?.recommendedPlan?.coachingNotes &&
+          userData.generatedProfile.recommendedPlan.coachingNotes.length >
+            0 && (
+            <Card className="border-[#E98A15] bg-gradient-to-r from-orange-50/50 to-white shadow-sm">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <Target className="mt-1 h-5 w-5 flex-shrink-0 text-[#E98A15]" />
+                  <div>
+                    <p className="mb-3 font-semibold text-neutral-900">
+                      🏃‍♂️ Personalized Coaching Notes
+                    </p>
+                    <div className="space-y-3">
+                      {userData.generatedProfile.recommendedPlan.coachingNotes.map(
+                        (note, idx) => (
+                          <p
+                            key={idx}
+                            className="text-sm leading-relaxed text-neutral-700"
+                          >
+                            {note}
+                          </p>
+                        )
+                      )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Training Zones */}
-          <Card className="border shadow-sm">
-            <CardHeader className="border-b bg-slate-50">
-              <CardTitle className="text-gray-900 flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Training Zones
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                Customized heart rate zones based on your skiing background and
-                threshold feel
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">
-                        Zone
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">
-                        Heart Rate
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">
-                        Pace
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">
-                        Description
-                      </th>
+        {/* Training Zones */}
+        <Card className="border-neutral-200 shadow-sm">
+          <CardHeader className="border-b border-neutral-100 bg-neutral-50">
+            <CardTitle className="flex items-center gap-2 text-neutral-900">
+              <Target className="h-5 w-5" />
+              Training Zones
+            </CardTitle>
+            <CardDescription className="text-neutral-600">
+              Customized heart rate zones based on your skiing background and
+              threshold feel
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-neutral-200">
+                    <th className="px-4 py-3 text-left font-semibold text-neutral-900">
+                      Zone
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-neutral-900">
+                      Heart Rate
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-neutral-900">
+                      Pace
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-neutral-900">
+                      Description
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100">
+                  {trainingZones.map((zone, idx) => (
+                    <tr
+                      key={idx}
+                      className="transition-colors hover:bg-neutral-50"
+                    >
+                      <td className="px-4 py-4">
+                        <Badge
+                          variant="outline"
+                          className={`${zone.color} border text-sm font-medium`}
+                        >
+                          {zone.zone}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-4 font-medium text-neutral-800">
+                        {zone.heartRate}
+                      </td>
+                      <td className="px-4 py-4 text-neutral-700">
+                        {zone.pace}
+                      </td>
+                      <td className="px-4 py-4 text-neutral-600">
+                        {zone.description}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {trainingZones.map((zone, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
-                        <td className="py-4 px-4">
-                          <Badge
-                            variant="outline"
-                            className={`${zone.color} border text-sm`}
-                          >
-                            {zone.zone}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-4 font-medium text-gray-900">
-                          {zone.heartRate}
-                        </td>
-                        <td className="py-4 px-4 text-gray-700">{zone.pace}</td>
-                        <td className="py-4 px-4 text-gray-600">
-                          {zone.description}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Training Phase Overview */}
-          <Card className="border shadow-sm">
-            <CardHeader className="border-b bg-slate-50">
-              <CardTitle className="text-gray-900 flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Training Phase Overview
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                12-week progression from base building to race day
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">
-                        Weeks
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">
-                        Phase
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">
-                        Weekly Miles
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">
-                        Vertical
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900">
-                        Focus
-                      </th>
+        {/* Training Phase Overview */}
+        <Card className="border-neutral-200 shadow-sm">
+          <CardHeader className="border-b border-neutral-100 bg-neutral-50">
+            <CardTitle className="flex items-center gap-2 text-neutral-900">
+              <TrendingUp className="h-5 w-5" />
+              Training Phase Overview
+            </CardTitle>
+            <CardDescription className="text-neutral-600">
+              12-week progression from base building to race day
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-neutral-200">
+                    <th className="px-4 py-3 text-left font-semibold text-neutral-900">
+                      Weeks
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-neutral-900">
+                      Phase
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-neutral-900">
+                      Weekly Miles
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-neutral-900">
+                      Vertical
+                    </th>
+                    <th className="px-4 py-3 text-left font-semibold text-neutral-900">
+                      Focus
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100">
+                  {trainingPhases.map((phase, idx) => (
+                    <tr
+                      key={idx}
+                      className="transition-colors hover:bg-neutral-50"
+                    >
+                      <td className="px-4 py-4 font-medium text-neutral-800">
+                        {phase.weeks}
+                      </td>
+                      <td className="px-4 py-4 font-semibold text-neutral-900">
+                        {phase.phase}
+                      </td>
+                      <td className="px-4 py-4 text-neutral-700">
+                        {phase.miles}
+                      </td>
+                      <td className="px-4 py-4 text-neutral-700">
+                        {phase.vertical}
+                      </td>
+                      <td className="px-4 py-4 text-neutral-600">
+                        {phase.focus}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {trainingPhases.map((phase, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
-                        <td className="py-4 px-4 font-medium text-gray-900">
-                          {phase.weeks}
-                        </td>
-                        <td className="py-4 px-4 font-semibold text-gray-900">
-                          {phase.phase}
-                        </td>
-                        <td className="py-4 px-4 text-gray-700">
-                          {phase.miles}
-                        </td>
-                        <td className="py-4 px-4 text-gray-700">
-                          {phase.vertical}
-                        </td>
-                        <td className="py-4 px-4 text-gray-600">
-                          {phase.focus}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Back-to-Back Long Runs */}
-          <Card className="border shadow-sm">
-            <CardHeader className="border-b bg-slate-50">
-              <CardTitle className="text-gray-900 flex items-center gap-2">
-                <Mountain className="h-5 w-5" />
-                Why Back-to-Back Long Runs?
-              </CardTitle>
-              <CardDescription className="text-gray-600">
-                The science behind this training approach
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
-                <Quote className="h-5 w-5 text-blue-600 mb-2" />
-                <blockquote className="text-blue-800 italic mb-3">
-                  &ldquo;This gives you a similar training effect as doing one
-                  very long day by mimicking some of the demands of your event,
-                  but it reduces the stress and shortens the recovery time
-                  significantly.&rdquo;
-                </blockquote>
-                <cite className="text-blue-700 text-sm">
-                  - Training for the Uphill Athlete
-                </cite>
-              </div>
-
-              <div className="space-y-3">
-                {backToBackBenefits.map((benefit, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <p className="text-gray-700">{benefit}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </OnboardingGuard>
+    </div>
   );
 }

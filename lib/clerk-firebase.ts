@@ -1,15 +1,22 @@
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { signInWithCustomToken, signOut } from "firebase/auth";
+import {
+  signInWithCustomToken,
+  signOut,
+} from "firebase/auth";
 import { auth } from "./firebase";
-import { initializeNewUser, getUserData } from "./firestore";
+import {
+  initializeNewUser,
+  getUserData,
+} from "./firestore";
 import { UserData } from "./types";
 
 // Hook to handle Clerk + Firebase Auth integration
 export function useClerkFirebase() {
   const { userId, isSignedIn } = useAuth();
   const { user } = useUser();
-  const [isFirebaseReady, setIsFirebaseReady] = useState(false);
+  const [isFirebaseReady, setIsFirebaseReady] =
+    useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,18 +32,24 @@ export function useClerkFirebase() {
 
       try {
         // If already authenticated with Firebase with the same user, skip
-        if (auth.currentUser && auth.currentUser.uid === userId) {
+        if (
+          auth.currentUser &&
+          auth.currentUser.uid === userId
+        ) {
           setIsFirebaseReady(true);
           return;
         }
 
         // Get Firebase custom token from our API
-        const response = await fetch("/api/auth/firebase-token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          "/api/auth/firebase-token",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -63,7 +76,10 @@ export function useClerkFirebase() {
         setIsFirebaseReady(true);
         setError(null);
       } catch (err) {
-        console.error("Error authenticating with Firebase:", err);
+        console.error(
+          "Error authenticating with Firebase:",
+          err
+        );
         setError(
           err instanceof Error
             ? err.message
@@ -87,7 +103,9 @@ export function useClerkFirebase() {
 // Hook to get user data from Firebase
 export function useUserData() {
   const { userId, isFirebaseReady } = useClerkFirebase();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -106,7 +124,9 @@ export function useUserData() {
       } catch (err) {
         console.error("Error loading user data:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to load user data"
+          err instanceof Error
+            ? err.message
+            : "Failed to load user data"
         );
       } finally {
         setIsLoading(false);

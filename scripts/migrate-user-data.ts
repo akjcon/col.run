@@ -19,8 +19,10 @@ const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  storageBucket:
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId:
+    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
@@ -31,7 +33,9 @@ const OLD_USER_ID = "user_2zbjUKRVRuJbPggLxvbHbHcDQWz";
 const NEW_USER_ID = "user_2zhDTlKzaI69yf4zsqkTSc8eveB";
 
 async function migrateUserData() {
-  console.log(`🔄 Starting migration from ${OLD_USER_ID} to ${NEW_USER_ID}`);
+  console.log(
+    `🔄 Starting migration from ${OLD_USER_ID} to ${NEW_USER_ID}`
+  );
 
   try {
     // Step 1: Copy main user document
@@ -72,7 +76,9 @@ async function migrateUserData() {
         OLD_USER_ID,
         subcollectionName
       );
-      const oldCollectionSnap = await getDocs(oldCollectionRef);
+      const oldCollectionSnap = await getDocs(
+        oldCollectionRef
+      );
 
       if (!oldCollectionSnap.empty) {
         const batch = writeBatch(db);
@@ -103,7 +109,9 @@ async function migrateUserData() {
           `✅ Copied ${docCount} documents from ${subcollectionName}`
         );
       } else {
-        console.log(`ℹ️  No documents found in ${subcollectionName}`);
+        console.log(
+          `ℹ️  No documents found in ${subcollectionName}`
+        );
       }
     }
 
@@ -118,7 +126,9 @@ async function migrateUserData() {
 }
 
 async function cleanupOldUser() {
-  console.log(`🧹 Starting cleanup of old user ${OLD_USER_ID}`);
+  console.log(
+    `🧹 Starting cleanup of old user ${OLD_USER_ID}`
+  );
 
   try {
     // Delete subcollections first
@@ -138,7 +148,9 @@ async function cleanupOldUser() {
         OLD_USER_ID,
         subcollectionName
       );
-      const oldCollectionSnap = await getDocs(oldCollectionRef);
+      const oldCollectionSnap = await getDocs(
+        oldCollectionRef
+      );
 
       if (!oldCollectionSnap.empty) {
         const batch = writeBatch(db);

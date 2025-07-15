@@ -96,7 +96,7 @@ ${
     phaseDistribution.taperWeeks
   } weeks (reduce volume, maintain sharpness)
 
-TASK: Create a comprehensive, personalized ${planLength}-week training plan following these requirements:
+TASK: Create a comprehensive, personalized ${planLength}-week training plan with ALL ${planLength} weeks included following these requirements:
 
 1. **Training Zones**: Create 5 heart rate zones based on their fitness level and background
 2. **Training Phases**: Design a periodized plan with distinct phases (Base, Build, Peak, Taper)
@@ -147,7 +147,7 @@ OUTPUT FORMAT: Return a structured JSON object with this exact format:
         // ... all 7 days
       ]
     }
-    // ... generate 4-5 sample weeks
+    // IMPORTANT: Generate ALL ${planLength} weeks (weeks 1 through ${planLength}) with complete 7-day workout schedules for each week
   ],
   "coachingNotes": [
     "Key coaching insights based on their background",
@@ -316,7 +316,10 @@ export async function quickChatResponse(
 
 // Full context LLM (for detailed coaching with book knowledge)
 export async function fullChatResponse(
-  messages: Array<{ role: "user" | "assistant"; content: string }>,
+  messages: Array<{
+    role: "user" | "assistant";
+    content: string;
+  }>,
   userData: UserData
 ): Promise<string> {
   try {

@@ -15,28 +15,32 @@ const defaultTrainingZones: TrainingZone[] = [
     zone: "Zone 1",
     heartRate: "<130 HR",
     pace: "~9:30-10:00/mi",
-    description: "Very Easy/Recovery - Feels almost too easy",
+    description:
+      "Very Easy/Recovery - Feels almost too easy",
     color: "bg-slate-100 text-slate-700 border-slate-200",
   },
   {
     zone: "Zone 2",
     heartRate: "130-140 HR",
     pace: "~8:30-9:00/mi",
-    description: "Aerobic Capacity - Comfortable, conversational",
+    description:
+      "Aerobic Capacity - Comfortable, conversational",
     color: "bg-blue-50 text-blue-700 border-blue-200",
   },
   {
     zone: "Zone 3",
     heartRate: "140-165 HR",
     pace: "~7:00-8:00/mi",
-    description: "Threshold - Comfortably hard, sustainable",
+    description:
+      "Threshold - Comfortably hard, sustainable",
     color: "bg-amber-50 text-amber-700 border-amber-200",
   },
   {
     zone: "Zone 4",
     heartRate: "165-180 HR",
     pace: "~6:30-7:00/mi",
-    description: "Above Threshold - Hard, challenging effort",
+    description:
+      "Above Threshold - Hard, challenging effort",
     color: "bg-orange-50 text-orange-700 border-orange-200",
   },
   {
@@ -54,14 +58,16 @@ const defaultTrainingPhases: TrainingPhase[] = [
     phase: "Base + Strength",
     miles: "45-50",
     vertical: "8,000-10,000 ft",
-    focus: "Z1/Z2 aerobic work, strength foundation (strong base from skiing)",
+    focus:
+      "Z1/Z2 aerobic work, strength foundation (strong base from skiing)",
   },
   {
     weeks: "5-8",
     phase: "Intensity Introduction",
     miles: "50-55",
     vertical: "10,000-12,000 ft",
-    focus: "Add Zone 3 threshold work (140-165 HR), muscular endurance",
+    focus:
+      "Add Zone 3 threshold work (140-165 HR), muscular endurance",
   },
   {
     weeks: "9-10",
@@ -91,7 +97,8 @@ const defaultBasePhaseWorkouts: Workout[] = [
     day: "Monday",
     type: "Rest/Active Recovery",
     zone: "Recovery",
-    description: "Complete rest or 20-30 min easy walk/bike",
+    description:
+      "Complete rest or 20-30 min easy walk/bike",
     notes: "Full recovery after weekend long runs",
   },
   {
@@ -105,15 +112,20 @@ const defaultBasePhaseWorkouts: Workout[] = [
       "Pickups: 8×15 sec @ Z4 effort (165-180 HR, 2 min recovery)",
       "PM: Stage 3 Strength Program",
     ],
-    notes: "Use Z2 for base building given strong aerobic development",
+    notes:
+      "Use Z2 for base building given strong aerobic development",
   },
   {
     day: "Wednesday",
     type: "Zone 2 Sustained",
     zone: "Zone 2",
     description: "60-75 minutes sustained effort",
-    details: ["Zone: Z2 (130-140 HR)", "Vertical: 1,500-2,000 ft"],
-    notes: "Focus on maintaining steady effort, practice race nutrition",
+    details: [
+      "Zone: Z2 (130-140 HR)",
+      "Vertical: 1,500-2,000 ft",
+    ],
+    notes:
+      "Focus on maintaining steady effort, practice race nutrition",
   },
   {
     day: "Thursday",
@@ -125,7 +137,8 @@ const defaultBasePhaseWorkouts: Workout[] = [
       "PM: 8×10 sec maximum effort uphill (180+ HR, 2-3 min recovery)",
       "Core: 6 exercises × max reps",
     ],
-    notes: "Focus on explosive power, full recovery between efforts",
+    notes:
+      "Focus on explosive power, full recovery between efforts",
   },
   {
     day: "Friday",
@@ -140,7 +153,10 @@ const defaultBasePhaseWorkouts: Workout[] = [
     type: "Long Run #1",
     zone: "Zone 1-2",
     description: "10-12 miles mountain-specific",
-    details: ["Vertical: 2,500-3,000 ft", "Include some Z2 sections"],
+    details: [
+      "Vertical: 2,500-3,000 ft",
+      "Include some Z2 sections",
+    ],
     notes: "Practice nutrition, focus on consistent effort",
   },
   {
@@ -148,7 +164,10 @@ const defaultBasePhaseWorkouts: Workout[] = [
     type: "Long Run #2",
     zone: "Zone 1",
     description: "8-10 miles back-to-back",
-    details: ["Vertical: 2,000 ft", "Run on partially depleted glycogen"],
+    details: [
+      "Vertical: 2,000 ft",
+      "Run on partially depleted glycogen",
+    ],
     notes: "Stay aerobic, build aerobic capacity",
   },
 ];
@@ -160,7 +179,8 @@ export const createDefaultUserData = (): UserData => {
       day: "Monday",
       type: "Rest/Active Recovery",
       zone: "Recovery",
-      description: "Complete rest or gentle yoga/stretching",
+      description:
+        "Complete rest or gentle yoga/stretching",
       notes: "Full recovery, focus on mobility",
     },
     {
@@ -174,14 +194,18 @@ export const createDefaultUserData = (): UserData => {
         "Pickups: 6×20 sec @ Z4 effort (165-180 HR, 90 sec recovery)",
         "PM: Stage 3 Strength Program",
       ],
-      notes: "Slightly longer pickups than week 1 for progression",
+      notes:
+        "Slightly longer pickups than week 1 for progression",
     },
     {
       day: "Wednesday",
       type: "Zone 2 Sustained",
       zone: "Zone 2",
       description: "70-80 minutes sustained effort",
-      details: ["Zone: Z2 (130-140 HR)", "Vertical: 1,800-2,200 ft"],
+      details: [
+        "Zone: Z2 (130-140 HR)",
+        "Vertical: 1,800-2,200 ft",
+      ],
       notes: "Build endurance, focus on consistent pacing",
     },
     {
@@ -194,7 +218,8 @@ export const createDefaultUserData = (): UserData => {
         "PM: 6×12 sec maximum effort uphill (180+ HR, 3 min recovery)",
         "Core: 8 exercises × max reps",
       ],
-      notes: "Slightly longer sprints, maintain quality over quantity",
+      notes:
+        "Slightly longer sprints, maintain quality over quantity",
     },
     {
       day: "Friday",
@@ -220,8 +245,12 @@ export const createDefaultUserData = (): UserData => {
       type: "Long Run #2",
       zone: "Zone 1",
       description: "9-11 miles back-to-back",
-      details: ["Vertical: 2,200 ft", "Start on tired legs from Saturday"],
-      notes: "Focus on mental toughness and form when fatigued",
+      details: [
+        "Vertical: 2,200 ft",
+        "Start on tired legs from Saturday",
+      ],
+      notes:
+        "Focus on mental toughness and form when fatigued",
     },
   ];
 
@@ -253,20 +282,25 @@ export const createDefaultUserData = (): UserData => {
       type: "Zone 2 Sustained",
       zone: "Zone 2",
       description: "75-85 minutes sustained effort",
-      details: ["Zone: Z2 (130-140 HR)", "Vertical: 2,000-2,500 ft"],
+      details: [
+        "Zone: Z2 (130-140 HR)",
+        "Vertical: 2,000-2,500 ft",
+      ],
       notes: "Active recovery from threshold work",
     },
     {
       day: "Thursday",
       type: "Recovery + Hill Sprints",
       zone: "Zone 1/5",
-      description: "5-6 miles recovery + neuromuscular work",
+      description:
+        "5-6 miles recovery + neuromuscular work",
       details: [
         "AM: Zone 1 recovery run (<130 HR), 800 ft vertical",
         "PM: 8×8 sec maximum effort uphill (180+ HR, 3-4 min recovery)",
         "Core: 8 exercises × max reps",
       ],
-      notes: "Maintain speed work while building aerobic base",
+      notes:
+        "Maintain speed work while building aerobic base",
     },
     {
       day: "Friday",
@@ -338,15 +372,19 @@ export const createDefaultUserData = (): UserData => {
   ];
 
   // Set start date to yesterday so we're currently in week 1, day 2
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 1); // Yesterday
+  const startDateObj = new Date();
+  startDateObj.setDate(startDateObj.getDate() - 1); // Yesterday
+  const startDate = startDateObj.getTime(); // Convert to timestamp
 
   // Calculate current week based on start date
   const today = new Date();
   const daysSinceStart = Math.floor(
-    (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    (today.getTime() - startDate) / (1000 * 60 * 60 * 24)
   );
-  const currentWeek = Math.min(Math.floor(daysSinceStart / 7) + 1, 12); // 1-indexed, cap at 12 weeks
+  const currentWeek = Math.min(
+    Math.floor(daysSinceStart / 7) + 1,
+    12
+  ); // 1-indexed, cap at 12 weeks
 
   const trainingPlan: TrainingPlan = {
     id: "default-plan",
@@ -362,7 +400,7 @@ export const createDefaultUserData = (): UserData => {
       "Based on your Nordic skiing background and threshold feel of 155-170 HR, these zones reflect your actual physiological thresholds.",
       "Your strong aerobic development means Z1 will feel 'stupidly easy' but is still valuable for recovery.",
     ],
-    generatedAt: new Date(),
+    generatedAt: Date.now(),
   };
 
   const trainingBackground: TrainingBackground = {
@@ -371,7 +409,8 @@ export const createDefaultUserData = (): UserData => {
     longestRun: 50,
     marathonPR: "2:57",
     currentFitness: "~3:20",
-    background: "Former D1 Nordic skier (excellent aerobic base)",
+    background:
+      "Former D1 Nordic skier (excellent aerobic base)",
     goals: {
       raceDistance: "50K",
       targetTime: "no clue",
@@ -401,7 +440,7 @@ export const createDefaultUserData = (): UserData => {
       id: "default-user",
       email: "user@example.com",
       name: "Trail Runner",
-      createdAt: new Date(),
+      createdAt: Date.now(),
       completedOnboarding: true,
     },
     trainingBackground,

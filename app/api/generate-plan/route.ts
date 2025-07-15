@@ -24,8 +24,9 @@ export async function POST(req: NextRequest) {
     console.log("Generating training plan for user:", userId);
     const generatedPlan = await generateTrainingPlan(trainingBackground);
 
-    // Set the user ID in the plan
+    // Set the user ID and start date in the plan
     generatedPlan.userId = userId;
+    generatedPlan.startDate = Date.now(); // Set plan start date to today
 
     // Save the plan to Firebase
     const planId = await saveTrainingPlan(userId, generatedPlan);

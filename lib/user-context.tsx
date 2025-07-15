@@ -1,6 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+} from "react";
 import { UserData } from "./types";
 import { useUserData } from "./clerk-firebase";
 import { createDefaultUserData } from "./default-data";
@@ -13,16 +18,21 @@ interface UserContextType {
   userId: string | null;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+const UserContext = createContext<
+  UserContextType | undefined
+>(undefined);
 
-export function UserProvider({ children }: { children: React.ReactNode }) {
+export function UserProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   // Try to get data from Firebase first
   const firebaseData = useUserData();
 
   // Fallback to default data if Firebase not ready or no user data
-  const [fallbackUserData, setFallbackUserData] = useState<UserData | null>(
-    null
-  );
+  const [fallbackUserData, setFallbackUserData] =
+    useState<UserData | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -35,24 +45,32 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   // Use Firebase data if available and user is signed in, otherwise use fallback
   const contextValue: UserContextType = {
-    userData: firebaseData.userId ? firebaseData.userData : fallbackUserData,
+    userData: firebaseData.userId
+      ? firebaseData.userData
+      : fallbackUserData,
     setUserData: firebaseData.userId
       ? firebaseData.setUserData
       : setFallbackUserData,
-    isLoading: firebaseData.userId ? firebaseData.isLoading : !isInitialized,
+    isLoading: firebaseData.userId
+      ? firebaseData.isLoading
+      : !isInitialized,
     error: firebaseData.error,
     userId: firebaseData.userId || null,
   };
 
   return (
-    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
+    <UserContext.Provider value={contextValue}>
+      {children}
+    </UserContext.Provider>
   );
 }
 
 export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error("useUser must be used within a UserProvider");
+    throw new Error(
+      "useUser must be used within a UserProvider"
+    );
   }
   return context;
 }

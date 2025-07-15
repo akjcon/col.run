@@ -8,7 +8,9 @@ interface OnboardingGuardProps {
   children: React.ReactNode;
 }
 
-export default function OnboardingGuard({ children }: OnboardingGuardProps) {
+export default function OnboardingGuard({
+  children,
+}: OnboardingGuardProps) {
   const { userData, isLoading, userId } = useUser();
   const router = useRouter();
 
@@ -16,7 +18,10 @@ export default function OnboardingGuard({ children }: OnboardingGuardProps) {
     // Only check onboarding status if user is authenticated and data is loaded
     if (!isLoading && userId && userData) {
       // If user exists but hasn't completed onboarding, redirect to onboarding
-      if (userData.profile && !userData.profile.completedOnboarding) {
+      if (
+        userData.profile &&
+        !userData.profile.completedOnboarding
+      ) {
         router.push("/onboarding");
       }
     }
@@ -25,9 +30,9 @@ export default function OnboardingGuard({ children }: OnboardingGuardProps) {
   // Show loading while checking auth and onboarding status
   if (isLoading || !userId) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>
@@ -35,12 +40,17 @@ export default function OnboardingGuard({ children }: OnboardingGuardProps) {
   }
 
   // If user hasn't completed onboarding, show loading (they'll be redirected)
-  if (userData?.profile && !userData.profile.completedOnboarding) {
+  if (
+    userData?.profile &&
+    !userData.profile.completedOnboarding
+  ) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Setting up your training plan...</p>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
+          <p className="text-gray-600">
+            Setting up your training plan...
+          </p>
         </div>
       </div>
     );

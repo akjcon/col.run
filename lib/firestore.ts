@@ -38,17 +38,25 @@ function convertTimestamps<T>(data: T): T {
     return data.map((item) => convertTimestamps(item)) as T;
   }
 
-  const converted = { ...(data as Record<string, unknown>) };
+  const converted = {
+    ...(data as Record<string, unknown>),
+  };
 
   Object.keys(converted).forEach((key) => {
     const value = converted[key];
     if (value instanceof Timestamp) {
       converted[key] = value.toDate();
-    } else if (value && typeof value === "object" && !Array.isArray(value)) {
+    } else if (
+      value &&
+      typeof value === "object" &&
+      !Array.isArray(value)
+    ) {
       converted[key] = convertTimestamps(value);
     } else if (Array.isArray(value)) {
       converted[key] = value.map((item) =>
-        item && typeof item === "object" ? convertTimestamps(item) : item
+        item && typeof item === "object"
+          ? convertTimestamps(item)
+          : item
       );
     }
   });
@@ -98,7 +106,12 @@ export async function saveTrainingBackground(
   userId: string,
   background: Omit<TrainingBackground, "id" | "createdAt">
 ): Promise<string> {
-  const backgroundRef = collection(db, "users", userId, "backgrounds");
+  const backgroundRef = collection(
+    db,
+    "users",
+    userId,
+    "backgrounds"
+  );
   const docRef = await addDoc(backgroundRef, {
     ...background,
     createdAt: serverTimestamp(),
@@ -109,8 +122,17 @@ export async function saveTrainingBackground(
 export async function getLatestTrainingBackground(
   userId: string
 ): Promise<TrainingBackground | null> {
-  const backgroundRef = collection(db, "users", userId, "backgrounds");
-  const q = query(backgroundRef, orderBy("createdAt", "desc"), limit(1));
+  const backgroundRef = collection(
+    db,
+    "users",
+    userId,
+    "backgrounds"
+  );
+  const q = query(
+    backgroundRef,
+    orderBy("createdAt", "desc"),
+    limit(1)
+  );
   const snapshot = await getDocs(q);
 
   if (snapshot.empty) {
@@ -129,7 +151,12 @@ export async function saveTrainingPlan(
   userId: string,
   plan: Omit<TrainingPlan, "id" | "userId" | "generatedAt">
 ): Promise<string> {
-  const planRef = collection(db, "users", userId, "trainingPlans");
+  const planRef = collection(
+    db,
+    "users",
+    userId,
+    "trainingPlans"
+  );
   const docRef = await addDoc(planRef, {
     ...plan,
     userId,
@@ -156,8 +183,17 @@ export async function saveTrainingPlan(
 export async function getActiveTrainingPlan(
   userId: string
 ): Promise<TrainingPlan | null> {
-  const planRef = collection(db, "users", userId, "trainingPlans");
-  const q = query(planRef, where("isActive", "==", true), limit(1));
+  const planRef = collection(
+    db,
+    "users",
+    userId,
+    "trainingPlans"
+  );
+  const q = query(
+    planRef,
+    where("isActive", "==", true),
+    limit(1)
+  );
   const snapshot = await getDocs(q);
 
   if (snapshot.empty) {
@@ -175,7 +211,13 @@ export async function getTrainingPlan(
   userId: string,
   planId: string
 ): Promise<TrainingPlan | null> {
-  const planRef = doc(db, "users", userId, "trainingPlans", planId);
+  const planRef = doc(
+    db,
+    "users",
+    userId,
+    "trainingPlans",
+    planId
+  );
   const planSnap = await getDoc(planRef);
 
   if (!planSnap.exists()) {
@@ -193,7 +235,13 @@ export async function updateTrainingPlan(
   planId: string,
   updates: Partial<TrainingPlan>
 ): Promise<void> {
-  const planRef = doc(db, "users", userId, "trainingPlans", planId);
+  const planRef = doc(
+    db,
+    "users",
+    userId,
+    "trainingPlans",
+    planId
+  );
   await updateDoc(planRef, updates);
 }
 
@@ -202,7 +250,12 @@ export async function saveChatMessage(
   userId: string,
   message: Omit<ChatMessage, "id" | "timestamp">
 ): Promise<string> {
-  const chatRef = collection(db, "users", userId, "chatHistory");
+  const chatRef = collection(
+    db,
+    "users",
+    userId,
+    "chatHistory"
+  );
   const docRef = await addDoc(chatRef, {
     ...message,
     timestamp: serverTimestamp(),
@@ -214,8 +267,17 @@ export async function getChatHistory(
   userId: string,
   limitCount: number = 50
 ): Promise<ChatMessage[]> {
-  const chatRef = collection(db, "users", userId, "chatHistory");
-  const q = query(chatRef, orderBy("timestamp", "desc"), limit(limitCount));
+  const chatRef = collection(
+    db,
+    "users",
+    userId,
+    "chatHistory"
+  );
+  const q = query(
+    chatRef,
+    orderBy("timestamp", "desc"),
+    limit(limitCount)
+  );
   const snapshot = await getDocs(q);
 
   return snapshot.docs
@@ -230,14 +292,17 @@ export async function getChatHistory(
 }
 
 // Complete User Data Operations
-export async function getUserData(userId: string): Promise<UserData | null> {
+export async function getUserData(
+  userId: string
+): Promise<UserData | null> {
   try {
-    const [profile, background, plan, chatHistory] = await Promise.all([
-      getUserProfile(userId),
-      getLatestTrainingBackground(userId),
-      getActiveTrainingPlan(userId),
-      getChatHistory(userId, 20),
-    ]);
+    const [profile, background, plan, chatHistory] =
+      await Promise.all([
+        getUserProfile(userId),
+        getLatestTrainingBackground(userId),
+        getActiveTrainingPlan(userId),
+        getChatHistory(userId, 20),
+      ]);
 
     if (!profile) {
       return null;
@@ -292,7 +357,7 @@ export async function initializeNewUser(
   await createUserProfile(userId, {
     email,
     name,
-    createdAt: new Date(),
+    createdAt: Date.now(),
     completedOnboarding: false,
   });
 }

@@ -3,22 +3,22 @@ import { SignIn } from "@clerk/nextjs";
 export default function SignInPage() {
   return (
     <div className="h-full bg-neutral-50">
-      <div className="px-4 sm:px-6 py-6 sm:py-20">
-        <div className="max-w-md mx-auto">
+      <div className="px-4 py-6 sm:px-6 sm:py-20">
+        <div className="mx-auto max-w-md">
           {/* Header with col branding */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl sm:text-4xl font-serif font-medium text-neutral-900 mb-2 tracking-tight">
+          <div className="mb-8 text-center">
+            <h1 className="mb-2 font-serif text-3xl font-medium tracking-tight text-neutral-900 sm:text-4xl">
               col
             </h1>
-            <div className="text-neutral-500 text-xs tracking-[0.2em] font-serif mb-6">
+            <div className="mb-6 font-serif text-xs tracking-[0.2em] text-neutral-500">
               /kɒl/
             </div>
-            <h2 className="text-xl sm:text-2xl font-serif font-light text-neutral-900 mb-3 tracking-tight leading-tight">
+            <h2 className="mb-3 font-serif text-xl font-light leading-tight tracking-tight text-neutral-900 sm:text-2xl">
               Welcome back
             </h2>
-            <p className="text-neutral-600 text-sm leading-relaxed font-serif">
-              Access your personalized training plan and continue your mountain
-              journey
+            <p className="font-serif text-sm leading-relaxed text-neutral-600">
+              Access your personalized training plan and
+              continue your mountain journey
             </p>
           </div>
 
@@ -28,10 +28,10 @@ export default function SignInPage() {
           </div>
 
           {/* Footer text */}
-          <div className="text-center mt-6">
-            <p className="text-xs text-neutral-500 font-serif">
-              &quot;Every great ascent begins with understanding the col
-              ahead&quot;
+          <div className="mt-6 text-center">
+            <p className="font-serif text-xs text-neutral-500">
+              &quot;Every great ascent begins with
+              understanding the col ahead&quot;
             </p>
           </div>
         </div>

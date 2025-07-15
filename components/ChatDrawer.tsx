@@ -67,40 +67,44 @@ const ChatInterface = ({
   }, []);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       {/* Chat Header */}
-      <div className="border-b border-gray-200 p-4 pt-0 bg-white">
-        <h3 className="font-bold text-gray-900 tracking-tight text-lg">
+      <div className="border-b border-gray-200 bg-white p-4 pt-0">
+        <h3 className="text-lg font-bold tracking-tight text-gray-900">
           Your Coach
         </h3>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className="mt-1 text-sm text-gray-600">
           Ask about training, nutrition, or race strategy
         </p>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+      <div className="flex-1 space-y-4 overflow-y-auto bg-white p-4">
         {messages.map((message) => (
           <div
             key={message.id}
             className={`flex ${
-              message.role === "user" ? "justify-end" : "justify-start"
+              message.role === "user"
+                ? "justify-end"
+                : "justify-start"
             }`}
           >
             <div
-              className={`max-w-[75%] p-3 rounded-lg ${
+              className={`max-w-[75%] rounded-lg p-3 ${
                 message.role === "user"
                   ? "bg-gray-900 text-white"
                   : "bg-gray-100 text-gray-900"
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              <p className="whitespace-pre-wrap text-sm">
+                {message.content}
+              </p>
             </div>
           </div>
         ))}
         {isChatLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 p-3 rounded-lg">
+            <div className="rounded-lg bg-gray-100 p-3">
               <Loader2 className="h-4 w-4 animate-spin text-gray-600" />
             </div>
           </div>
@@ -109,17 +113,19 @@ const ChatInterface = ({
       </div>
 
       {/* Quick Questions */}
-      <div className="border-t border-gray-200 p-3 pb-1 bg-white">
-        <p className="text-xs font-bold text-gray-900 mb-2 uppercase tracking-widest">
+      <div className="border-t border-gray-200 bg-white p-3 pb-1">
+        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-900">
           Quick Questions
         </p>
         <div className="overflow-x-auto">
           <div className="flex gap-2 pb-2">
             <button
               onClick={() =>
-                setQuickQuestion("What should I focus on for today's workout?")
+                setQuickQuestion(
+                  "What should I focus on for today's workout?"
+                )
               }
-              className="flex-shrink-0 px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-xs text-gray-800 transition-colors whitespace-nowrap"
+              className="flex-shrink-0 whitespace-nowrap rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs text-gray-800 transition-colors hover:bg-gray-200"
             >
               Today&apos;s Focus
             </button>
@@ -129,7 +135,7 @@ const ChatInterface = ({
                   "How should I fuel for my long runs this weekend?"
                 )
               }
-              className="flex-shrink-0 px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-xs text-gray-800 transition-colors whitespace-nowrap"
+              className="flex-shrink-0 whitespace-nowrap rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs text-gray-800 transition-colors hover:bg-gray-200"
             >
               Nutrition
             </button>
@@ -139,7 +145,7 @@ const ChatInterface = ({
                   "I'm feeling more tired than usual, should I adjust my training?"
                 )
               }
-              className="flex-shrink-0 px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-xs text-gray-800 transition-colors whitespace-nowrap"
+              className="flex-shrink-0 whitespace-nowrap rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs text-gray-800 transition-colors hover:bg-gray-200"
             >
               Recovery
             </button>
@@ -149,19 +155,20 @@ const ChatInterface = ({
                   "My [injury] is acting up, what should I do? Do I need to adjust my training?"
                 )
               }
-              className="flex-shrink-0 px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-xs text-gray-800 transition-colors whitespace-nowrap"
+              className="flex-shrink-0 whitespace-nowrap rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs text-gray-800 transition-colors hover:bg-gray-200"
             >
               Injury Advice
             </button>
             <button
               onClick={() =>
                 setQuickQuestion(
-                  userData?.trainingBackground?.goals.raceDistance
+                  userData?.trainingBackground?.goals
+                    .raceDistance
                     ? `What's the race strategy for my ${userData.trainingBackground.goals.raceDistance} based on my training?`
                     : "What's the race strategy based on my training?"
                 )
               }
-              className="flex-shrink-0 px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-xs text-gray-800 transition-colors whitespace-nowrap"
+              className="flex-shrink-0 whitespace-nowrap rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs text-gray-800 transition-colors hover:bg-gray-200"
             >
               Race Strategy
             </button>
@@ -170,7 +177,7 @@ const ChatInterface = ({
       </div>
 
       {/* Input */}
-      <div className="border-t border-gray-200 p-3 bg-white">
+      <div className="border-t border-gray-200 bg-white p-3">
         <div className="relative">
           <textarea
             ref={inputRef}
@@ -178,7 +185,7 @@ const ChatInterface = ({
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Ask about your training..."
-            className="w-full min-h-[100px] p-2 pr-12 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-0 focus:border-gray-300 text-base"
+            className="min-h-[100px] w-full resize-none rounded-lg border border-gray-200 p-2 pr-12 text-base focus:border-gray-300 focus:outline-none focus:ring-0"
             disabled={isChatLoading}
             rows={2}
             autoComplete="off"
@@ -189,7 +196,7 @@ const ChatInterface = ({
           <Button
             onClick={sendMessage}
             disabled={!chatInput.trim() || isChatLoading}
-            className="absolute bottom-[18px] right-3 p-4 bg-gray-600 hover:bg-gray-800 text-white rounded-lg h-9 w-9"
+            className="absolute bottom-[18px] right-3 h-9 w-9 rounded-lg bg-gray-600 p-4 text-white hover:bg-gray-800"
             size="sm"
           >
             {isChatLoading ? (
@@ -199,7 +206,9 @@ const ChatInterface = ({
             )}
           </Button>
         </div>
-        <p className="text-xs text-gray-500 mt-1">Press Enter to send</p>
+        <p className="mt-1 text-xs text-gray-500">
+          Press Enter to send
+        </p>
       </div>
     </div>
   );
@@ -224,7 +233,8 @@ export default function ChatDrawer({
         return "Hi! I'm your training plan assistant. I have access to the full Training for the Uphill Athlete book. Ask me anything about training, nutrition, recovery, or race strategy!";
       }
 
-      const plan = userData.generatedProfile.recommendedPlan;
+      const plan =
+        userData.generatedProfile.recommendedPlan;
       return `Hi! I'm your training plan assistant. I have access to the full Training for the Uphill Athlete book, your customized ${plan.planType} plan, and know you're currently on week ${plan.currentWeek} of ${plan.totalWeeks}. Ask me anything about your training, nutrition, recovery, specific workouts, or race strategy!`;
     };
 
@@ -242,7 +252,9 @@ export default function ChatDrawer({
 
   // Auto-scroll to bottom
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
   }, [messages]);
 
   const sendMessage = async () => {
@@ -293,7 +305,8 @@ export default function ChatDrawer({
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "Sorry, I encountered an error. Please try again.",
+        content:
+          "Sorry, I encountered an error. Please try again.",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -317,10 +330,12 @@ export default function ChatDrawer({
     <Drawer.Root open={isOpen} onOpenChange={onOpenChange}>
       {children}
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/60 z-50" />
-        <Drawer.Content className="bg-white flex flex-col rounded-t-[20px] h-[90%] mt-24 fixed bottom-0 left-0 right-0 z-[60]">
-          <Drawer.Title className="sr-only">Chat with Coach</Drawer.Title>
-          <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-zinc-300 mt-4 mb-2" />
+        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/60" />
+        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[60] mt-12 flex h-[90%] flex-col rounded-t-[30px] bg-white">
+          <Drawer.Title className="sr-only">
+            Chat with Coach
+          </Drawer.Title>
+          <div className="mx-auto mb-2 mt-4 h-1.5 w-12 flex-shrink-0 rounded-full bg-zinc-300" />
           <ChatInterface
             messages={messages}
             chatInput={chatInput}

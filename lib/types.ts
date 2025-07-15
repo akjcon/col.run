@@ -3,7 +3,7 @@ export interface UserProfile {
   id: string;
   email: string;
   name: string;
-  createdAt: Date;
+  createdAt: number; // epoch timestamp
   completedOnboarding: boolean;
 }
 
@@ -16,7 +16,7 @@ export interface TrainingBackground {
   injuries?: string;
   goals: {
     raceDistance: string;
-    raceDate?: Date;
+    raceDate?: number; // epoch timestamp
     targetTime?: string;
   };
   background?: string; // e.g., "Former D1 Nordic skier"
@@ -40,7 +40,8 @@ export interface TrainingPhase {
 }
 
 export interface Workout {
-  day: string;
+  day: string; // Keep for backward compatibility
+  date?: number; // Actual date for this workout (optional, calculated dynamically) - epoch timestamp
   type: string;
   zone: string;
   description: string;
@@ -60,14 +61,14 @@ export interface TrainingPlan {
   id: string;
   userId: string;
   planType: string; // e.g., "12-week 50K"
-  startDate: Date;
+  startDate: number; // epoch timestamp
   currentWeek: number;
   totalWeeks: number;
   zones: TrainingZone[];
   phases: TrainingPhase[];
   weeks: WeekPlan[];
   coachingNotes: string[];
-  generatedAt: Date;
+  generatedAt: number; // epoch timestamp
 }
 
 export interface GeneratedProfile {

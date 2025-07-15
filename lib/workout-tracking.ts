@@ -41,9 +41,13 @@ export async function saveWorkoutCompletion(
     };
 
     // Only include feelingNotes if it has a value (Firestore doesn't accept undefined)
-    const workoutCompletion: WorkoutCompletionDoc = workoutData.feelingNotes
-      ? { ...baseCompletion, feelingNotes: workoutData.feelingNotes }
-      : baseCompletion;
+    const workoutCompletion: WorkoutCompletionDoc =
+      workoutData.feelingNotes
+        ? {
+            ...baseCompletion,
+            feelingNotes: workoutData.feelingNotes,
+          }
+        : baseCompletion;
 
     const docRef = await addDoc(
       collection(db, "users", userId, "workoutCompletions"),
@@ -52,7 +56,10 @@ export async function saveWorkoutCompletion(
 
     return docRef.id;
   } catch (error) {
-    console.error("Error saving workout completion:", error);
+    console.error(
+      "Error saving workout completion:",
+      error
+    );
     throw new Error("Failed to save workout completion");
   }
 }
@@ -69,7 +76,10 @@ export async function getWorkoutCompletions(
       "workoutCompletions"
     );
 
-    let q = query(completionsRef, orderBy("completedAt", "desc"));
+    let q = query(
+      completionsRef,
+      orderBy("completedAt", "desc")
+    );
 
     if (weekNumber) {
       q = query(
@@ -90,7 +100,10 @@ export async function getWorkoutCompletions(
     // Suppress permission errors - they're just auth timing issues
     const errorCode = (error as { code?: string })?.code;
     if (errorCode !== "permission-denied") {
-      console.error("Error getting workout completions:", error);
+      console.error(
+        "Error getting workout completions:",
+        error
+      );
     }
     return [];
   }
@@ -122,7 +135,10 @@ export async function isWorkoutCompleted(
     if (errorCode === "permission-denied") {
       return false; // Assume not completed if auth isn't ready yet
     }
-    console.error("Error checking workout completion:", error);
+    console.error(
+      "Error checking workout completion:",
+      error
+    );
     return false;
   }
 }
