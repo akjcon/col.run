@@ -145,8 +145,7 @@ export default function TrainingPlanPage() {
                 : "Weekly Schedule"}
             </CardTitle>
             <CardDescription className="text-neutral-600">
-              {selectedWeekData?.description ||
-                "Customized training for this week"}
+              Customized training for this week
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
