@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Mountain, TrendingUp, Activity } from "lucide-react";
-import { useUser } from "@/lib/user-context-redux";
+import { useUser } from "@/lib/user-context-rtk";
 import { calculateCurrentWeek } from "@/lib/plan-utils";
 import { useState, useMemo, useEffect } from "react";
 

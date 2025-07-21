@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Drawer } from "vaul";
 import { Button } from "@/components/ui/button";
 import { Send, Loader2 } from "lucide-react";
+import { useSendChatMessageMutation } from "@/lib/store/api";
 
 interface Message {
   id: string;
@@ -84,9 +85,7 @@ const ChatInterface = ({
           <div
             key={message.id}
             className={`flex ${
-              message.role === "user"
-                ? "justify-end"
-                : "justify-start"
+              message.role === "user" ? "justify-end" : "justify-start"
             }`}
           >
             <div
@@ -96,9 +95,7 @@ const ChatInterface = ({
                   : "bg-gray-100 text-gray-900"
               }`}
             >
-              <p className="whitespace-pre-wrap text-sm">
-                {message.content}
-              </p>
+              <p className="whitespace-pre-wrap text-sm">{message.content}</p>
             </div>
           </div>
         ))}
@@ -121,9 +118,7 @@ const ChatInterface = ({
           <div className="flex gap-2 pb-2">
             <button
               onClick={() =>
-                setQuickQuestion(
-                  "What should I focus on for today's workout?"
-                )
+                setQuickQuestion("What should I focus on for today's workout?")
               }
               className="flex-shrink-0 whitespace-nowrap rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs text-gray-800 transition-colors hover:bg-gray-200"
             >
@@ -162,8 +157,7 @@ const ChatInterface = ({
             <button
               onClick={() =>
                 setQuickQuestion(
-                  userData?.trainingBackground?.goals
-                    .raceDistance
+                  userData?.trainingBackground?.goals.raceDistance
                     ? `What's the race strategy for my ${userData.trainingBackground.goals.raceDistance} based on my training?`
                     : "What's the race strategy based on my training?"
                 )
@@ -206,9 +200,7 @@ const ChatInterface = ({
             )}
           </Button>
         </div>
-        <p className="mt-1 text-xs text-gray-500">
-          Press Enter to send
-        </p>
+        <p className="mt-1 text-xs text-gray-500">Press Enter to send</p>
       </div>
     </div>
   );
@@ -225,6 +217,7 @@ export default function ChatDrawer({
   const [chatInput, setChatInput] = useState("");
   const [isChatLoading, setIsChatLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [sendChatMessage] = useSendChatMessageMutation();
 
   // Initialize welcome message
   useEffect(() => {
@@ -233,8 +226,7 @@ export default function ChatDrawer({
         return "Hi! I'm your training plan assistant. I have access to the full Training for the Uphill Athlete book. Ask me anything about training, nutrition, recovery, or race strategy!";
       }
 
-      const plan =
-        userData.generatedProfile.recommendedPlan;
+      const plan = userData.generatedProfile.recommendedPlan;
       return `Hi! I'm your training plan assistant. I have access to the full Training for the Uphill Athlete book, your customized ${plan.planType} plan, and know you're currently on week ${plan.currentWeek} of ${plan.totalWeeks}. Ask me anything about your training, nutrition, recovery, specific workouts, or race strategy!`;
     };
 
@@ -272,30 +264,18 @@ export default function ChatDrawer({
     setIsChatLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          userId: userId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to get response");
-      }
-
-      const data = await response.json();
+      const result = await sendChatMessage({
+        messages: [...messages, userMessage].map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        userId: userId || undefined,
+      }).unwrap();
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.message,
+        content: result.message,
         timestamp: new Date(),
       };
 
@@ -305,8 +285,7 @@ export default function ChatDrawer({
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content:
-          "Sorry, I encountered an error. Please try again.",
+        content: "Sorry, I encountered an error. Please try again.",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -332,9 +311,7 @@ export default function ChatDrawer({
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-50 bg-black/60" />
         <Drawer.Content className="fixed bottom-0 left-0 right-0 z-[60] mt-12 flex h-[90%] flex-col rounded-t-[30px] bg-white">
-          <Drawer.Title className="sr-only">
-            Chat with Coach
-          </Drawer.Title>
+          <Drawer.Title className="sr-only">Chat with Coach</Drawer.Title>
           <div className="mx-auto mb-2 mt-4 h-1.5 w-12 flex-shrink-0 rounded-full bg-zinc-300" />
           <ChatInterface
             messages={messages}

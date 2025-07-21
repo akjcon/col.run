@@ -1,8 +1,8 @@
 {
-  "name": "50k-trail-training-plan",
+  "name": "col.run",
   "version": "1.0.0",
   "private": true,
-  "description": "12-week training plan for a 50K trail race with 10,000ft vertical",
+  "description": "col.run is a platform for runners to track their progress and get personalized training plans.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

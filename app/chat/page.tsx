@@ -9,14 +9,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  MessageCircle,
-  Send,
-  Bot,
-  User,
-  Loader2,
-} from "lucide-react";
-import { useUser } from "@/lib/user-context-redux";
+import { MessageCircle, Send, Bot, User, Loader2 } from "lucide-react";
+import { useUser } from "@/lib/user-context-rtk";
+import { useSendChatMessageMutation } from "@/lib/store/api";
 
 interface Message {
   id: string;
@@ -26,11 +21,8 @@ interface Message {
 }
 
 export default function TrainingChat() {
-  const {
-    userData,
-    isLoading: userLoading,
-    userId,
-  } = useUser();
+  const { userData, isLoading: userLoading, userId } = useUser();
+  const [sendChatMessage] = useSendChatMessageMutation();
 
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -40,8 +32,7 @@ export default function TrainingChat() {
         return "Hi! I'm your training plan assistant. I have access to the full Training for the Uphill Athlete book. Ask me anything about training, nutrition, recovery, or race strategy!";
       }
 
-      const plan =
-        userData.generatedProfile.recommendedPlan;
+      const plan = userData.generatedProfile.recommendedPlan;
       return `Hi! I'm your training plan assistant. I have access to the full Training for the Uphill Athlete book, your customized ${plan.planType} plan, and know you're currently on week ${plan.currentWeek} of ${plan.totalWeeks}. Ask me anything about your training, nutrition, recovery, specific workouts, or race strategy!`;
     };
 
@@ -75,30 +66,18 @@ export default function TrainingChat() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          userId: userId, // Include userId for personalized responses
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to get response");
-      }
-
-      const data = await response.json();
+      const result = await sendChatMessage({
+        messages: [...messages, userMessage].map((m) => ({
+          role: m.role,
+          content: m.content,
+        })),
+        userId: userId || undefined, // Include userId for personalized responses
+      }).unwrap();
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.message,
+        content: result.message,
         timestamp: new Date(),
       };
 
@@ -108,8 +87,7 @@ export default function TrainingChat() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content:
-          "Sorry, I encountered an error. Please try again.",
+        content: "Sorry, I encountered an error. Please try again.",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -136,8 +114,7 @@ export default function TrainingChat() {
               Training Plan Assistant
             </CardTitle>
             <CardDescription className="text-gray-600">
-              Powered by your training book knowledge and
-              current plan status
+              Powered by your training book knowledge and current plan status
             </CardDescription>
           </CardHeader>
 
@@ -147,9 +124,7 @@ export default function TrainingChat() {
               <div
                 key={message.id}
                 className={`flex items-start gap-3 ${
-                  message.role === "user"
-                    ? "justify-end"
-                    : "justify-start"
+                  message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 {message.role === "assistant" && (
@@ -175,13 +150,10 @@ export default function TrainingChat() {
                         : "text-gray-500"
                     }`}
                   >
-                    {message.timestamp.toLocaleTimeString(
-                      [],
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }
-                    )}
+                    {message.timestamp.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
                 </div>
 
@@ -201,9 +173,7 @@ export default function TrainingChat() {
                 <div className="rounded-lg bg-gray-100 px-4 py-2">
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm text-gray-600">
-                      Thinking...
-                    </span>
+                    <span className="text-sm text-gray-600">Thinking...</span>
                   </div>
                 </div>
               </div>
@@ -222,9 +192,7 @@ export default function TrainingChat() {
                 size="sm"
                 className="h-auto bg-white p-2 text-xs"
                 onClick={() =>
-                  setInput(
-                    "What should I focus on for today's workout?"
-                  )
+                  setInput("What should I focus on for today's workout?")
                 }
               >
                 Today&#39;s Workout
@@ -234,9 +202,7 @@ export default function TrainingChat() {
                 size="sm"
                 className="h-auto bg-white p-2 text-xs"
                 onClick={() =>
-                  setInput(
-                    "How should I fuel for my long runs this weekend?"
-                  )
+                  setInput("How should I fuel for my long runs this weekend?")
                 }
               >
                 Nutrition
@@ -259,8 +225,7 @@ export default function TrainingChat() {
                 className="h-auto bg-white p-2 text-xs"
                 onClick={() =>
                   setInput(
-                    userData?.trainingBackground?.goals
-                      .raceDistance
+                    userData?.trainingBackground?.goals.raceDistance
                       ? `What's the race strategy for my ${userData.trainingBackground.goals.raceDistance} based on my training?`
                       : "What's the race strategy based on my training?"
                   )

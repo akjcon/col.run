@@ -1,9 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import userReducer from "./userSlice";
+import { baseApi } from "./api";
 
 export const store = configureStore({
   reducer: {
-    user: userReducer,
+    [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -12,30 +12,28 @@ export const store = configureStore({
         ignoredActions: [
           "persist/PERSIST",
           "persist/REHYDRATE",
+          // RTK Query actions
+          `${baseApi.reducerPath}/queries/fulfilled`,
+          `${baseApi.reducerPath}/queries/pending`,
+          `${baseApi.reducerPath}/queries/rejected`,
+          `${baseApi.reducerPath}/mutations/fulfilled`,
+          `${baseApi.reducerPath}/mutations/pending`,
+          `${baseApi.reducerPath}/mutations/rejected`,
         ],
-        // Ignore these field paths in all actions (backwards compatibility for old Date objects)
+        // Ignore these field paths in all actions
         ignoredActionsPaths: [
+          // RTK Query
           "meta.arg",
-          "payload.timestamp",
-          "payload.profile.createdAt",
-          "payload.profile.lastActiveAt",
-          "payload.generatedProfile.recommendedPlan.startDate",
-          "payload.generatedProfile.recommendedPlan.generatedAt",
-          "payload.trainingBackground.goals.raceDate",
-          "payload.trainingBackground.createdAt",
+          "meta.baseQueryMeta.request",
+          "meta.baseQueryMeta.response",
         ],
-        // Ignore these paths in the state (backwards compatibility for old Date objects)
+        // Ignore these paths in the state
         ignoredPaths: [
-          "user.userData.profile.createdAt",
-          "user.userData.profile.lastActiveAt",
-          "user.userData.generatedProfile.recommendedPlan.startDate",
-          "user.userData.generatedProfile.recommendedPlan.generatedAt",
-          "user.userData.trainingBackground.goals.raceDate",
-          "user.userData.trainingBackground.createdAt",
-          "user.lastFetched",
+          // RTK Query
+          `${baseApi.reducerPath}`,
         ],
       },
-    }),
+    }).concat(baseApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

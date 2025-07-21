@@ -12,8 +12,11 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrainingBackground } from "@/lib/types";
-import { saveTrainingBackground, updateUserProfile } from "@/lib/firestore";
-import { useUser } from "@/lib/user-context-redux";
+import { useUser } from "@/lib/user-context-rtk";
+import {
+  useSaveTrainingBackgroundMutation,
+  useUpdateUserProfileMutation,
+} from "@/lib/store/api";
 
 export default function OnboardingPage() {
   const { user } = useClerkUser();
@@ -29,6 +32,10 @@ export default function OnboardingPage() {
       raceDistance: "",
     },
   });
+
+  // RTK Query hooks
+  const [saveTrainingBackground] = useSaveTrainingBackgroundMutation();
+  const [updateUserProfile] = useUpdateUserProfileMutation();
 
   // Redirect if user has already completed onboarding
   React.useEffect(() => {
@@ -48,10 +55,10 @@ export default function OnboardingPage() {
       }
 
       // Save training background to Firebase
-      await saveTrainingBackground(
+      await saveTrainingBackground({
         userId,
-        formData as Omit<TrainingBackground, "id" | "createdAt">
-      );
+        background: formData as Omit<TrainingBackground, "id" | "createdAt">,
+      }).unwrap();
 
       // Generate personalized training plan
       console.log("Generating personalized training plan...");
@@ -77,9 +84,10 @@ export default function OnboardingPage() {
       console.log("Training plan generated:", planResult.planId);
 
       // Mark onboarding as complete
-      await updateUserProfile(userId, {
-        completedOnboarding: true,
-      });
+      await updateUserProfile({
+        userId,
+        updates: { completedOnboarding: true },
+      }).unwrap();
 
       console.log("Onboarding completed successfully!");
 

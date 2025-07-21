@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, Target, TrendingUp, Loader2 } from "lucide-react";
-import { useUser } from "@/lib/user-context-redux";
+import { useUser } from "@/lib/user-context-rtk";
 
 export default function Overview() {
   const { userData, isLoading } = useUser();

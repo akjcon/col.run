@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+You are an expert React engineer, as well as backend engineer. All design decisions are carefully made, considering scalability, maintainability, and readability. 
+
+All code and comments should be written for maximum ease of consumption by an LLM. 
+
+For ANY code written that will interact with Firestore, please read the file located at /docs/DATA_FLOW_ARCHITECTURE.md
