@@ -11,13 +11,14 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { TrainingBackground, TrainingPlan } from "@/lib/types";
+import { TrainingBackground, TrainingPlan, Workout } from "@/lib/types";
 import {
   baseApi,
   sanitizeForFirestore,
   normalizeTimestamps,
   handleFirestoreError,
 } from "./baseApi";
+import { getWeeksWithDates, getTomorrowsWorkout } from "@/lib/workout-utils";
 
 export const trainingApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -183,6 +184,45 @@ export const trainingApi = baseApi.injectEndpoints({
         "TrainingPlan",
       ],
     }),
+
+    // Get tomorrow's workout
+    getTomorrowsWorkout: builder.query<
+      { workout: Workout | null; plan: TrainingPlan | null },
+      string
+    >({
+      queryFn: async (userId) => {
+        try {
+          const planRef = collection(db, "users", userId, "trainingPlans");
+          const q = query(planRef, where("isActive", "==", true), limit(1));
+          const snapshot = await getDocs(q);
+
+          if (snapshot.empty) {
+            return { data: { workout: null, plan: null } };
+          }
+
+          const doc = snapshot.docs[0];
+          const plan = normalizeTimestamps({
+            id: doc.id,
+            ...doc.data(),
+          }) as TrainingPlan;
+
+          const weeksWithDates = getWeeksWithDates(
+            plan.startDate,
+            plan.generatedAt,
+            plan.weeks
+          );
+
+          const tomorrowsWorkout = getTomorrowsWorkout(weeksWithDates);
+
+          return { data: { workout: tomorrowsWorkout || null, plan } };
+        } catch (error) {
+          return {
+            error: handleFirestoreError(error, "get tomorrow's workout"),
+          };
+        }
+      },
+      providesTags: ["TrainingPlan"],
+    }),
   }),
 });
 
@@ -192,4 +232,5 @@ export const {
   useSaveTrainingPlanMutation,
   useGetActiveTrainingPlanQuery,
   useUpdateTrainingPlanMutation,
+  useGetTomorrowsWorkoutQuery,
 } = trainingApi;

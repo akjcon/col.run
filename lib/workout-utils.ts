@@ -25,6 +25,30 @@ export function getTodaysWorkout(
     });
 }
 
+export function getTomorrowsWorkout(
+  weeksWithDates: Array<{ workouts: Workout[] }>
+): Workout | undefined {
+  const today = new Date();
+  const tomorrow = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() + 1
+  );
+
+  return weeksWithDates
+    .flatMap((week) => week.workouts)
+    .find((workout) => {
+      if (!workout.date) return false;
+      const workoutDate = new Date(workout.date);
+      const workoutLocal = new Date(
+        workoutDate.getFullYear(),
+        workoutDate.getMonth(),
+        workoutDate.getDate()
+      );
+      return workoutLocal.getTime() === tomorrow.getTime();
+    });
+}
+
 export function getWeeksWithDates(
   startDate: number | undefined,
   generatedAt: number | undefined,

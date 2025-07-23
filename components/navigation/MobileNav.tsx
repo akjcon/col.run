@@ -2,20 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  Menu,
-  X,
-  Home,
-  Target,
-  Dumbbell,
-  MessageCircle,
-  Calendar,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
 import Image from "next/image";
+import { navigationItems } from "./constants";
 
-export function Navigation() {
+export function MobileNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isSignedIn, user } = useUser();
 
@@ -27,34 +20,6 @@ export function Navigation() {
     setIsMobileMenuOpen(false);
   };
 
-  const navLinks = [
-    {
-      href: "/home",
-      label: "Dashboard",
-      icon: Home,
-    },
-    {
-      href: "/overview",
-      label: "Overview",
-      icon: Target,
-    },
-    {
-      href: "/phase",
-      label: "Phases",
-      icon: Calendar,
-    },
-    {
-      href: "/strength",
-      label: "Strength",
-      icon: Dumbbell,
-    },
-    {
-      href: "/chat",
-      label: "AI Chat",
-      icon: MessageCircle,
-    },
-  ];
-
   return (
     <>
       <nav className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white backdrop-blur">
@@ -62,7 +27,7 @@ export function Navigation() {
           {/* Mobile hamburger menu */}
           <button
             onClick={toggleMobileMenu}
-            className="rounded-lg p-2 transition-colors hover:bg-neutral-50 md:hidden"
+            className="rounded-lg p-2 transition-colors hover:bg-neutral-50"
             aria-label="Toggle menu"
           >
             <div className="relative">
@@ -89,45 +54,13 @@ export function Navigation() {
           <Link href={isSignedIn ? "/home" : "/"} className="flex items-center">
             <Image src="/col_logo.svg" alt="col" width={70} height={70} />
           </Link>
-
-          {/* Desktop navigation */}
-          <div className="hidden flex-1 items-center justify-end space-x-6 text-sm md:flex">
-            {isSignedIn &&
-              navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="font-normal text-neutral-700 transition-colors hover:text-neutral-900"
-                >
-                  {link.label}
-                </Link>
-              ))}
-
-            {/* Authentication */}
-            {isSignedIn ? (
-              <div className="flex items-center space-x-3">
-                {user?.firstName && (
-                  <span className="hidden text-sm text-neutral-600 lg:block">
-                    Welcome, {user?.firstName}
-                  </span>
-                )}
-                <UserButton />
-              </div>
-            ) : (
-              <SignInButton mode="modal">
-                <button className="rounded-lg bg-neutral-900 px-4 py-2 font-medium text-white transition-colors hover:bg-neutral-800">
-                  Sign In
-                </button>
-              </SignInButton>
-            )}
-          </div>
         </div>
       </nav>
 
       {/* Mobile menu overlay */}
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-black/20 md:hidden",
+          "fixed inset-0 z-50 bg-black/20",
           isMobileMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"
         )}
         style={{
@@ -139,7 +72,7 @@ export function Navigation() {
       {/* Mobile menu drawer */}
       <div
         className={cn(
-          "fixed left-0 top-0 z-[60] h-full w-72 transform border-r border-neutral-200 bg-white md:hidden flex flex-col",
+          "fixed left-0 top-0 z-[60] h-full w-72 transform border-r border-neutral-200 bg-white flex flex-col",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
         style={{
@@ -165,7 +98,7 @@ export function Navigation() {
           </div>
         </div>
 
-        {/* Mobile menu content - flex-1 to take remaining space */}
+        {/* Mobile menu content */}
         <div className="flex-1 p-4">
           {/* Authentication for mobile - only show if not signed in */}
           {!isSignedIn && (
@@ -184,18 +117,18 @@ export function Navigation() {
           {/* Navigation links - only show if signed in */}
           {isSignedIn && (
             <nav className="space-y-1">
-              {navLinks.map((link) => {
-                const IconComponent = link.icon;
+              {navigationItems.map((item, index) => {
+                const IconComponent = item.icon;
                 return (
                   <Link
-                    key={link.href}
-                    href={link.href}
+                    key={index}
+                    href={item.href!}
                     onClick={closeMobileMenu}
                     className="flex items-center space-x-3 rounded-lg p-3 transition-colors hover:bg-neutral-50"
                   >
                     <IconComponent className="h-5 w-5 text-neutral-600" />
                     <span className="font-medium text-neutral-700">
-                      {link.label}
+                      {item.label}
                     </span>
                   </Link>
                 );

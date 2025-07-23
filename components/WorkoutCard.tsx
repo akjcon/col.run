@@ -3,11 +3,16 @@ import {
   CheckCircle2,
   MessageCircle,
   ArrowRight,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WorkoutCompletionModal from "@/components/WorkoutCompletionModal";
 import { getZoneColor, getZoneText, extractWorkoutMetrics } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { Workout } from "@/lib/types";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface WorkoutCardProps {
   todaysWorkout: Workout | null;
@@ -22,6 +27,8 @@ export function WorkoutCard({
   isFirebaseReady,
   onWorkoutComplete,
 }: WorkoutCardProps) {
+  const [showDetails, setShowDetails] = useState(false);
+
   if (!todaysWorkout) {
     // Rest Day Design
     return (
@@ -74,9 +81,10 @@ export function WorkoutCard({
         {todaysWorkout.zone && (
           <div className="mb-2 flex items-center gap-3">
             <div
-              className={`h-3 w-3 rounded-full ${getZoneColor(
-                todaysWorkout.zone
-              )}`}
+              className={cn(
+                "h-3 w-3 rounded-full",
+                getZoneColor(todaysWorkout.zone)
+              )}
             ></div>
             <span className="text-sm font-medium uppercase tracking-wider text-neutral-900">
               {getZoneText(todaysWorkout.zone)}
@@ -89,11 +97,12 @@ export function WorkoutCard({
       {(metrics.distance || metrics.vertical) && (
         <div className="border-b border-neutral-100 bg-neutral-50 px-6 py-6">
           <div
-            className={`grid ${
+            className={cn(
+              "grid gap-8",
               metrics.distance && metrics.vertical
                 ? "grid-cols-2"
                 : "grid-cols-1"
-            } gap-8`}
+            )}
           >
             {metrics.distance && (
               <div className="text-center">
@@ -119,66 +128,122 @@ export function WorkoutCard({
         </div>
       )}
 
-      {/* Workout Description */}
-      {todaysWorkout.description && (
-        <div className="px-6 py-6">
-          <p className="leading-relaxed text-neutral-800">
-            {todaysWorkout.description}
-          </p>
-        </div>
-      )}
-
-      {/* Detailed Instructions */}
-      {todaysWorkout.details && todaysWorkout.details.length > 0 && (
-        <div className="px-6 pb-6">
-          <div className="space-y-4">
-            {todaysWorkout.details.map((detail: string, index: number) => (
-              <div key={index} className="flex items-start gap-4">
-                <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-neutral-900"></div>
-                <p className="text-sm leading-relaxed text-neutral-700">
-                  {detail}
+      {/* Conditionally render details section */}
+      <AnimatePresence initial={false}>
+        {(!isWorkoutDone || showDetails) && (
+          <motion.div
+            initial={{ height: 0, opacity: 0, y: -30 }}
+            animate={{ height: "auto", opacity: 1, y: 0 }}
+            exit={{ height: 0, opacity: 0, y: -30 }}
+            transition={{
+              height: { duration: 0.3, ease: "easeInOut" },
+              opacity: { duration: 0.2, ease: "easeInOut" },
+              y: { duration: 0.3, ease: "easeInOut" },
+            }}
+            className="overflow-hidden"
+          >
+            {/* Workout Description */}
+            {todaysWorkout.description && (
+              <div className="px-6 py-6">
+                <p className="leading-relaxed text-neutral-800">
+                  {todaysWorkout.description}
                 </p>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            )}
 
-      {/* Coach Notes */}
-      {todaysWorkout.notes && (
-        <div className="px-6">
-          <div className="rounded-xl bg-neutral-900 p-5 text-white">
-            <div className="flex items-start gap-3">
-              <MessageCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-              <div>
-                <p className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-300">
-                  Coach Notes
-                </p>
-                <p className="text-sm leading-relaxed">{todaysWorkout.notes}</p>
+            {/* Detailed Instructions */}
+            {todaysWorkout.details && todaysWorkout.details.length > 0 && (
+              <div className="px-6 pb-6">
+                <div className="space-y-4">
+                  {todaysWorkout.details.map(
+                    (detail: string, index: number) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-neutral-900"></div>
+                        <p className="text-sm leading-relaxed text-neutral-700">
+                          {detail}
+                        </p>
+                      </div>
+                    )
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            )}
 
-      {/* Action Button */}
-      <div className="px-6 pb-6">
-        {!isWorkoutDone && (
-          <WorkoutCompletionModal
-            onSubmit={onWorkoutComplete}
-            workoutType={todaysWorkout.type}
-            trigger={
-              <Button
-                className="mt-4 w-full rounded-xl border-0 bg-neutral-900 py-4 text-sm font-medium uppercase tracking-wider text-white transition-all duration-200 hover:bg-neutral-800"
-                disabled={!isFirebaseReady}
-              >
-                {isFirebaseReady ? "Mark Complete" : "Loading..."}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            }
-          />
+            {/* Coach Notes */}
+            {todaysWorkout.notes && (
+              <div className="px-6 pb-6">
+                <div className="rounded-xl bg-neutral-900 p-5 text-white">
+                  <div className="flex items-start gap-3">
+                    <MessageCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                    <div>
+                      <p className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-300">
+                        Coach Notes
+                      </p>
+                      <p className="text-sm leading-relaxed">
+                        {todaysWorkout.notes}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Button - Only show when workout not done */}
+            {!isWorkoutDone && (
+              <div className="px-6 pb-6">
+                <WorkoutCompletionModal
+                  onSubmit={onWorkoutComplete}
+                  workoutType={todaysWorkout.type}
+                  trigger={
+                    <Button
+                      className="mt-4 w-full rounded-xl border-0 bg-neutral-900 py-4 text-sm font-medium uppercase tracking-wider text-white transition-all duration-200 hover:bg-neutral-800"
+                      disabled={!isFirebaseReady}
+                    >
+                      {isFirebaseReady ? "Mark Complete" : "Loading..."}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  }
+                />
+              </div>
+            )}
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
+
+      {/* Show Details Button - At the bottom when workout is done */}
+      {isWorkoutDone && (
+        <motion.div
+          className={cn(showDetails && "border-t border-neutral-100")}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="flex w-full items-center justify-center gap-2 py-4 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-900"
+          >
+            <motion.span
+              key={showDetails ? "hide" : "show"}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.15 }}
+              className="flex items-center gap-2"
+            >
+              {showDetails ? (
+                <>
+                  <span>Hide Details</span>
+                  <ChevronUp className="h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  <span>Show Details</span>
+                  <ChevronDown className="h-4 w-4" />
+                </>
+              )}
+            </motion.span>
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 }

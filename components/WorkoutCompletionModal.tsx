@@ -11,8 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface WorkoutCompletionModalProps {
   onSubmit: (rating: number, notes?: string) => Promise<void>;
@@ -137,7 +138,7 @@ export default function WorkoutCompletionModal({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <LoadingSpinner variant="button" size="sm" className="mr-2" />
                   Saving...
                 </>
               ) : (

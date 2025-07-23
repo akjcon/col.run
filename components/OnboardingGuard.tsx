@@ -3,6 +3,7 @@
 import { useUser } from "@/lib/user-context-rtk";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface OnboardingGuardProps {
   children: React.ReactNode;
@@ -24,26 +25,12 @@ export default function OnboardingGuard({ children }: OnboardingGuardProps) {
 
   // Show loading while checking auth and onboarding status
   if (isLoading || !userId) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   // If user hasn't completed onboarding, show loading (they'll be redirected)
   if (userData?.profile && !userData.profile.completedOnboarding) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
-          <p className="text-gray-600">Setting up your training plan...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   // User is authenticated and has completed onboarding, show the protected content

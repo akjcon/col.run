@@ -3,10 +3,15 @@
 import { useUser } from "@/lib/user-context-rtk";
 import ChatDrawer from "@/components/ChatDrawer";
 import { WorkoutCard } from "@/components/WorkoutCard";
+import { TomorrowWorkoutCard } from "@/components/TomorrowWorkoutCard";
 import { ProgressOverview } from "@/components/ProgressOverview";
 import { QuickActions } from "@/components/QuickActions";
 import { RaceCountdown } from "@/components/RaceCountdown";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+
+import {
+  WorkoutCardSkeleton,
+  ProgressOverviewSkeleton,
+} from "@/components/ui/skeleton-loaders";
 import {
   useSaveWorkoutCompletionMutation,
   useIsWorkoutCompletedQuery,
@@ -92,21 +97,12 @@ export default function HomePage() {
     }
   };
 
-  // Show loading for authenticated users who are actually loading
-  if (userId && isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  // If user hasn't completed onboarding, redirect to onboarding
-  if (userData && !userData.profile?.completedOnboarding) {
-    router.push("/onboarding");
-    return <LoadingSpinner message="Redirecting to onboarding..." />;
-  }
-
-  // Don't render if userData is null
-  if (!userData) {
-    return <LoadingSpinner />;
-  }
+  // Check if user needs onboarding
+  useEffect(() => {
+    if (userData && !userData.profile?.completedOnboarding) {
+      router.push("/onboarding");
+    }
+  }, [userData, router]);
 
   const totalWeeks =
     userData?.generatedProfile?.recommendedPlan?.totalWeeks || 12;
@@ -118,6 +114,7 @@ export default function HomePage() {
         : currentWeek === parseInt(phase.weeks);
     });
 
+  // Show page structure immediately, use skeletons for loading content
   return (
     <ChatDrawer
       userData={userData}
@@ -128,19 +125,30 @@ export default function HomePage() {
       <div className="min-h-screen bg-white">
         <div className="space-y-6 py-6 pb-24">
           {/* Today's Workout or Rest Day */}
-          <WorkoutCard
-            todaysWorkout={todaysWorkout || null}
-            isWorkoutDone={isWorkoutDone}
-            isFirebaseReady={isFirebaseReady}
-            onWorkoutComplete={handleWorkoutCompletion}
-          />
+          {isLoading ? (
+            <WorkoutCardSkeleton />
+          ) : (
+            <WorkoutCard
+              todaysWorkout={todaysWorkout || null}
+              isWorkoutDone={isWorkoutDone}
+              isFirebaseReady={isFirebaseReady}
+              onWorkoutComplete={handleWorkoutCompletion}
+            />
+          )}
+
+          {/* Tomorrow's Workout Preview */}
+          <TomorrowWorkoutCard />
 
           {/* Progress Overview */}
-          <ProgressOverview
-            currentWeek={currentWeek}
-            totalWeeks={totalWeeks}
-            currentPhase={currentPhase}
-          />
+          {isLoading ? (
+            <ProgressOverviewSkeleton />
+          ) : (
+            <ProgressOverview
+              currentWeek={currentWeek}
+              totalWeeks={totalWeeks}
+              currentPhase={currentPhase}
+            />
+          )}
 
           {/* Quick Actions */}
           <QuickActions currentPhase={currentPhase} />

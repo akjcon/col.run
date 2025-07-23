@@ -17,6 +17,7 @@ import {
   useSaveTrainingBackgroundMutation,
   useUpdateUserProfileMutation,
 } from "@/lib/store/api";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function OnboardingPage() {
   const { user } = useClerkUser();
@@ -106,11 +107,7 @@ export default function OnboardingPage() {
   };
 
   if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

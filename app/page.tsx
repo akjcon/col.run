@@ -6,6 +6,7 @@ import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
 import Link from "next/link";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function Home() {
   const { isSignedIn, isLoaded } = useUser();
@@ -20,30 +21,12 @@ export default function Home() {
   }, [isLoaded, isSignedIn, router]);
 
   if (!isLoaded) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-6 w-6 animate-spin rounded-full border-2 border-neutral-900 border-t-transparent"></div>
-          <p className="text-sm text-neutral-600">
-            Loading...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (isSignedIn) {
     // Will redirect via useEffect, but show loading state
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-6 w-6 animate-spin rounded-full border-2 border-neutral-900 border-t-transparent"></div>
-          <p className="text-sm text-neutral-600">
-            Redirecting to your dashboard...
-          </p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -70,23 +53,18 @@ export default function Home() {
                   noun
                 </div>
                 <div className="mb-2 font-serif text-sm leading-relaxed text-neutral-900">
-                  <span className="text-lg font-light">
-                    1.
-                  </span>{" "}
-                  A mountain pass between peaks.
+                  <span className="text-lg font-light">1.</span> A mountain pass
+                  between peaks.
                 </div>
                 <div className="mb-4 font-serif text-sm leading-relaxed text-neutral-900">
-                  <span className="text-lg font-light">
-                    2.
-                  </span>{" "}
-                  A structured training methodology that
-                  guides athletes through progressive
-                  phases, building from base fitness to peak
-                  mountain performance.
+                  <span className="text-lg font-light">2.</span> A structured
+                  training methodology that guides athletes through progressive
+                  phases, building from base fitness to peak mountain
+                  performance.
                 </div>
                 <div className="mb-6 font-serif text-xs italic text-neutral-400">
-                  &ldquo;Every great ascent begins with
-                  understanding the col ahead.&rdquo;
+                  &ldquo;Every great ascent begins with understanding the col
+                  ahead.&rdquo;
                 </div>
               </div>
 
@@ -96,23 +74,18 @@ export default function Home() {
                   noun
                 </div>
                 <div className="mb-4 font-serif text-base leading-relaxed text-neutral-900">
-                  <span className="text-xl font-light lg:text-2xl">
-                    1.
-                  </span>{" "}
-                  A mountain pass or saddle between peaks.
+                  <span className="text-xl font-light lg:text-2xl">1.</span> A
+                  mountain pass or saddle between peaks.
                 </div>
                 <div className="mb-8 font-serif text-base leading-relaxed text-neutral-900">
-                  <span className="text-xl font-light lg:text-2xl">
-                    2.
-                  </span>{" "}
-                  A structured training methodology that
-                  guides athletes through progressive
-                  phases, elevating performance from base
-                  fitness to peak condition.
+                  <span className="text-xl font-light lg:text-2xl">2.</span> A
+                  structured training methodology that guides athletes through
+                  progressive phases, elevating performance from base fitness to
+                  peak condition.
                 </div>
                 <div className="border-l-2 border-neutral-200 pl-4 font-serif text-sm italic text-neutral-500">
-                  &ldquo;Every great ascent begins with
-                  understanding the col ahead.&rdquo;
+                  &ldquo;Every great ascent begins with understanding the col
+                  ahead.&rdquo;
                 </div>
               </div>
             </div>
@@ -121,8 +94,7 @@ export default function Home() {
             <div className="lg:col-span-8">
               <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-6 lg:p-12">
                 <h2 className="mb-3 font-serif text-xl font-light leading-tight tracking-tight text-neutral-900 sm:mb-4 sm:text-2xl md:text-3xl lg:mb-8 lg:text-4xl xl:text-5xl">
-                  Personalized trail running plans for every
-                  level
+                  Personalized trail running plans for every level
                 </h2>
 
                 {/* Mobile: Moderately simplified description */}
@@ -132,9 +104,8 @@ export default function Home() {
                     <em className="font-medium">
                       Training for the Uphill Athlete
                     </em>
-                    . Get structured plans that adapt to
-                    your experience and mountain running
-                    goals.
+                    . Get structured plans that adapt to your experience and
+                    mountain running goals.
                   </p>
                 </div>
 
@@ -145,9 +116,8 @@ export default function Home() {
                     <em className="font-medium">
                       Training for the Uphill Athlete
                     </em>
-                    . Get a structured plan that adapts to
-                    your experience, goals, and current
-                    fitness level.
+                    . Get a structured plan that adapts to your experience,
+                    goals, and current fitness level.
                   </p>
                 </div>
 
