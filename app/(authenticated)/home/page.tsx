@@ -134,9 +134,9 @@ export default function HomePage() {
       <div className="min-h-screen bg-white">
         <div className="space-y-6 pt-2 pb-24">
           {/* Top row with 3-column grid on desktop */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {/* Today's Workout - spans 2 columns on desktop */}
-            <div className="lg:col-span-2">
+            <div className="">
               {isLoadingWorkoutCard ? (
                 <WorkoutCardSkeleton />
               ) : (
@@ -150,7 +150,7 @@ export default function HomePage() {
             </div>
 
             {/* Tomorrow's Workout - spans 1 column on desktop */}
-            <div className="lg:col-span-1">
+            <div className="mx-4">
               <TomorrowWorkoutCard />
             </div>
           </div>

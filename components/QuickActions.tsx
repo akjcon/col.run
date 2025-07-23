@@ -41,7 +41,7 @@ export function QuickActions({ currentPhase }: QuickActionsProps) {
     <div className="mx-4 grid grid-cols-2 gap-4">
       {quickActions.slice(0, 2).map((action, index) => (
         <Link key={index} href={action.href}>
-          <div className="group rounded-2xl min-h-[162px] border border-neutral-200 bg-white p-6 transition-colors hover:bg-neutral-50">
+          <div className="group rounded-2xl min-h-[162px] md:min-h-0 border border-neutral-200 bg-white p-6 transition-colors hover:bg-neutral-50">
             <div className="mb-3 flex items-center gap-4">
               <action.icon className="h-6 w-6 text-neutral-600" />
               <ArrowRight className="h-4 w-4 text-neutral-400 transition-colors group-hover:text-neutral-600" />
