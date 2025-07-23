@@ -1,7 +1,6 @@
 "use client";
 
 import { Drawer } from "vaul";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserData } from "@/lib/types";
 import { Send } from "lucide-react";
@@ -114,12 +113,9 @@ const ChatInterface = forwardRef<
   }, [quickQuestion]);
 
   return (
-    <div
-      ref={ref}
-      className={cn("mx-auto flex h-full max-w-2xl flex-col", className)}
-    >
+    <div ref={ref} className={cn("flex h-full flex-col", className)}>
       {/* Messages */}
-      <div className="flex-1 space-y-4 overflow-y-auto bg-white p-4">
+      <div className="flex-1 space-y-3 overflow-y-auto bg-white px-4 py-3">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -128,19 +124,21 @@ const ChatInterface = forwardRef<
             }`}
           >
             <div
-              className={`max-w-[75%] rounded-lg p-3 ${
+              className={`max-w-[85%] rounded-lg p-3 ${
                 message.role === "user"
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-900"
+                  ? "bg-neutral-900 text-white"
+                  : "bg-neutral-100 text-neutral-900"
               }`}
             >
-              <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                {message.content}
+              </p>
             </div>
           </div>
         ))}
         {isChatLoading && (
           <div className="flex justify-start">
-            <div className="rounded-lg bg-gray-100 p-3">
+            <div className="rounded-lg bg-neutral-100 p-3">
               <LoadingSpinner variant="inline" size="sm" />
             </div>
           </div>
@@ -149,55 +147,53 @@ const ChatInterface = forwardRef<
       </div>
 
       {/* Quick Questions */}
-      <Card className="mx-4 border-x-0 border-b-0 rounded-none shadow-none">
-        <CardContent className="p-2">
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            <button
-              onClick={() =>
-                setQuickQuestion("What should I focus on for today's workout?")
-              }
-              className="flex-shrink-0 whitespace-nowrap rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs text-gray-800 transition-colors hover:bg-gray-200"
-            >
-              Today&apos;s Focus
-            </button>
-            <button
-              onClick={() =>
-                setQuickQuestion(
-                  "How should I adjust my pace if I'm feeling tired today?"
-                )
-              }
-              className="flex-shrink-0 whitespace-nowrap rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs text-gray-800 transition-colors hover:bg-gray-200"
-            >
-              Pace Adjustment
-            </button>
-            <button
-              onClick={() =>
-                setQuickQuestion(
-                  "What's the best way to recover after today's workout?"
-                )
-              }
-              className="flex-shrink-0 whitespace-nowrap rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs text-gray-800 transition-colors hover:bg-gray-200"
-            >
-              Recovery Tips
-            </button>
-            <button
-              onClick={() =>
-                setQuickQuestion(
-                  userData?.trainingBackground?.goals.raceDistance
-                    ? `What's the race strategy for my ${userData.trainingBackground.goals.raceDistance} based on my training?`
-                    : "What's the race strategy based on my training?"
-                )
-              }
-              className="flex-shrink-0 whitespace-nowrap rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-xs text-gray-800 transition-colors hover:bg-gray-200"
-            >
-              Race Strategy
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="border-t border-neutral-200 bg-white">
+        <div className="flex gap-2 overflow-x-auto p-3 pb-2">
+          <button
+            onClick={() =>
+              setQuickQuestion("What should I focus on for today's workout?")
+            }
+            className="flex-shrink-0 whitespace-nowrap rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100"
+          >
+            Today&apos;s Focus
+          </button>
+          <button
+            onClick={() =>
+              setQuickQuestion(
+                "How should I adjust my pace if I'm feeling tired today?"
+              )
+            }
+            className="flex-shrink-0 whitespace-nowrap rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100"
+          >
+            Pace Adjustment
+          </button>
+          <button
+            onClick={() =>
+              setQuickQuestion(
+                "What's the best way to recover after today's workout?"
+              )
+            }
+            className="flex-shrink-0 whitespace-nowrap rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100"
+          >
+            Recovery Tips
+          </button>
+          <button
+            onClick={() =>
+              setQuickQuestion(
+                userData?.trainingBackground?.goals.raceDistance
+                  ? `What's the race strategy for my ${userData.trainingBackground.goals.raceDistance} based on my training?`
+                  : "What's the race strategy based on my training?"
+              )
+            }
+            className="flex-shrink-0 whitespace-nowrap rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100"
+          >
+            Race Strategy
+          </button>
+        </div>
+      </div>
 
       {/* Input */}
-      <div className="border-t border-gray-200 bg-white p-3">
+      <div className="border-t border-neutral-200 bg-white p-3">
         <div className="relative">
           <textarea
             ref={inputRef}
@@ -205,9 +201,9 @@ const ChatInterface = forwardRef<
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Ask about your training..."
-            className="min-h-[100px] w-full resize-none rounded-lg border border-gray-200 p-2 pr-12 text-base focus:border-gray-300 focus:outline-none focus:ring-0"
+            className="w-full resize-none rounded-lg border border-neutral-200 p-3 pr-12 text-sm focus:border-neutral-300 focus:outline-none focus:ring-0"
             disabled={isChatLoading}
-            rows={2}
+            rows={3}
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -216,17 +212,17 @@ const ChatInterface = forwardRef<
           <Button
             onClick={sendMessage}
             disabled={!chatInput.trim() || isChatLoading}
-            className="absolute bottom-[18px] right-3 h-9 w-9 rounded-lg bg-gray-600 p-4 text-white hover:bg-gray-800"
+            className="absolute bottom-3 right-2 h-8 w-8 rounded-lg bg-neutral-900 p-0 text-white hover:bg-neutral-800"
             size="sm"
           >
             {isChatLoading ? (
               <LoadingSpinner variant="button" size="sm" />
             ) : (
-              <Send className="h-3 w-3" />
+              <Send className="h-3.5 w-3.5" />
             )}
           </Button>
         </div>
-        <p className="mt-1 text-xs text-gray-500">Press Enter to send</p>
+        <p className="mt-1.5 text-xs text-neutral-500">Press Enter to send</p>
       </div>
     </div>
   );
@@ -246,18 +242,18 @@ export default function ChatDrawer({
       {children}
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 mt-24 flex h-[90vh] flex-col rounded-t-[10px] border-t border-gray-200 bg-white">
+        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 mt-24 flex h-[85vh] flex-col rounded-t-[10px] border-t border-neutral-200 bg-white">
           {/* Handle Bar */}
           <div className="flex justify-center p-2">
-            <div className="h-1 w-12 rounded-full bg-gray-300" />
+            <div className="h-1 w-12 rounded-full bg-neutral-300" />
           </div>
 
           {/* Header */}
-          <div className="border-b border-gray-200 px-4 pb-2">
-            <h2 className="text-sm font-medium text-gray-900">
+          <div className="border-b border-neutral-200 px-4 pb-3">
+            <h2 className="text-base font-medium text-neutral-900">
               Training Assistant
             </h2>
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-neutral-600">
               Ask about your training plan, workouts, or general advice
             </p>
           </div>

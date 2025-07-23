@@ -22,7 +22,7 @@ export function MobileNav() {
 
   return (
     <>
-      <nav className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white backdrop-blur">
+      <nav className="fixed top-0 left-0 right-0 z-40 w-full border-b border-neutral-200 bg-white backdrop-blur">
         <div className="container mx-auto flex h-14 items-center px-4">
           {/* Mobile hamburger menu */}
           <button

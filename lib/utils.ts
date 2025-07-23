@@ -8,10 +8,10 @@ export function cn(...inputs: ClassValue[]) {
 // Workout zone utilities
 export function getZoneColor(zone: string): string {
   if (zone.includes("1") || zone === "Recovery") return "bg-neutral-400";
-  if (zone.includes("2")) return "bg-neutral-500";
-  if (zone.includes("3")) return "bg-neutral-600";
-  if (zone.includes("4")) return "bg-neutral-700";
-  if (zone.includes("5")) return "bg-neutral-900";
+  if (zone.includes("2")) return "bg-green-500";
+  if (zone.includes("3")) return "bg-blue-500";
+  if (zone.includes("4")) return "bg-orange-500";
+  if (zone.includes("5")) return "bg-red-500";
   return "bg-neutral-500";
 }
 

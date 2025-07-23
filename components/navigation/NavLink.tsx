@@ -102,7 +102,11 @@ export function NavLink({
   );
 
   return (
-    <Tooltip content={isExpanded ? undefined : item.label} side="right">
+    <Tooltip
+      content={isExpanded ? undefined : item.label}
+      side="right"
+      align="center"
+    >
       {item.modal ? (
         <button onClick={handleClick} className={className}>
           {content}

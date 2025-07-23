@@ -58,16 +58,18 @@ export default function HomePage() {
   const todaysWorkout = getTodaysWorkout(weeksWithDates);
 
   // Check if today's workout is already completed using RTK Query
-  const { data: isCompleted } = useIsWorkoutCompletedQuery(
-    {
-      userId: clerkUserId || "",
-      workoutDay: todaysWorkout?.day || "",
-      weekNumber: currentWeek,
-    },
-    {
-      skip: !isFirebaseReady || !clerkUserId || !todaysWorkout || !currentWeek,
-    }
-  );
+  const { data: isCompleted, isLoading: isCheckingCompletion } =
+    useIsWorkoutCompletedQuery(
+      {
+        userId: clerkUserId || "",
+        workoutDay: todaysWorkout?.day || "",
+        weekNumber: currentWeek,
+      },
+      {
+        skip:
+          !isFirebaseReady || !clerkUserId || !todaysWorkout || !currentWeek,
+      }
+    );
 
   useEffect(() => {
     setIsWorkoutDone(isCompleted || false);
@@ -114,6 +116,13 @@ export default function HomePage() {
         : currentWeek === parseInt(phase.weeks);
     });
 
+  // Check if we're still loading either user data or workout completion status
+  // We need to show skeleton until we know if today is actually a rest day
+  const hasFinishedLoadingPlan =
+    !isLoading && userData?.generatedProfile?.recommendedPlan;
+  const isLoadingWorkoutCard =
+    !hasFinishedLoadingPlan || (todaysWorkout && isCheckingCompletion);
+
   // Show page structure immediately, use skeletons for loading content
   return (
     <ChatDrawer
@@ -123,21 +132,28 @@ export default function HomePage() {
       onOpenChange={setIsChatOpen}
     >
       <div className="min-h-screen bg-white">
-        <div className="space-y-6 py-6 pb-24">
-          {/* Today's Workout or Rest Day */}
-          {isLoading ? (
-            <WorkoutCardSkeleton />
-          ) : (
-            <WorkoutCard
-              todaysWorkout={todaysWorkout || null}
-              isWorkoutDone={isWorkoutDone}
-              isFirebaseReady={isFirebaseReady}
-              onWorkoutComplete={handleWorkoutCompletion}
-            />
-          )}
+        <div className="space-y-6 pt-2 pb-24">
+          {/* Top row with 3-column grid on desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Today's Workout - spans 2 columns on desktop */}
+            <div className="lg:col-span-2">
+              {isLoadingWorkoutCard ? (
+                <WorkoutCardSkeleton />
+              ) : (
+                <WorkoutCard
+                  todaysWorkout={todaysWorkout || null}
+                  isWorkoutDone={isWorkoutDone}
+                  isFirebaseReady={isFirebaseReady}
+                  onWorkoutComplete={handleWorkoutCompletion}
+                />
+              )}
+            </div>
 
-          {/* Tomorrow's Workout Preview */}
-          <TomorrowWorkoutCard />
+            {/* Tomorrow's Workout - spans 1 column on desktop */}
+            <div className="lg:col-span-1">
+              <TomorrowWorkoutCard />
+            </div>
+          </div>
 
           {/* Progress Overview */}
           {isLoading ? (

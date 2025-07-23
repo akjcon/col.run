@@ -55,7 +55,8 @@ export function useMutationForm<TArgs, TResult>(
           err instanceof Error
             ? err.message
             : typeof err === "object" && err !== null && "data" in err
-              ? (err as any).data?.message || "An error occurred"
+              ? (err as { data: { message: string } }).data?.message ||
+                "An error occurred"
               : "An error occurred";
         setFormError(errorMessage);
         throw err;

@@ -4,13 +4,15 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 // Workout Card Skeleton
 export function WorkoutCardSkeleton() {
   return (
-    <div className="mx-4 rounded-xl border border-neutral-200 bg-white shadow-sm">
+    <div className="mx-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
       <div className="p-6">
         <Skeleton className="h-4 w-24 mb-2" />
         <Skeleton className="h-8 w-48 mb-4" />
+        <Skeleton className="h-24 w-1/2 mb-4" />
         <div className="space-y-2">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-6 w-3/5" />
         </div>
       </div>
     </div>

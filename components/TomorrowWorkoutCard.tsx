@@ -1,4 +1,4 @@
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { getZoneColor, getZoneText, extractWorkoutMetrics } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useGetTomorrowsWorkoutQuery } from "@/lib/store/api/trainingApi";
@@ -13,7 +13,7 @@ export function TomorrowWorkoutCard() {
 
   if (isLoading) {
     return (
-      <div className="mx-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="mx-4 md:mx-0 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
         <Skeleton className="h-16 w-full" />
       </div>
     );
@@ -28,7 +28,7 @@ export function TomorrowWorkoutCard() {
   if (!tomorrowsWorkout) {
     // Rest Day Design - Compact Version
     return (
-      <div className="mx-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="mx-4 md:mx-0 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100">
@@ -54,7 +54,7 @@ export function TomorrowWorkoutCard() {
   const metrics = extractWorkoutMetrics(tomorrowsWorkout);
 
   return (
-    <div className="mx-4 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
+    <div className="mx-4 md:mx-0 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
       <div className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -119,11 +119,6 @@ export function TomorrowWorkoutCard() {
                 {tomorrowsWorkout.description}
               </p>
             )}
-          </div>
-
-          {/* Arrow Icon */}
-          <div className="ml-4 mt-1 flex-shrink-0">
-            <ArrowRight className="h-4 w-4 text-neutral-400" />
           </div>
         </div>
       </div>
