@@ -132,11 +132,11 @@ export default function HomePage() {
       onOpenChange={setIsChatOpen}
     >
       <div className="min-h-screen bg-white">
-        <div className="space-y-6 pt-2 pb-24">
+        <div className="pt-2 pb-24">
           {/* Top row with 3-column grid on desktop */}
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1">
             {/* Today's Workout - spans 2 columns on desktop */}
-            <div className="">
+            <div className="z-20">
               {isLoadingWorkoutCard ? (
                 <WorkoutCardSkeleton />
               ) : (
@@ -156,24 +156,32 @@ export default function HomePage() {
           </div>
 
           {/* Progress Overview */}
-          {isLoading ? (
-            <ProgressOverviewSkeleton />
-          ) : (
-            <ProgressOverview
-              currentWeek={currentWeek}
-              totalWeeks={totalWeeks}
-              currentPhase={currentPhase}
-            />
-          )}
+          <div className="mt-4 mx-2">
+            {isLoading ? (
+              <ProgressOverviewSkeleton />
+            ) : (
+              <ProgressOverview
+                currentWeek={currentWeek}
+                totalWeeks={totalWeeks}
+                currentPhase={currentPhase}
+              />
+            )}
+          </div>
+
+          <hr className="my-6 mx-6" />
 
           {/* Quick Actions */}
-          <QuickActions currentPhase={currentPhase} />
+          <div className="mt-6">
+            <QuickActions currentPhase={currentPhase} />
+          </div>
 
           {/* Race Countdown */}
           {userData?.trainingBackground?.goals.raceDate && (
-            <RaceCountdown
-              raceDate={userData.trainingBackground.goals.raceDate}
-            />
+            <div className="mt-6">
+              <RaceCountdown
+                raceDate={userData.trainingBackground.goals.raceDate}
+              />
+            </div>
           )}
         </div>
 

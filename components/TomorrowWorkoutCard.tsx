@@ -1,6 +1,5 @@
 import { Calendar } from "lucide-react";
 import { getZoneColor, getZoneText, extractWorkoutMetrics } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 import { useGetTomorrowsWorkoutQuery } from "@/lib/store/api/trainingApi";
 import { useUser } from "@/lib/user-context-rtk";
 import { Skeleton } from "@/components/ui/loading-spinner";
@@ -26,39 +25,18 @@ export function TomorrowWorkoutCard() {
   const { workout: tomorrowsWorkout } = data;
 
   if (!tomorrowsWorkout) {
-    // Rest Day Design - Compact Version
-    return (
-      <div className="mx-4 md:mx-0 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100">
-              <Calendar className="h-4 w-4 text-neutral-600" />
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
-                Tomorrow
-              </p>
-              <h3 className="font-serif text-lg font-light text-neutral-900">
-                Rest Day
-              </h3>
-            </div>
-          </div>
-          <p className="text-xs font-medium uppercase tracking-wider text-neutral-400">
-            Recovery
-          </p>
-        </div>
-      </div>
-    );
+    console.log("No workout for tomorrow");
+    return null;
   }
 
   const metrics = extractWorkoutMetrics(tomorrowsWorkout);
 
   return (
-    <div className="mx-4 md:mx-0 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
+    <div className="md:mx-0 mx-2 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
       <div className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="mb-2 flex items-center gap-2">
+            <div className="mb-3 flex items-center gap-2">
               <Calendar className="h-3.5 w-3.5 text-neutral-500" />
               <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
                 Tomorrow
@@ -73,10 +51,10 @@ export function TomorrowWorkoutCard() {
             {tomorrowsWorkout.zone && (
               <div className="mb-3 flex items-center gap-2">
                 <div
-                  className={cn(
-                    "h-2 w-2 rounded-full",
-                    getZoneColor(tomorrowsWorkout.zone)
-                  )}
+                  className="h-2 w-2 rounded-full"
+                  style={{
+                    backgroundColor: getZoneColor(tomorrowsWorkout.zone),
+                  }}
                 ></div>
                 <span className="text-xs font-medium uppercase tracking-wider text-neutral-700">
                   {getZoneText(tomorrowsWorkout.zone)}

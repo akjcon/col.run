@@ -6,13 +6,14 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Workout zone utilities
+// Returns color values that match our brand guidelines
 export function getZoneColor(zone: string): string {
-  if (zone.includes("1") || zone === "Recovery") return "bg-neutral-400";
-  if (zone.includes("2")) return "bg-green-500";
-  if (zone.includes("3")) return "bg-blue-500";
-  if (zone.includes("4")) return "bg-orange-500";
-  if (zone.includes("5")) return "bg-red-500";
-  return "bg-neutral-500";
+  if (zone.includes("1") || zone === "Recovery") return "#A3A3A3"; // neutral-400
+  if (zone.includes("2")) return "#737373"; // neutral-500
+  if (zone.includes("3")) return "#525252"; // neutral-600
+  if (zone.includes("4")) return "#404040"; // neutral-700
+  if (zone.includes("5")) return "#171717"; // neutral-900
+  return "#737373"; // neutral-500
 }
 
 export function getZoneText(zone: string): string {

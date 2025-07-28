@@ -40,24 +40,11 @@ export function WorkoutCard({
 
   if (!todaysWorkout) {
     // Rest Day Design
-    return (
-      <div className="mx-4 rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm">
-        <div className="py-12 text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-neutral-100">
-            <Calendar className="h-8 w-8 text-neutral-600" />
-          </div>
-          <h2 className="mb-3 font-serif text-3xl font-light tracking-tight text-neutral-900">
-            Rest Day
-          </h2>
-          <p className="text-sm font-medium uppercase tracking-wider text-neutral-600">
-            Recovery & Preparation
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const metrics = extractWorkoutMetrics(todaysWorkout);
+  const zoneColor = getZoneColor(todaysWorkout.zone);
 
   return (
     <div className="mx-4 md:mr-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
@@ -90,10 +77,8 @@ export function WorkoutCard({
         {todaysWorkout.zone && (
           <div className="mb-2 flex items-center gap-3">
             <div
-              className={cn(
-                "h-3 w-3 rounded-full",
-                getZoneColor(todaysWorkout.zone)
-              )}
+              className="h-3 w-3 rounded-full"
+              style={{ backgroundColor: zoneColor }}
             ></div>
             <span className="text-sm font-medium uppercase tracking-wider text-neutral-900">
               {getZoneText(todaysWorkout.zone)}
@@ -203,7 +188,7 @@ export function WorkoutCard({
                 workoutType={todaysWorkout.type}
                 trigger={
                   <Button
-                    className="mt-4 w-full rounded-xl border-0 bg-neutral-900 py-4 text-sm font-medium uppercase tracking-wider text-white transition-all duration-200 hover:bg-neutral-800"
+                    className=" w-full rounded-xl border-0 bg-neutral-900 py-4 text-sm font-medium uppercase tracking-wider text-white transition-all duration-200 hover:bg-neutral-800"
                     disabled={!isFirebaseReady}
                   >
                     {isFirebaseReady ? "Mark Complete" : "Loading..."}

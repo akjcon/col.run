@@ -15,8 +15,8 @@ export function ProgressOverview({
   currentPhase,
 }: ProgressOverviewProps) {
   return (
-    <div className="mx-4 grid grid-cols-2 gap-4">
-      <div className="rounded-2xl border border-neutral-200 bg-white p-6">
+    <div className="mx-4 grid grid-cols-2 gap-6">
+      <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-6 shadow-sm">
         <div className="mb-4 flex items-center gap-3">
           <Calendar className="h-5 w-5 text-neutral-600" />
           <span className="text-xs font-medium uppercase tracking-wider text-neutral-600">
@@ -37,7 +37,7 @@ export function ProgressOverview({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-neutral-200 bg-white p-6">
+      <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-6 shadow-sm">
         <div className="mb-4 flex items-center gap-3">
           <TrendingUp className="h-5 w-5 text-neutral-600" />
           <span className="text-xs font-medium uppercase tracking-wider text-neutral-600">
