@@ -9,10 +9,6 @@ import { QuickActions } from "@/components/QuickActions";
 import { RaceCountdown } from "@/components/RaceCountdown";
 
 import {
-  WorkoutCardSkeleton,
-  ProgressOverviewSkeleton,
-} from "@/components/ui/skeleton-loaders";
-import {
   useSaveWorkoutCompletionMutation,
   useIsWorkoutCompletedQuery,
 } from "@/lib/store/api";
@@ -137,16 +133,13 @@ export default function HomePage() {
           <div className="grid grid-cols-1">
             {/* Today's Workout - spans 2 columns on desktop */}
             <div className="z-20">
-              {isLoadingWorkoutCard ? (
-                <WorkoutCardSkeleton />
-              ) : (
-                <WorkoutCard
-                  todaysWorkout={todaysWorkout || null}
-                  isWorkoutDone={isWorkoutDone}
-                  isFirebaseReady={isFirebaseReady}
-                  onWorkoutComplete={handleWorkoutCompletion}
-                />
-              )}
+              <WorkoutCard
+                todaysWorkout={todaysWorkout || null}
+                isWorkoutDone={isWorkoutDone}
+                isFirebaseReady={isFirebaseReady}
+                onWorkoutComplete={handleWorkoutCompletion}
+                isLoading={isLoadingWorkoutCard}
+              />
             </div>
 
             {/* Tomorrow's Workout - spans 1 column on desktop */}
@@ -157,15 +150,12 @@ export default function HomePage() {
 
           {/* Progress Overview */}
           <div className="mt-4 mx-2">
-            {isLoading ? (
-              <ProgressOverviewSkeleton />
-            ) : (
-              <ProgressOverview
-                currentWeek={currentWeek}
-                totalWeeks={totalWeeks}
-                currentPhase={currentPhase}
-              />
-            )}
+            <ProgressOverview
+              currentWeek={currentWeek}
+              totalWeeks={totalWeeks}
+              currentPhase={currentPhase}
+              isLoading={isLoading}
+            />
           </div>
 
           <hr className="my-6 mx-6" />

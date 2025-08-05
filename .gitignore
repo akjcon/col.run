@@ -42,3 +42,11 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# training plan backups
+/backups/
+
+# temporary files
+partial-weeks-example.json
+debug-response-*.txt
+weeks-*.json

@@ -1,4 +1,5 @@
 import { Calendar, TrendingUp } from "lucide-react";
+import { Skeleton } from "@/components/ui/loading-spinner";
 
 interface ProgressOverviewProps {
   currentWeek: number;
@@ -7,13 +8,33 @@ interface ProgressOverviewProps {
     phase: string;
     weeks: string;
   };
+  isLoading?: boolean;
 }
 
 export function ProgressOverview({
   currentWeek,
   totalWeeks,
   currentPhase,
+  isLoading = false,
 }: ProgressOverviewProps) {
+  // Show skeleton when loading
+  if (isLoading) {
+    return (
+      <div className="mx-4 grid grid-cols-2 gap-6">
+        <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-6 shadow-sm">
+          <Skeleton className="h-6 w-32 mb-4" />
+          <Skeleton className="h-8 w-full mb-2" />
+          <Skeleton className="h-2 w-full rounded-full" />
+        </div>
+        <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-6 shadow-sm">
+          <Skeleton className="h-6 w-32 mb-4" />
+          <Skeleton className="h-6 w-full mb-2" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-4 grid grid-cols-2 gap-6">
       <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-6 shadow-sm">

@@ -13,12 +13,14 @@ import { cn } from "@/lib/utils";
 import type { Workout } from "@/lib/types";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Skeleton } from "@/components/ui/loading-spinner";
 
 interface WorkoutCardProps {
   todaysWorkout: Workout | null;
   isWorkoutDone: boolean;
   isFirebaseReady: boolean;
   onWorkoutComplete: (rating: number, notes?: string) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export function WorkoutCard({
@@ -26,6 +28,7 @@ export function WorkoutCard({
   isWorkoutDone,
   isFirebaseReady,
   onWorkoutComplete,
+  isLoading = false,
 }: WorkoutCardProps) {
   const [showDetails, setShowDetails] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -37,6 +40,24 @@ export function WorkoutCard({
       setContentHeight(height);
     }
   }, [todaysWorkout, isWorkoutDone]);
+
+  // Show skeleton when loading
+  if (isLoading) {
+    return (
+      <div className="mx-4 md:mr-0 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <div className="p-6">
+          <Skeleton className="h-4 w-24 mb-2" />
+          <Skeleton className="h-8 w-48 mb-4" />
+          <Skeleton className="h-24 w-1/2 mb-4" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-full" />
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-6 w-3/5" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!todaysWorkout) {
     // Rest Day Design

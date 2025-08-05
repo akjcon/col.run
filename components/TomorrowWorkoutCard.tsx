@@ -12,8 +12,15 @@ export function TomorrowWorkoutCard() {
 
   if (isLoading) {
     return (
-      <div className="mx-4 md:mx-0 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-        <Skeleton className="h-16 w-full" />
+      <div className="md:mx-0 mx-2 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
+        <div className="p-4">
+          <div className="flex flex-col items-start justify-between gap-2">
+            <Skeleton className="h-4 w-1/3 mb-1" />
+            <Skeleton className="h-6 w-2/3" />
+            <Skeleton className="h-4 w-5/6 mb-1" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+        </div>
       </div>
     );
   }

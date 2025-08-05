@@ -1,0 +1,359 @@
+[
+  {
+    "weekNumber": 6,
+    "phase": "Intensity Introduction",
+    "targetMiles": "50-55",
+    "targetVertical": "10,000-12,000 ft",
+    "workouts": [
+      {
+        "day": "Monday",
+        "type": "Rest/Active Recovery",
+        "zone": "Recovery",
+        "description": "Complete rest or 30 min easy walk",
+        "notes": "Recovery from previous week's intensity",
+        "details": [
+          "Focus on quality sleep",
+          "Light stretching if desired"
+        ]
+      },
+      {
+        "day": "Tuesday",
+        "type": "Zone 3 Threshold + Strength",
+        "zone": "Zone 3",
+        "description": "9-11 miles with 3×12 min Z3 intervals",
+        "details": [
+          "Vertical: 1,800-2,200 ft",
+          "Warm-up: 15 min Z1-Z2",
+          "Main: 3×12 min Z3 (140-165 HR, 3 min Z1 recovery)",
+          "Cool-down: 10 min Z1",
+          "PM: Stage 3 Strength Program"
+        ],
+        "notes": "Build on last week's threshold work - slightly longer intervals"
+      },
+      {
+        "day": "Wednesday",
+        "type": "Zone 2 Sustained",
+        "zone": "Zone 2",
+        "description": "80-90 minutes sustained effort",
+        "details": [
+          "Zone: Z2 (130-140 HR)",
+          "Vertical: 2,200-2,600 ft"
+        ],
+        "notes": "Focus on steady effort and good form"
+      },
+      {
+        "day": "Thursday",
+        "type": "Recovery + Hill Sprints",
+        "zone": "Zone 1/5",
+        "description": "6 miles recovery run + hill sprints",
+        "details": [
+          "AM: Zone 1 recovery run (<130 HR), 800 ft vertical",
+          "PM: 8×8 sec maximum effort uphill (180+ HR, 3 min recovery)",
+          "Core: 8 exercises × max reps"
+        ],
+        "notes": "Keep sprints powerful but controlled"
+      },
+      {
+        "day": "Friday",
+        "type": "Easy Run",
+        "zone": "Zone 1",
+        "description": "7-8 miles easy pace",
+        "details": [
+          "Vertical: 1,200 ft"
+        ],
+        "notes": "Stay relaxed, prepare for weekend volume"
+      },
+      {
+        "day": "Saturday",
+        "type": "Long Run with Tempo",
+        "zone": "Zone 1-3",
+        "description": "13-15 miles with 25 min Z3 section",
+        "details": [
+          "Vertical: 3,200-3,600 ft",
+          "Build-up: 60 min Z1-Z2",
+          "Tempo: 25 min Z3 (140-165 HR)",
+          "Cool-down: remainder Z1"
+        ],
+        "notes": "Practice race effort within long run context"
+      },
+      {
+        "day": "Sunday",
+        "type": "Long Run Recovery",
+        "zone": "Zone 1",
+        "description": "10-12 miles recovery pace",
+        "details": [
+          "Vertical: 2,500 ft",
+          "Full aerobic pace"
+        ],
+        "notes": "Build aerobic capacity on tired legs"
+      }
+    ]
+  },
+  {
+    "weekNumber": 7,
+    "phase": "Intensity Introduction",
+    "targetMiles": "52-57",
+    "targetVertical": "11,000-13,000 ft",
+    "workouts": [
+      {
+        "day": "Monday",
+        "type": "Rest/Active Recovery",
+        "zone": "Recovery",
+        "description": "Complete rest or light cross-training",
+        "notes": "Focus on recovery after big weekend",
+        "details": [
+          "Optional 30 min easy swim or bike"
+        ]
+      },
+      {
+        "day": "Tuesday",
+        "type": "Zone 3 Threshold + Strength",
+        "zone": "Zone 3",
+        "description": "10-12 miles with 3×15 min Z3 intervals",
+        "details": [
+          "Vertical: 2,000-2,400 ft",
+          "Warm-up: 15 min Z1-Z2",
+          "Main: 3×15 min Z3 (140-165 HR, 3 min Z1 recovery)",
+          "Cool-down: 10 min Z1",
+          "PM: Stage 3 Strength Program"
+        ],
+        "notes": "Progress threshold duration from last week"
+      },
+      {
+        "day": "Wednesday",
+        "type": "Zone 2 Sustained",
+        "zone": "Zone 2",
+        "description": "90-100 minutes sustained effort",
+        "details": [
+          "Zone: Z2 (130-140 HR)",
+          "Vertical: 2,400-2,800 ft"
+        ],
+        "notes": "Maintain steady effort throughout"
+      },
+      {
+        "day": "Thursday",
+        "type": "Recovery + Hill Sprints",
+        "zone": "Zone 1/5",
+        "description": "6-7 miles recovery run + hill sprints",
+        "details": [
+          "AM: Zone 1 recovery run (<130 HR), 900 ft vertical",
+          "PM: 8×10 sec maximum effort uphill (180+ HR, 3 min recovery)",
+          "Core: 8 exercises × max reps"
+        ],
+        "notes": "Slightly longer hill sprints than last week"
+      },
+      {
+        "day": "Friday",
+        "type": "Easy Run",
+        "zone": "Zone 1",
+        "description": "8-9 miles easy pace",
+        "details": [
+          "Vertical: 1,400 ft"
+        ],
+        "notes": "Keep it controlled, prepare for weekend"
+      },
+      {
+        "day": "Saturday",
+        "type": "Long Run with Tempo",
+        "zone": "Zone 1-3",
+        "description": "14-16 miles with 30 min Z3 section",
+        "details": [
+          "Vertical: 3,400-3,800 ft",
+          "Build-up: 60 min Z1-Z2",
+          "Tempo: 30 min Z3 (140-165 HR)",
+          "Cool-down: remainder Z1"
+        ],
+        "notes": "Progress tempo duration within long run"
+      },
+      {
+        "day": "Sunday",
+        "type": "Long Run Recovery",
+        "zone": "Zone 1",
+        "description": "11-13 miles recovery pace",
+        "details": [
+          "Vertical: 2,700 ft",
+          "Full aerobic pace"
+        ],
+        "notes": "Focus on form when fatigued"
+      }
+    ]
+  },
+  {
+    "weekNumber": 8,
+    "phase": "Intensity Introduction",
+    "targetMiles": "54-59",
+    "targetVertical": "11,500-13,500 ft",
+    "workouts": [
+      {
+        "day": "Monday",
+        "type": "Rest/Active Recovery",
+        "zone": "Recovery",
+        "description": "Complete rest or light cross-training",
+        "notes": "Recovery priority after peak week",
+        "details": [
+          "Optional 30 min easy swim or bike"
+        ]
+      },
+      {
+        "day": "Tuesday",
+        "type": "Zone 3/4 Intervals + Strength",
+        "zone": "Zone 3-4",
+        "description": "10-12 miles with mixed intervals",
+        "details": [
+          "Vertical: 2,200-2,600 ft",
+          "Warm-up: 15 min Z1-Z2",
+          "Main: 2×15 min Z3 + 2×5 min Z4 (3 min recovery)",
+          "Cool-down: 10 min Z1",
+          "PM: Stage 3 Strength Program"
+        ],
+        "notes": "First introduction of Z4 work"
+      },
+      {
+        "day": "Wednesday",
+        "type": "Zone 2 Sustained",
+        "zone": "Zone 2",
+        "description": "95-105 minutes sustained effort",
+        "details": [
+          "Zone: Z2 (130-140 HR)",
+          "Vertical: 2,600-3,000 ft"
+        ],
+        "notes": "Keep effort steady and controlled"
+      },
+      {
+        "day": "Thursday",
+        "type": "Recovery + Hill Sprints",
+        "zone": "Zone 1/5",
+        "description": "7-8 miles recovery run + hill sprints",
+        "details": [
+          "AM: Zone 1 recovery run (<130 HR), 1,000 ft vertical",
+          "PM: 8×12 sec maximum effort uphill (180+ HR, 3 min recovery)",
+          "Core: 8 exercises × max reps"
+        ],
+        "notes": "Progress sprint duration slightly"
+      },
+      {
+        "day": "Friday",
+        "type": "Easy Run",
+        "zone": "Zone 1",
+        "description": "8-9 miles easy pace",
+        "details": [
+          "Vertical: 1,500 ft"
+        ],
+        "notes": "Stay relaxed, prepare for weekend volume"
+      },
+      {
+        "day": "Saturday",
+        "type": "Long Run with Mixed Intensity",
+        "zone": "Zone 1-4",
+        "description": "15-17 miles with mixed intensity",
+        "details": [
+          "Vertical: 3,600-4,000 ft",
+          "Build-up: 45 min Z1-Z2",
+          "Main: 20 min Z3 + 2×8 min Z4 (3 min recovery)",
+          "Cool-down: remainder Z1"
+        ],
+        "notes": "Practice race-specific intensities"
+      },
+      {
+        "day": "Sunday",
+        "type": "Long Run Recovery",
+        "zone": "Zone 1",
+        "description": "12-14 miles recovery pace",
+        "details": [
+          "Vertical: 2,900 ft",
+          "Full aerobic pace"
+        ],
+        "notes": "Focus on efficient form when tired"
+      }
+    ]
+  },
+  {
+    "weekNumber": 9,
+    "phase": "Race Specificity",
+    "targetMiles": "50-55",
+    "targetVertical": "12,000+ ft",
+    "workouts": [
+      {
+        "day": "Monday",
+        "type": "Rest/Active Recovery",
+        "zone": "Recovery",
+        "description": "Complete rest or light cross-training",
+        "notes": "Recovery focus",
+        "details": [
+          "Optional 30 min easy swim or bike"
+        ]
+      },
+      {
+        "day": "Tuesday",
+        "type": "Zone 4 Intervals + Strength",
+        "zone": "Zone 4",
+        "description": "10-12 miles with Z4 intervals",
+        "details": [
+          "Vertical: 2,400-2,800 ft",
+          "Warm-up: 15 min Z1-Z2",
+          "Main: 5×6 min Z4 (3 min recovery)",
+          "Cool-down: 10 min Z1",
+          "PM: Stage 3 Strength Program"
+        ],
+        "notes": "Focus on quality Z4 efforts"
+      },
+      {
+        "day": "Wednesday",
+        "type": "Zone 1 Recovery",
+        "zone": "Zone 1",
+        "description": "8-10 miles easy recovery",
+        "details": [
+          "Zone: Z1 (<130 HR)",
+          "Vertical: 1,500-1,800 ft"
+        ],
+        "notes": "Keep it very easy after yesterday's intensity"
+      },
+      {
+        "day": "Thursday",
+        "type": "Tempo + Hill Sprints",
+        "zone": "Zone 3/5",
+        "description": "8-10 miles including tempo + sprints",
+        "details": [
+          "Warm-up: 15 min Z1",
+          "Main: 20 min Z3 tempo + 6×15 sec hill sprints",
+          "Cool-down: 10 min Z1",
+          "Core: 8 exercises × max reps"
+        ],
+        "notes": "Quality over quantity"
+      },
+      {
+        "day": "Friday",
+        "type": "Easy Run",
+        "zone": "Zone 1",
+        "description": "6-7 miles easy pace",
+        "details": [
+          "Vertical: 1,000 ft"
+        ],
+        "notes": "Very easy, prepare for weekend"
+      },
+      {
+        "day": "Saturday",
+        "type": "Race Simulation",
+        "zone": "Zone 1-4",
+        "description": "16-18 miles race simulation",
+        "details": [
+          "Vertical: 4,000-4,400 ft",
+          "Include: 3×15 min at race pace/effort",
+          "Practice: Race nutrition & pacing"
+        ],
+        "notes": "Focus on race-specific elements"
+      },
+      {
+        "day": "Sunday",
+        "type": "Long Run Recovery",
+        "zone": "Zone 1",
+        "description": "12-14 miles recovery pace",
+        "details": [
+          "Vertical: 3,000 ft",
+          "Full aerobic pace"
+        ],
+        "notes": "Practice maintaining form when fatigued"
+      }
+    ]
+  }
+]

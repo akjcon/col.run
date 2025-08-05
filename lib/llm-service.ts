@@ -25,12 +25,10 @@ async function getBookContent(): Promise<string> {
   try {
     // Try multiple possible paths for the book
     const possiblePaths = [
-      join(process.cwd(), "..", "..", "optimized_book.md"),
-      join(process.cwd(), "..", "..", "combined_book.md"),
+      join(process.cwd(), "lib", "optimized_book.md"),
+      join(process.cwd(), "optimized_book.md"),
       join(process.cwd(), "..", "optimized_book.md"),
-      join(process.cwd(), "..", "combined_book.md"),
-      "/Users/jackconsenstein/Desktop/bookrip/optimized_book.md",
-      "/Users/jackconsenstein/Desktop/bookrip/combined_book.md",
+      join(process.cwd(), "..", "..", "optimized_book.md"),
     ];
 
     for (const path of possiblePaths) {
@@ -238,9 +236,9 @@ export async function generateTrainingPlan(
     const prompt = generateTrainingPlanPrompt(background);
 
     const response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022", // Use full sonnet for complex generation
-      max_tokens: 4000,
-      temperature: 0.3, // Lower temperature for structured output
+      model: "claude-sonnet-4-20250514", // Use full sonnet for complex generation
+      max_tokens: 40000,
+      temperature: 0, // Lower temperature for structured output
       system: `${prompt}\n\nBOOK REFERENCE:\n${bookContent}`,
       messages: [
         {

@@ -9,7 +9,15 @@
     "start": "next start",
     "lint": "next lint",
     "migrate-user": "tsx scripts/migrate-user-data.ts",
-    "test-firebase": "tsx scripts/test-firebase-connection.ts"
+    "test-firebase": "tsx scripts/test-firebase-connection.ts",
+    "extend-plan": "tsx scripts/extend-training-plan.ts",
+    "analyze-plan": "tsx scripts/analyze-training-plan.ts",
+    "backup-plan": "tsx scripts/backup-training-plan.ts",
+    "list-plans": "tsx scripts/list-plans.ts",
+    "parse-partial": "tsx scripts/parse-partial-weeks.ts",
+    "manual-extend": "tsx scripts/manual-extend.ts",
+    "extract-debug": "tsx scripts/extract-from-debug.ts",
+    "simple-extract": "tsx scripts/simple-extract.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.56.0",
