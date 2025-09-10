@@ -18,7 +18,7 @@ import { MessageCircle } from "lucide-react";
 import { calculateCurrentWeek } from "@/lib/plan-utils";
 import { getTodaysWorkout, getWeeksWithDates } from "@/lib/workout-utils";
 import { Drawer } from "vaul";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const { userData, isLoading, userId } = useUser();
