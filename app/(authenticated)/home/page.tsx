@@ -95,12 +95,12 @@ export default function HomePage() {
     }
   };
 
-  // Check if user needs onboarding
+  /* // Check if user needs onboarding
   useEffect(() => {
     if (userData && !userData.profile?.completedOnboarding) {
       router.push("/onboarding");
     }
-  }, [userData, router]);
+  }, [userData, router]); */
 
   const totalWeeks =
     userData?.generatedProfile?.recommendedPlan?.totalWeeks || 12;
