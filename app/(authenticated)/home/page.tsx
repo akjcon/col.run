@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 export default function HomePage() {
   const { userData, isLoading, userId } = useUser();
   const { userId: clerkUserId, isFirebaseReady } = useClerkFirebase();
-  const router = useRouter();
+  // const router = useRouter();
 
   const [isWorkoutDone, setIsWorkoutDone] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
