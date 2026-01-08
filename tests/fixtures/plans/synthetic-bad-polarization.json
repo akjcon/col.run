@@ -1,0 +1,104 @@
+{
+  "id": "test-bad-polarization",
+  "userId": "test-user-001",
+  "planType": "6-week Plan - Too Much Intensity",
+  "startDate": 1704067200000,
+  "currentWeek": 1,
+  "totalWeeks": 6,
+  "zones": [],
+  "phases": [],
+  "weeks": [
+    {
+      "weekNumber": 1,
+      "phase": "Base",
+      "targetMiles": "35",
+      "targetVertical": "1500",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "Tempo Run", "zone": "Zone 3", "description": "50 min tempo run" },
+        { "day": "Wednesday", "type": "Intervals", "zone": "Zone 4", "description": "45 min interval session" },
+        { "day": "Thursday", "type": "Tempo Run", "zone": "Zone 3", "description": "45 min tempo run" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Long Run", "zone": "Zone 2-3", "description": "90 min long run with tempo finish" },
+        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "30 min recovery" }
+      ]
+    },
+    {
+      "weekNumber": 2,
+      "phase": "Base",
+      "targetMiles": "37",
+      "targetVertical": "1600",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "Threshold Run", "zone": "Zone 4", "description": "55 min threshold workout" },
+        { "day": "Wednesday", "type": "Hill Repeats", "zone": "Zone 4-5", "description": "50 min hill repeat session" },
+        { "day": "Thursday", "type": "Tempo Run", "zone": "Zone 3", "description": "50 min tempo run" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Long Run", "zone": "Zone 2-3", "description": "100 min long run with race pace sections" },
+        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "35 min recovery" }
+      ]
+    },
+    {
+      "weekNumber": 3,
+      "phase": "Build",
+      "targetMiles": "40",
+      "targetVertical": "1800",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "VO2max Intervals", "zone": "Zone 5", "description": "55 min with VO2max intervals" },
+        { "day": "Wednesday", "type": "Tempo Run", "zone": "Zone 3-4", "description": "50 min tempo" },
+        { "day": "Thursday", "type": "Threshold Intervals", "zone": "Zone 4", "description": "55 min threshold work" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Long Run", "zone": "Zone 2-3", "description": "110 min progression long run" },
+        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "40 min recovery" }
+      ]
+    },
+    {
+      "weekNumber": 4,
+      "phase": "Build",
+      "targetMiles": "42",
+      "targetVertical": "1900",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "Speed Work", "zone": "Zone 5", "description": "55 min speed session" },
+        { "day": "Wednesday", "type": "Tempo Run", "zone": "Zone 3", "description": "55 min tempo" },
+        { "day": "Thursday", "type": "Interval Training", "zone": "Zone 4", "description": "55 min intervals" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Long Run", "zone": "Zone 2-3", "description": "120 min long run with fast finish" },
+        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "40 min recovery" }
+      ]
+    },
+    {
+      "weekNumber": 5,
+      "phase": "Peak",
+      "targetMiles": "44",
+      "targetVertical": "2000",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "Race Pace Intervals", "zone": "Zone 3-4", "description": "60 min race pace work" },
+        { "day": "Wednesday", "type": "VO2max Session", "zone": "Zone 5", "description": "55 min VO2max intervals" },
+        { "day": "Thursday", "type": "Tempo", "zone": "Zone 3", "description": "55 min tempo" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Long Run", "zone": "Zone 2-3", "description": "130 min long run" },
+        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "40 min recovery" }
+      ]
+    },
+    {
+      "weekNumber": 6,
+      "phase": "Taper",
+      "targetMiles": "30",
+      "targetVertical": "1200",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "Tempo Run", "zone": "Zone 3", "description": "40 min tempo" },
+        { "day": "Wednesday", "type": "Intervals", "zone": "Zone 4", "description": "35 min intervals" },
+        { "day": "Thursday", "type": "Tempo Run", "zone": "Zone 3", "description": "35 min tempo" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Speed Work", "zone": "Zone 5", "description": "30 min speed work" },
+        { "day": "Sunday", "type": "RACE", "zone": "Race", "description": "Race day!" }
+      ]
+    }
+  ],
+  "coachingNotes": ["This plan has too much high-intensity work - not enough easy running"],
+  "generatedAt": 1704067200000
+}

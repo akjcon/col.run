@@ -1,0 +1,89 @@
+{
+  "id": "test-invalid-missing-weeks",
+  "userId": "test-user-001",
+  "planType": "8-week Plan",
+  "startDate": 1704067200000,
+  "currentWeek": 1,
+  "totalWeeks": 8,
+  "zones": [],
+  "phases": [],
+  "weeks": [
+    {
+      "weekNumber": 1,
+      "phase": "Base",
+      "targetMiles": "30",
+      "targetVertical": "1500",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "45 min easy" },
+        { "day": "Wednesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "40 min easy" },
+        { "day": "Thursday", "type": "Easy Run", "zone": "Zone 1-2", "description": "45 min easy" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Long Run", "zone": "Zone 1-2", "description": "90 min long run" },
+        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "30 min recovery" }
+      ]
+    },
+    {
+      "weekNumber": 2,
+      "phase": "Base",
+      "targetMiles": "32",
+      "targetVertical": "1600",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "50 min easy" },
+        { "day": "Wednesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "45 min easy" },
+        { "day": "Thursday", "type": "Easy Run", "zone": "Zone 1-2", "description": "50 min easy" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Long Run", "zone": "Zone 1-2", "description": "100 min long run" },
+        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "35 min recovery" }
+      ]
+    },
+    {
+      "weekNumber": 4,
+      "phase": "Build",
+      "targetMiles": "38",
+      "targetVertical": "2000",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "55 min easy" },
+        { "day": "Wednesday", "type": "Tempo", "zone": "Zone 3", "description": "45 min with tempo" },
+        { "day": "Thursday", "type": "Easy Run", "zone": "Zone 1-2", "description": "50 min easy" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Long Run", "zone": "Zone 1-2", "description": "120 min long run" },
+        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "40 min recovery" }
+      ]
+    },
+    {
+      "weekNumber": 5,
+      "phase": "Build",
+      "targetMiles": "40",
+      "targetVertical": "2200",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "55 min easy" },
+        { "day": "Wednesday", "type": "Intervals", "zone": "Zone 4", "description": "50 min with intervals" },
+        { "day": "Thursday", "type": "Easy Run", "zone": "Zone 1-2", "description": "50 min easy" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Long Run", "zone": "Zone 1-2", "description": "130 min long run" },
+        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "40 min recovery" }
+      ]
+    },
+    {
+      "weekNumber": 8,
+      "phase": "Taper",
+      "targetMiles": "25",
+      "targetVertical": "1000",
+      "workouts": [
+        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Tuesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "35 min easy" },
+        { "day": "Wednesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "30 min easy" },
+        { "day": "Thursday", "type": "Easy Run", "zone": "Zone 1-2", "description": "30 min easy" },
+        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
+        { "day": "Saturday", "type": "Easy Run", "zone": "Zone 1", "description": "20 min shakeout" },
+        { "day": "Sunday", "type": "RACE", "zone": "Race", "description": "Race day!" }
+      ]
+    }
+  ],
+  "coachingNotes": [],
+  "generatedAt": 1704067200000
+}
