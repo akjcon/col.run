@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { checkSafetyRules } from "@/lib/plan-evaluation";
-import type { TrainingPlan } from "@/lib/types";
+import type { TrainingPlan, Day } from "@/lib/plan-evaluation";
 
 // Load fixtures
 import validPlan from "../../fixtures/plans/synthetic-valid-12week.json";
@@ -38,7 +38,7 @@ describe("Safety Rules", () => {
     it("marks large volume spikes as critical", () => {
       const result = checkSafetyRules(volumeSpikePlan as TrainingPlan);
 
-      // Week 2 to 3 is 32 -> 45 = 40% increase - should be critical
+      // Week 2 to 3 has large volume spike - should be critical
       const criticalViolations = result.violations.filter(
         (v) => v.rule === "VOLUME_PROGRESSION_LIMIT" && v.severity === "critical"
       );
@@ -66,9 +66,7 @@ describe("Safety Rules", () => {
         weeks: Array.from({ length: 8 }, (_, i) => ({
           weekNumber: i + 1,
           phase: "Build", // Not "Recovery" - continuous building
-          targetMiles: String(40 + i * 2),
-          targetVertical: "2000",
-          workouts: validPlan.weeks[4].workouts, // Use a build week template
+          days: validPlan.weeks[4].days, // Use a build week template
         })),
       } as TrainingPlan;
 
@@ -101,17 +99,15 @@ describe("Safety Rules", () => {
           {
             weekNumber: 1,
             phase: "Build",
-            targetMiles: "40",
-            targetVertical: "2000",
-            workouts: [
-              { day: "Monday", type: "Rest", zone: "Recovery", description: "Rest" },
-              { day: "Tuesday", type: "Intervals", zone: "Zone 4", description: "Hard intervals" },
-              { day: "Wednesday", type: "Tempo Run", zone: "Zone 3-4", description: "Hard tempo" }, // Back-to-back!
-              { day: "Thursday", type: "Easy Run", zone: "Zone 1-2", description: "Easy" },
-              { day: "Friday", type: "Rest", zone: "Recovery", description: "Rest" },
-              { day: "Saturday", type: "Long Run", zone: "Zone 1-2", description: "Long run" },
-              { day: "Sunday", type: "Easy Run", zone: "Zone 1-2", description: "Easy" },
-            ],
+            days: [
+              { dayOfWeek: "Monday", workouts: [{ blocks: [{ type: "rest", value: 0, effortLevel: "z1" }] }] },
+              { dayOfWeek: "Tuesday", workouts: [{ blocks: [{ type: "intervals", value: 50, effortLevel: "z4" }] }] },
+              { dayOfWeek: "Wednesday", workouts: [{ blocks: [{ type: "tempo", value: 45, effortLevel: "z4" }] }] }, // Back-to-back!
+              { dayOfWeek: "Thursday", workouts: [{ blocks: [{ type: "easy", value: 45, effortLevel: "z2" }] }] },
+              { dayOfWeek: "Friday", workouts: [{ blocks: [{ type: "rest", value: 0, effortLevel: "z1" }] }] },
+              { dayOfWeek: "Saturday", workouts: [{ blocks: [{ type: "longRun", value: 90, effortLevel: "z2" }] }] },
+              { dayOfWeek: "Sunday", workouts: [{ blocks: [{ type: "easy", value: 30, effortLevel: "z1" }] }] },
+            ] as Day[],
           },
         ],
       } as TrainingPlan;
@@ -144,17 +140,15 @@ describe("Safety Rules", () => {
           {
             weekNumber: 1,
             phase: "Build",
-            targetMiles: "50",
-            targetVertical: "2000",
-            workouts: [
-              { day: "Monday", type: "Easy Run", zone: "Zone 1-2", description: "Easy run" },
-              { day: "Tuesday", type: "Easy Run", zone: "Zone 1-2", description: "Easy run" },
-              { day: "Wednesday", type: "Tempo", zone: "Zone 3", description: "Tempo run" },
-              { day: "Thursday", type: "Easy Run", zone: "Zone 1-2", description: "Easy run" },
-              { day: "Friday", type: "Easy Run", zone: "Zone 1-2", description: "Easy run" },
-              { day: "Saturday", type: "Long Run", zone: "Zone 1-2", description: "Long run" },
-              { day: "Sunday", type: "Easy Run", zone: "Zone 1-2", description: "Easy run" },
-            ],
+            days: [
+              { dayOfWeek: "Monday", workouts: [{ blocks: [{ type: "easy", value: 40, effortLevel: "z2" }] }] },
+              { dayOfWeek: "Tuesday", workouts: [{ blocks: [{ type: "easy", value: 45, effortLevel: "z2" }] }] },
+              { dayOfWeek: "Wednesday", workouts: [{ blocks: [{ type: "tempo", value: 45, effortLevel: "z3" }] }] },
+              { dayOfWeek: "Thursday", workouts: [{ blocks: [{ type: "easy", value: 45, effortLevel: "z2" }] }] },
+              { dayOfWeek: "Friday", workouts: [{ blocks: [{ type: "easy", value: 40, effortLevel: "z2" }] }] },
+              { dayOfWeek: "Saturday", workouts: [{ blocks: [{ type: "longRun", value: 90, effortLevel: "z2" }] }] },
+              { dayOfWeek: "Sunday", workouts: [{ blocks: [{ type: "easy", value: 30, effortLevel: "z1" }] }] },
+            ] as Day[],
           },
         ],
       } as TrainingPlan;
@@ -173,10 +167,10 @@ describe("Safety Rules", () => {
         ...validPlan,
         totalWeeks: 4,
         weeks: [
-          { ...validPlan.weeks[0], weekNumber: 1, targetMiles: "40" },
-          { ...validPlan.weeks[1], weekNumber: 2, targetMiles: "45" },
-          { ...validPlan.weeks[2], weekNumber: 3, phase: "Peak", targetMiles: "50" },
-          { ...validPlan.weeks[3], weekNumber: 4, phase: "Race Week", targetMiles: "45" }, // Not enough reduction
+          { ...validPlan.weeks[0], weekNumber: 1 },
+          { ...validPlan.weeks[1], weekNumber: 2 },
+          { ...validPlan.weeks[9], weekNumber: 3, phase: "Peak" }, // High volume
+          { ...validPlan.weeks[9], weekNumber: 4, phase: "Race Week" }, // Same high volume!
         ],
       } as TrainingPlan;
 
@@ -187,7 +181,7 @@ describe("Safety Rules", () => {
     });
 
     it("accepts proper taper", () => {
-      // Valid plan has proper taper: peak ~50mi, race week ~25mi
+      // Valid plan has proper taper
       const result = checkSafetyRules(validPlan as TrainingPlan);
 
       const taperViolations = result.violations.filter((v) => v.rule === "INSUFFICIENT_TAPER");

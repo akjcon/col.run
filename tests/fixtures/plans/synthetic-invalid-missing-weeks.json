@@ -1,89 +1,82 @@
 {
   "id": "test-invalid-missing-weeks",
   "userId": "test-user-001",
-  "planType": "8-week Plan",
-  "startDate": 1704067200000,
-  "currentWeek": 1,
   "totalWeeks": 8,
-  "zones": [],
-  "phases": [],
+  "startDate": 1704067200000,
+  "generatedAt": 1704067200000,
   "weeks": [
     {
       "weekNumber": 1,
       "phase": "Base",
-      "targetMiles": "30",
-      "targetVertical": "1500",
-      "workouts": [
-        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
-        { "day": "Tuesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "45 min easy" },
-        { "day": "Wednesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "40 min easy" },
-        { "day": "Thursday", "type": "Easy Run", "zone": "Zone 1-2", "description": "45 min easy" },
-        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
-        { "day": "Saturday", "type": "Long Run", "zone": "Zone 1-2", "description": "90 min long run" },
-        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "30 min recovery" }
+      "days": [
+        { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 45, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 40, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 45, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 90, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 30, "effortLevel": "z1" }] }] }
       ]
     },
     {
       "weekNumber": 2,
       "phase": "Base",
-      "targetMiles": "32",
-      "targetVertical": "1600",
-      "workouts": [
-        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
-        { "day": "Tuesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "50 min easy" },
-        { "day": "Wednesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "45 min easy" },
-        { "day": "Thursday", "type": "Easy Run", "zone": "Zone 1-2", "description": "50 min easy" },
-        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
-        { "day": "Saturday", "type": "Long Run", "zone": "Zone 1-2", "description": "100 min long run" },
-        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "35 min recovery" }
+      "days": [
+        { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 50, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 45, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 50, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 100, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 35, "effortLevel": "z1" }] }] }
       ]
     },
     {
       "weekNumber": 4,
       "phase": "Build",
-      "targetMiles": "38",
-      "targetVertical": "2000",
-      "workouts": [
-        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
-        { "day": "Tuesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "55 min easy" },
-        { "day": "Wednesday", "type": "Tempo", "zone": "Zone 3", "description": "45 min with tempo" },
-        { "day": "Thursday", "type": "Easy Run", "zone": "Zone 1-2", "description": "50 min easy" },
-        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
-        { "day": "Saturday", "type": "Long Run", "zone": "Zone 1-2", "description": "120 min long run" },
-        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "40 min recovery" }
+      "days": [
+        { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 55, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [
+          { "type": "warmUp", "value": 15, "effortLevel": "z1" },
+          { "type": "tempo", "value": 20, "effortLevel": "z3" },
+          { "type": "coolDown", "value": 10, "effortLevel": "z1" }
+        ] }] },
+        { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 50, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 120, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 40, "effortLevel": "z1" }] }] }
       ]
     },
     {
       "weekNumber": 5,
       "phase": "Build",
-      "targetMiles": "40",
-      "targetVertical": "2200",
-      "workouts": [
-        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
-        { "day": "Tuesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "55 min easy" },
-        { "day": "Wednesday", "type": "Intervals", "zone": "Zone 4", "description": "50 min with intervals" },
-        { "day": "Thursday", "type": "Easy Run", "zone": "Zone 1-2", "description": "50 min easy" },
-        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
-        { "day": "Saturday", "type": "Long Run", "zone": "Zone 1-2", "description": "130 min long run" },
-        { "day": "Sunday", "type": "Easy Run", "zone": "Zone 1-2", "description": "40 min recovery" }
+      "days": [
+        { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 55, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [
+          { "type": "warmUp", "value": 15, "effortLevel": "z1" },
+          { "type": "intervals", "value": 25, "effortLevel": "z4" },
+          { "type": "coolDown", "value": 10, "effortLevel": "z1" }
+        ] }] },
+        { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 50, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 130, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 40, "effortLevel": "z1" }] }] }
       ]
     },
     {
       "weekNumber": 8,
       "phase": "Taper",
-      "targetMiles": "25",
-      "targetVertical": "1000",
-      "workouts": [
-        { "day": "Monday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
-        { "day": "Tuesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "35 min easy" },
-        { "day": "Wednesday", "type": "Easy Run", "zone": "Zone 1-2", "description": "30 min easy" },
-        { "day": "Thursday", "type": "Easy Run", "zone": "Zone 1-2", "description": "30 min easy" },
-        { "day": "Friday", "type": "Rest", "zone": "Recovery", "description": "Rest" },
-        { "day": "Saturday", "type": "Easy Run", "zone": "Zone 1", "description": "20 min shakeout" },
-        { "day": "Sunday", "type": "RACE", "zone": "Race", "description": "Race day!" }
+      "days": [
+        { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 35, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 30, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 30, "effortLevel": "z2" }] }] },
+        { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "easy", "value": 20, "effortLevel": "z1" }] }] },
+        { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "effortLevel": "z1" }] }] }
       ]
     }
-  ],
-  "coachingNotes": [],
-  "generatedAt": 1704067200000
+  ]
 }

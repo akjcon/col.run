@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { validateStructure } from "@/lib/plan-evaluation";
-import type { TrainingPlan } from "@/lib/types";
+import type { TrainingPlan } from "@/lib/plan-evaluation";
 
 // Load fixtures
 import validPlan from "../../fixtures/plans/synthetic-valid-12week.json";
@@ -23,9 +23,9 @@ describe("Structural Validity", () => {
       expect((validPlan as TrainingPlan).weeks).toHaveLength(12);
     });
 
-    it("has 7 workouts per week", () => {
+    it("has 7 days per week", () => {
       for (const week of (validPlan as TrainingPlan).weeks) {
-        expect(week.workouts).toHaveLength(7);
+        expect(week.days).toHaveLength(7);
       }
     });
   });
@@ -78,14 +78,14 @@ describe("Structural Validity", () => {
     });
   });
 
-  describe("Invalid Workouts", () => {
+  describe("Invalid Days", () => {
     it("fails for week with wrong number of days", () => {
       const planWithShortWeek = {
         ...validPlan,
         weeks: [
           {
             ...validPlan.weeks[0],
-            workouts: validPlan.weeks[0].workouts.slice(0, 5), // Only 5 days
+            days: validPlan.weeks[0].days.slice(0, 5), // Only 5 days
           },
           ...validPlan.weeks.slice(1),
         ],
@@ -94,49 +94,49 @@ describe("Structural Validity", () => {
       const result = validateStructure(planWithShortWeek);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.code === "INVALID_WORKOUT_COUNT")).toBe(true);
+      expect(result.errors.some((e) => e.code === "INVALID_DAY_COUNT")).toBe(true);
     });
 
-    it("fails for workout missing day field", () => {
-      const planWithBadWorkout = {
+    it("fails for day missing dayOfWeek field", () => {
+      const planWithBadDay = {
         ...validPlan,
         weeks: [
           {
             ...validPlan.weeks[0],
-            workouts: [
-              { type: "Rest", zone: "Recovery", description: "Rest" }, // Missing 'day'
-              ...validPlan.weeks[0].workouts.slice(1),
+            days: [
+              { workouts: validPlan.weeks[0].days[0].workouts }, // Missing dayOfWeek
+              ...validPlan.weeks[0].days.slice(1),
             ],
           },
           ...validPlan.weeks.slice(1),
         ],
       } as TrainingPlan;
 
-      const result = validateStructure(planWithBadWorkout);
+      const result = validateStructure(planWithBadDay);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.code === "MISSING_WORKOUT_DAY")).toBe(true);
+      expect(result.errors.some((e) => e.code === "MISSING_DAY_OF_WEEK")).toBe(true);
     });
 
-    it("fails for workout missing type field", () => {
-      const planWithBadWorkout = {
+    it("fails for day missing workouts array", () => {
+      const planWithBadDay = {
         ...validPlan,
         weeks: [
           {
             ...validPlan.weeks[0],
-            workouts: [
-              { day: "Monday", zone: "Recovery", description: "Rest" }, // Missing 'type'
-              ...validPlan.weeks[0].workouts.slice(1),
+            days: [
+              { dayOfWeek: "Monday" }, // Missing workouts
+              ...validPlan.weeks[0].days.slice(1),
             ],
           },
           ...validPlan.weeks.slice(1),
         ],
       } as TrainingPlan;
 
-      const result = validateStructure(planWithBadWorkout);
+      const result = validateStructure(planWithBadDay);
 
       expect(result.valid).toBe(false);
-      expect(result.errors.some((e) => e.code === "MISSING_WORKOUT_TYPE")).toBe(true);
+      expect(result.errors.some((e) => e.code === "MISSING_WORKOUTS")).toBe(true);
     });
   });
 
