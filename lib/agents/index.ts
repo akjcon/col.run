@@ -28,7 +28,12 @@ export { BaseAgent, extractJSON } from "./base";
 export type { AgentConfig } from "./base";
 
 // Agents
-export { OrchestratorAgent, setBookContentForTesting, clearBookContentCache } from "./orchestrator";
+export {
+  OrchestratorAgent,
+  setBookContentForTesting,
+  clearBookContentCache,
+  setUseCondensedMethodology,
+} from "./orchestrator";
 export { WeekGeneratorAgent } from "./week-generator";
 
 // Pipeline
