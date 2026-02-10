@@ -6,7 +6,7 @@
  * - WeekGenerator: Focused context, tactical execution
  */
 
-import type { Week, Day, Block } from "@/lib/blocks";
+import type { Week } from "@/lib/blocks";
 
 // =============================================================================
 // Agent Base Types

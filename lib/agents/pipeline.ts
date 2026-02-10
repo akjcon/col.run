@@ -16,7 +16,6 @@ import type {
   AgentTrace,
   OrchestratorOutput,
   PhaseTarget,
-  WeeklyTarget,
 } from "./types";
 
 // =============================================================================

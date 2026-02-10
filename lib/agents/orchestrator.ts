@@ -12,8 +12,6 @@ import { CONDENSED_METHODOLOGY } from "./methodology-condensed";
 import type {
   OrchestratorInput,
   OrchestratorOutput,
-  PhaseTarget,
-  WeeklyTarget,
 } from "./types";
 
 // =============================================================================
@@ -101,7 +99,8 @@ export class OrchestratorAgent extends BaseAgent<OrchestratorInput, Orchestrator
     return { valid: true };
   }
 
-  protected buildSystemPrompt(input: OrchestratorInput): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected buildSystemPrompt(_input: OrchestratorInput): string {
     return `You are an expert trail running coach designing a training plan structure based on "Training for the Uphill Athlete" principles.
 
 Your role is STRATEGIC PLANNING ONLY. You will:
