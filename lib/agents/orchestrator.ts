@@ -12,8 +12,6 @@ import { CONDENSED_METHODOLOGY } from "./methodology-condensed";
 import type {
   OrchestratorInput,
   OrchestratorOutput,
-  PhaseTarget,
-  WeeklyTarget,
 } from "./types";
 
 // =============================================================================
@@ -21,7 +19,7 @@ import type {
 // =============================================================================
 
 let bookContentCache: string | null = null;
-let useCondensedMethodology = true; // Default to condensed to avoid rate limits
+let useCondensedMethodology = true; // Full book is 130k tokens, exceeds 30k/min rate limit
 
 async function getBookContent(): Promise<string> {
   // Use condensed methodology by default to avoid rate limits
@@ -101,20 +99,40 @@ export class OrchestratorAgent extends BaseAgent<OrchestratorInput, Orchestrator
     return { valid: true };
   }
 
-  protected buildSystemPrompt(input: OrchestratorInput): string {
-    return `You are an expert trail running coach designing a training plan structure based on "Training for the Uphill Athlete" principles.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected buildSystemPrompt(_input: OrchestratorInput): string {
+    return `You are an expert trail running coach designing a training plan based on "Training for the Uphill Athlete" principles.
 
-Your role is STRATEGIC PLANNING ONLY. You will:
-1. Analyze the athlete's profile and identify their fitness level, limiters, and strengths
-2. Design the phase structure (Base, Build, Peak, Taper) appropriate for their goal
-3. Set weekly volume targets that progress safely
-4. Identify key workout types for each week
-5. Extract relevant methodology excerpts for the week-by-week planning
-
-You are NOT generating the detailed daily workouts - another agent handles that.
+Your role is STRATEGIC PLANNING. You will:
+1. Analyze the athlete and design the phase structure
+2. Set realistic weekly volume targets
+3. Write detailed instructions for each week (workouts, structure, rationale)
 
 TRAINING METHODOLOGY REFERENCE:
 ${this.bookContent}
+
+VOLUME PROGRESSION RULES:
+- Start from athlete's current fitness (use feasibility targets if provided)
+- Never increase volume more than 10% week-over-week
+- Recovery week every 3-4 weeks (25-30% volume reduction)
+- Taper: 2-3 weeks before race, 70-80% then 40-50% of peak
+- Taper replaces recovery - no separate recovery week needed during taper
+
+BACK-TO-BACK WEEKENDS (for ultras):
+Replace a single very long run with TWO SHORTER runs.
+WRONG: 25mi Saturday + 11mi Sunday (Saturday is still massive)
+CORRECT: 16mi Saturday + 12mi Sunday = 28mi total (neither day extreme)
+
+TAPER GUIDELINES:
+- No long runs during taper (max 60-70% of normal long run)
+- Race week: light running only, no hard workouts
+- Taper IS recovery - reduced volume provides rest
+
+PER-WEEK INSTRUCTIONS - include:
+- Specific workout prescriptions (intervals, tempo, hill work)
+- Long run details (distance, pace, any special structure)
+- Effort zone guidance
+- Rationale for the week's structure
 
 OUTPUT FORMAT:
 Return a JSON object with this exact structure:
@@ -127,60 +145,114 @@ Return a JSON object with this exact structure:
   },
   "phases": [
     {
-      "name": "Base Building",
+      "name": "Base",
       "startWeek": 1,
+      "endWeek": 3,
+      "focus": "Aerobic development",
+      "weeklyVolumeRange": [150, 180],
+      "keyWorkouts": ["long run", "easy runs"]
+    },
+    {
+      "name": "Recovery",
+      "startWeek": 4,
       "endWeek": 4,
-      "focus": "Aerobic development and volume building",
-      "weeklyVolumeRange": [180, 240],
-      "keyWorkouts": ["long run", "easy runs", "hill strides"]
+      "focus": "Adaptation and recovery",
+      "weeklyVolumeRange": [130, 140],
+      "keyWorkouts": ["easy runs only"]
     }
   ],
   "weeklyTargets": [
     {
       "weekNumber": 1,
-      "phase": "Base Building",
-      "targetVolume": 180,
+      "phase": "Base",
+      "targetVolume": 150,
       "keyWorkoutType": "longRun",
-      "notes": "First week, focus on consistency"
+      "notes": "First week, focus on consistency",
+      "instructions": "Easy aerobic week to establish baseline. Long run should be 10-12 miles at z2. Include 4-6 hill strides (20-30sec each) after one easy run to maintain leg turnover."
+    },
+    {
+      "weekNumber": 4,
+      "phase": "Recovery",
+      "targetVolume": 135,
+      "keyWorkoutType": null,
+      "notes": "Recovery week",
+      "instructions": "Reduced volume for adaptation. All runs at z1-z2. No hard workouts. Long run capped at 8 miles."
+    },
+    {
+      "weekNumber": 10,
+      "phase": "Race-Specific",
+      "targetVolume": 450,
+      "keyWorkoutType": "backToBack",
+      "notes": "Back-to-back weekend replacing single long run",
+      "instructions": "BACK-TO-BACK WEEKEND: Instead of one 26mi long run, do 16mi Saturday + 12mi Sunday = 28mi total. CRITICAL: Neither day exceeds 18mi - the stress reduction comes from shorter individual runs. Saturday at steady z2, Sunday easier (z1-z2) on tired legs. Include one tempo session mid-week (4x8min z3 with 3min recovery)."
     }
   ],
   "methodology": "Key excerpts from the book relevant to this athlete and plan..."
-}
-
-CRITICAL RULES:
-1. Volume progression: Never increase weekly volume by more than 10% week-over-week
-2. Recovery weeks: Include a recovery week (reduce volume by 20-30%) every 3-4 weeks
-3. Taper: Final 1-3 weeks should progressively reduce volume
-4. 80/20 rule: Plan should enable ~80% easy, ~20% hard training
-5. Race specificity: Later phases should include race-specific workouts`;
+}`;
   }
 
   protected buildUserMessage(input: OrchestratorInput): string {
-    const { athlete, goal, planWeeks, constraints } = input;
+    const { athlete, goal, planWeeks, constraints, raceRequirements, feasibility, feedbackContext } = input;
+
+    // Build experience section if we have lifetime data
+    const experienceSection = athlete.lifetimeMiles ? `
+LIFETIME EXPERIENCE (what they're capable of):
+- Lifetime miles: ${athlete.lifetimeMiles.toLocaleString()} miles
+- Longest run EVER: ${athlete.longestRunEver || "Unknown"} miles
+- Peak weekly mileage: ${athlete.peakWeeklyMileage || "Unknown"} miles
+- Ultra experience: ${athlete.ultraExperience ? "Yes" : "No"}
+- Trail experience: ${athlete.trailExperience ? "Yes" : "No"}
+
+IMPORTANT: This athlete is ${athlete.experience.toUpperCase()} level based on lifetime data.
+They are currently in a low-volume phase but have significant experience.` : "";
+
+    // Build race requirements section if provided
+    const requirementsSection = raceRequirements ? `
+RACE REQUIREMENTS (evidence-based targets for ${goal.raceDistance}):
+- Race distance: ${raceRequirements.distanceMiles} miles
+- Peak weekly mileage needed: ${raceRequirements.peakWeeklyMileage.min}-${raceRequirements.peakWeeklyMileage.ideal}-${raceRequirements.peakWeeklyMileage.max} miles
+- Peak long run needed: ${raceRequirements.peakLongRun.min}-${raceRequirements.peakLongRun.ideal}-${raceRequirements.peakLongRun.max} miles
+- Key workouts: ${raceRequirements.keyWorkouts.join(", ")}
+- Considerations: ${raceRequirements.considerations.slice(0, 3).join("; ")}` : "";
+
+    // Build feasibility section if provided
+    const feasibilitySection = feasibility ? `
+FEASIBILITY ANALYSIS (pre-computed):
+- Risk level: ${feasibility.riskLevel.toUpperCase()}
+- Recommended starting mileage: ${feasibility.startingWeeklyMileage} miles/week
+- Target peak mileage: ${feasibility.targetPeakMileage} miles/week (${Math.round(feasibility.targetPeakMileage * 9)} min at 9min/mi)
+- Target peak long run: ${feasibility.targetPeakLongRun} miles
+- Approach: ${feasibility.suggestedApproach}
+${feasibility.warnings.length > 0 ? `- Warnings: ${feasibility.warnings.join("; ")}` : ""}
+
+CRITICAL: Use these targets from the feasibility analysis. They account for the athlete's experience
+and the race requirements. Convert miles to minutes using appropriate pace for their level.` : "";
 
     return `Design a ${planWeeks}-week training plan structure for this athlete:
 
-ATHLETE PROFILE:
-- Experience: ${athlete.experience}
+CURRENT FITNESS (last 12 weeks):
+- Experience level: ${athlete.experience}
 - Current weekly mileage: ${athlete.weeklyMileage} miles
-- Longest run: ${athlete.longestRun} miles
-- Marathon PR: ${athlete.marathonPR || "Not provided"}
-- Current fitness: ${athlete.currentFitness || "Not provided"}
-- Athletic background: ${athlete.background || "Not provided"}
-- Injury history: ${athlete.injuries || "None"}
+- Longest recent run: ${athlete.longestRun} miles
+- CTL (fitness): ${athlete.ctl || "Not provided"}
+- Threshold pace: ${athlete.thresholdPace ? `${Math.floor(athlete.thresholdPace)}:${String(Math.round((athlete.thresholdPace % 1) * 60)).padStart(2, '0')}/mi` : "Not provided"}
+${experienceSection}
 
 RACE GOAL:
 - Race: ${goal.raceName || goal.raceDistance}
 - Distance: ${goal.raceDistance}
 - Target time: ${goal.targetTime || "Not specified"}
 - Race date: ${goal.raceDate ? new Date(goal.raceDate).toLocaleDateString() : "Not specified"}
-- Elevation: ${goal.elevation ? `${goal.elevation} ft gain` : "Not specified"}
+- Elevation: ${goal.elevation ? `${goal.elevation.toLocaleString()} ft gain` : "Not specified"}
 - Terrain: ${goal.terrainType || "trail"}
+${requirementsSection}
+${feasibilitySection}
 
 ${constraints ? `CONSTRAINTS:
 - Required rest days: ${constraints.requiredRestDays?.join(", ") || "None"}
 - Preferred long run day: ${constraints.preferredLongRunDay || "Not specified"}
 - Max weekly hours: ${constraints.maxWeeklyHours || "Not specified"}` : ""}
+${feedbackContext ? `\n${feedbackContext}` : ""}
 
 Return ONLY the JSON object, no additional text.`;
   }

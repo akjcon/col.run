@@ -1,0 +1,187 @@
+/**
+ * Strava Webhook Endpoint
+ *
+ * GET  — Strava subscription verification (echo hub.challenge)
+ * POST — Activity event processing (create/update)
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { getAdminDb } from "@/lib/firebase-admin";
+import { syncSingleActivity } from "@/lib/strava/sync";
+import { matchActivityToDay } from "@/lib/strava/matching";
+import { buildAthleteSnapshot } from "@/lib/athlete-snapshot";
+import type { StravaTokens } from "@/lib/strava";
+import type { WorkoutLog } from "@/lib/types";
+import { getDayTitle } from "@/lib/workout-display";
+import {
+  calculateDayTotalMiles,
+  calculateDayTotal,
+} from "@/lib/blocks/calculations";
+
+const VERIFY_TOKEN = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN || "col-run-strava";
+
+/**
+ * GET — Strava subscription verification
+ * Strava sends a GET with hub.mode, hub.challenge, hub.verify_token
+ */
+export async function GET(req: NextRequest) {
+  const searchParams = req.nextUrl.searchParams;
+  const mode = searchParams.get("hub.mode");
+  const challenge = searchParams.get("hub.challenge");
+  const verifyToken = searchParams.get("hub.verify_token");
+
+  if (mode === "subscribe" && verifyToken === VERIFY_TOKEN && challenge) {
+    console.log("Strava webhook subscription verified");
+    return NextResponse.json({ "hub.challenge": challenge });
+  }
+
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}
+
+/**
+ * POST — Activity events from Strava
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const event = await req.json();
+
+    // Only handle activity create/update events
+    if (event.object_type !== "activity") {
+      return NextResponse.json({ ok: true });
+    }
+    if (event.aspect_type !== "create" && event.aspect_type !== "update") {
+      return NextResponse.json({ ok: true });
+    }
+
+    const ownerId: number = event.owner_id;
+    const activityId: number = event.object_id;
+
+    console.log(
+      `Strava webhook: ${event.aspect_type} activity ${activityId} from athlete ${ownerId}`
+    );
+
+    const db = getAdminDb();
+
+    // Look up userId from stravaAthletes index
+    const athleteDoc = await db
+      .collection("stravaAthletes")
+      .doc(String(ownerId))
+      .get();
+
+    if (!athleteDoc.exists) {
+      console.warn(`No user found for Strava athlete ${ownerId}`);
+      return NextResponse.json({ ok: true });
+    }
+
+    const userId: string = athleteDoc.data()!.userId;
+
+    // Get Strava tokens
+    const stravaRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("integrations")
+      .doc("strava");
+    const stravaSnap = await stravaRef.get();
+
+    if (!stravaSnap.exists) {
+      console.warn(`Strava not connected for user ${userId}`);
+      return NextResponse.json({ ok: true });
+    }
+
+    const stravaData = stravaSnap.data()!;
+    const tokens: StravaTokens = {
+      access_token: stravaData.accessToken,
+      refresh_token: stravaData.refreshToken,
+      expires_at: stravaData.expiresAt,
+      token_type: "Bearer",
+    };
+
+    const onTokenRefresh = async (newTokens: StravaTokens) => {
+      await stravaRef.update({
+        accessToken: newTokens.access_token,
+        refreshToken: newTokens.refresh_token,
+        expiresAt: newTokens.expires_at,
+      });
+    };
+
+    // Fetch the single activity from Strava
+    const activity = await syncSingleActivity(tokens, userId, activityId, {
+      onTokenRefresh,
+    });
+
+    // Store the activity
+    const activityRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("activities")
+      .doc(activity.id);
+
+    const cleanActivity = Object.fromEntries(
+      Object.entries(activity).filter(([, v]) => v !== undefined)
+    );
+    await activityRef.set({ ...cleanActivity, syncedAt: Date.now() });
+
+    // Try to match to a plan day
+    const planSnap = await db
+      .collection("users")
+      .doc(userId)
+      .collection("trainingPlans")
+      .where("isActive", "==", true)
+      .limit(1)
+      .get();
+
+    if (!planSnap.empty) {
+      const planDoc = planSnap.docs[0];
+      const plan = { id: planDoc.id, ...planDoc.data() };
+      const match = matchActivityToDay(
+        activity,
+        plan as import("@/lib/types").TrainingPlan
+      );
+
+      if (match) {
+        const logId = `${match.day.date}-${match.day.dayOfWeek}`;
+        const workoutLog: WorkoutLog = {
+          id: logId,
+          date: match.day.date!,
+          weekNumber: match.week.weekNumber,
+          dayOfWeek: match.day.dayOfWeek,
+          plannedTitle: getDayTitle(match.day),
+          plannedMiles: calculateDayTotalMiles(match.day),
+          plannedMinutes: calculateDayTotal(match.day),
+          source: "strava",
+          completedAt: activity.date,
+          stravaActivityId: activity.stravaId,
+          actualMiles: activity.distance,
+          actualMinutes: activity.duration,
+          actualElevation: activity.elevation,
+          avgPace: activity.avgPace,
+          avgHeartRate: activity.avgHeartRate,
+        };
+
+        await db
+          .collection("users")
+          .doc(userId)
+          .collection("workoutLogs")
+          .doc(logId)
+          .set(workoutLog);
+
+        console.log(
+          `Matched activity ${activityId} to ${match.day.dayOfWeek} week ${match.week.weekNumber}`
+        );
+      }
+    }
+
+    // Rebuild athlete snapshot
+    try {
+      await buildAthleteSnapshot(userId);
+    } catch (err) {
+      console.warn("Could not rebuild snapshot after webhook:", err);
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Strava webhook error:", error);
+    // Always return 200 to Strava to prevent retries
+    return NextResponse.json({ ok: true });
+  }
+}

@@ -1,8 +1,19 @@
 import { Calendar } from "lucide-react";
-import { getZoneColor, getZoneText, extractWorkoutMetrics } from "@/lib/utils";
 import { useGetTomorrowsWorkoutQuery } from "@/lib/store/api/trainingApi";
 import { useUser } from "@/lib/user-context-rtk";
 import { Skeleton } from "@/components/ui/loading-spinner";
+import {
+  getDayTitle,
+  getDayEffortLevel,
+  effortToColor,
+  effortToZoneLabel,
+  isRestDay,
+  getWorkoutSummary,
+} from "@/lib/workout-display";
+import {
+  calculateDayTotalMiles,
+  calculateDayTotal,
+} from "@/lib/blocks/calculations";
 
 export function TomorrowWorkoutCard() {
   const { userId } = useUser();
@@ -12,7 +23,7 @@ export function TomorrowWorkoutCard() {
 
   if (isLoading) {
     return (
-      <div className="md:mx-0 mx-2 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
+      <div className="ml-4 mr-0 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
         <div className="p-4">
           <div className="flex flex-col items-start justify-between gap-2">
             <Skeleton className="h-4 w-1/3 mb-1" />
@@ -29,17 +40,45 @@ export function TomorrowWorkoutCard() {
     return null;
   }
 
-  const { workout: tomorrowsWorkout } = data;
+  const { day: tomorrowsDay } = data;
 
-  if (!tomorrowsWorkout) {
-    console.log("No workout for tomorrow");
+  if (!tomorrowsDay) {
     return null;
   }
 
-  const metrics = extractWorkoutMetrics(tomorrowsWorkout);
+  if (isRestDay(tomorrowsDay)) {
+    return (
+      <div className="ml-4 mr-0 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
+        <div className="p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Calendar className="h-3.5 w-3.5 text-neutral-500" />
+            <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
+              Tomorrow
+            </p>
+          </div>
+          <h3 className="font-serif text-xl font-light text-neutral-900">
+            Rest Day
+          </h3>
+          <p className="mt-1 text-sm text-neutral-500">
+            Scheduled recovery day.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const title = getDayTitle(tomorrowsDay);
+  const effortLevel = getDayEffortLevel(tomorrowsDay);
+  const zoneColor = effortToColor(effortLevel);
+  const zoneText = effortToZoneLabel(effortLevel);
+  const totalMiles = calculateDayTotalMiles(tomorrowsDay);
+  const totalMinutes = calculateDayTotal(tomorrowsDay);
+  const summary = tomorrowsDay.workouts.length > 0
+    ? getWorkoutSummary(tomorrowsDay.workouts[0])
+    : "";
 
   return (
-    <div className="md:mx-0 mx-2 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
+    <div className="ml-4 mr-0 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
       <div className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -51,57 +90,45 @@ export function TomorrowWorkoutCard() {
             </div>
 
             <h3 className="mb-2 font-serif text-xl font-light text-neutral-900">
-              {tomorrowsWorkout.type}
+              {title}
             </h3>
 
             {/* Zone Badge - Compact */}
-            {tomorrowsWorkout.zone && (
-              <div className="mb-3 flex items-center gap-2">
-                <div
-                  className="h-2 w-2 rounded-full"
-                  style={{
-                    backgroundColor: getZoneColor(tomorrowsWorkout.zone),
-                  }}
-                ></div>
-                <span className="text-xs font-medium uppercase tracking-wider text-neutral-700">
-                  {getZoneText(tomorrowsWorkout.zone)}
-                </span>
-              </div>
-            )}
+            <div className="mb-3 flex items-center gap-2">
+              <div
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: zoneColor }}
+              ></div>
+              <span className="text-xs font-medium uppercase tracking-wider text-neutral-700">
+                {zoneText}
+              </span>
+            </div>
 
             {/* Key Metrics - Compact */}
-            {(metrics.distance || metrics.vertical) && (
-              <div className="flex items-center gap-4">
-                {metrics.distance && (
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-mono text-lg font-semibold text-neutral-900">
-                      {metrics.distance}
-                    </span>
-                    <span className="text-xs font-medium uppercase tracking-wider text-neutral-500">
-                      miles
-                    </span>
-                  </div>
-                )}
-                {metrics.distance && metrics.vertical && (
-                  <span className="text-neutral-300">•</span>
-                )}
-                {metrics.vertical && (
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-mono text-lg font-semibold text-neutral-900">
-                      {metrics.vertical.replace(/,/g, "")}
-                    </span>
-                    <span className="text-xs font-medium uppercase tracking-wider text-neutral-500">
-                      ft
-                    </span>
-                  </div>
-                )}
+            <div className="flex items-center gap-4">
+              <div className="flex items-baseline gap-1">
+                <span className="font-mono text-lg font-semibold text-neutral-900">
+                  {totalMiles.toFixed(1)}
+                </span>
+                <span className="text-xs font-medium uppercase tracking-wider text-neutral-500">
+                  miles
+                </span>
               </div>
-            )}
+              <span className="text-neutral-300">&bull;</span>
+              <div className="flex items-baseline gap-1">
+                <span className="font-mono text-lg font-semibold text-neutral-900">
+                  {Math.round(totalMinutes)}
+                </span>
+                <span className="text-xs font-medium uppercase tracking-wider text-neutral-500">
+                  min
+                </span>
+              </div>
+            </div>
 
-            {/* Brief Description */}
-            {tomorrowsWorkout.description && (
+            {/* Brief Summary */}
+            {summary && (
               <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-neutral-600">
-                {tomorrowsWorkout.description}
+                {summary}
               </p>
             )}
           </div>

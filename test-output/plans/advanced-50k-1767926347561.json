@@ -1,0 +1,2455 @@
+{
+  "athlete": {
+    "id": "advanced-50k",
+    "name": "Elena - Advanced 50K Ultra",
+    "description": "Experienced trail runner, multiple marathons, training for first 50K in 14 weeks",
+    "profile": {
+      "experience": "advanced",
+      "weeklyMileage": 50,
+      "longestRun": 22,
+      "marathonPR": "3:15:00",
+      "currentFitness": "Strong aerobic base, just finished marathon block 4 weeks ago",
+      "background": "5 years of running, 3 marathons, regular trail running on weekends",
+      "injuries": "Plantar fasciitis 2 years ago, fully recovered"
+    },
+    "goal": {
+      "raceDistance": "50K",
+      "targetTime": "5:30:00",
+      "raceName": "Mountain Lakes 50K",
+      "raceDate": 1776393151820,
+      "elevation": 6500,
+      "terrainType": "trail"
+    },
+    "constraints": {
+      "preferredLongRunDay": "Saturday"
+    }
+  },
+  "plan": {
+    "id": "plan-1767926347560",
+    "userId": "to-be-set",
+    "totalWeeks": 13,
+    "weeks": [
+      {
+        "weekNumber": 1,
+        "phase": "Base Building",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 49,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 49,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 15,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 117,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 102,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 2,
+        "phase": "Base Building",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 63,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 69,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 19,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 151,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 50,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 3,
+        "phase": "Base Building",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 55,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 9,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 9,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 9,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 9,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 77,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 16,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 132,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 77,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 4,
+        "phase": "Base Recovery",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 55,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 6,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 72,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 6,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 17,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 100,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 55,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 6,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 5,
+        "phase": "Base Extension",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 32,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 95,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 6,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 19,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 177,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 6,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 88,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 6,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 6,
+        "phase": "Base Extension",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 18,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 30,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 18,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 107,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 18,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 195,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 83,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 7,
+        "phase": "Base Extension",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 5,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 5,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 5,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 5,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 5,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 5,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 36,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 113,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 159,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 113,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 8,
+        "phase": "Build Recovery",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 49,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 49,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 15,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 103,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 122,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 15,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 9,
+        "phase": "Build Intensity",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 15,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "tempo",
+                    "value": 20,
+                    "effortLevel": "z3"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 20,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "easy",
+                    "value": 75,
+                    "effortLevel": "z2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "easy",
+                    "value": 50,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 170,
+                    "effortLevel": "z2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "easy",
+                    "value": 230,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 10,
+        "phase": "Build Intensity",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 19,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 32,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 64,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 6,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 219,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 180,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 11,
+        "phase": "Build Intensity",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 17,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 7,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 7,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 7,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 7,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 7,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 32,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 17,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 81,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 17,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "longRun",
+                    "value": 191,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 156,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 12,
+        "phase": "Taper",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 18,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 4,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 6,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 44,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 85,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 18,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 73,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "tempo",
+                    "value": 24,
+                    "effortLevel": "z3"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 61,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 13,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 85,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 12,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "weekNumber": 13,
+        "phase": "Taper",
+        "days": [
+          {
+            "dayOfWeek": "Monday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Tuesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 14,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 28,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 3,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 3,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 3,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "recovery",
+                    "value": 3,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "intervals",
+                    "value": 3,
+                    "effortLevel": "z4"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 14,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Wednesday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Thursday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 48,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Friday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "rest",
+                    "value": 0,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Saturday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 14,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 145,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 7,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "dayOfWeek": "Sunday",
+            "workouts": [
+              {
+                "blocks": [
+                  {
+                    "type": "warmUp",
+                    "value": 11,
+                    "effortLevel": "z1"
+                  },
+                  {
+                    "type": "easy",
+                    "value": 48,
+                    "effortLevel": "z2"
+                  },
+                  {
+                    "type": "coolDown",
+                    "value": 10,
+                    "effortLevel": "z1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "phases": [
+      {
+        "name": "Base Building",
+        "startWeek": 1,
+        "endWeek": 3,
+        "focus": "Volume adaptation and aerobic development",
+        "weeklyVolumeRange": [
+          400,
+          480
+        ],
+        "keyWorkouts": [
+          "long run",
+          "easy runs",
+          "hill strides"
+        ]
+      },
+      {
+        "name": "Base Recovery",
+        "startWeek": 4,
+        "endWeek": 4,
+        "focus": "Adaptation and recovery",
+        "weeklyVolumeRange": [
+          360,
+          360
+        ],
+        "keyWorkouts": [
+          "easy runs only"
+        ]
+      },
+      {
+        "name": "Base Extension",
+        "startWeek": 5,
+        "endWeek": 7,
+        "focus": "Long run progression and vertical training introduction",
+        "weeklyVolumeRange": [
+          400,
+          550
+        ],
+        "keyWorkouts": [
+          "progressive long runs",
+          "hill repeats",
+          "easy runs"
+        ]
+      },
+      {
+        "name": "Build Recovery",
+        "startWeek": 8,
+        "endWeek": 8,
+        "focus": "Mid-plan recovery and adaptation",
+        "weeklyVolumeRange": [
+          410,
+          410
+        ],
+        "keyWorkouts": [
+          "easy runs",
+          "light hill work"
+        ]
+      },
+      {
+        "name": "Build Intensity",
+        "startWeek": 9,
+        "endWeek": 11,
+        "focus": "Race-specific intensity and back-to-back long runs",
+        "weeklyVolumeRange": [
+          550,
+          650
+        ],
+        "keyWorkouts": [
+          "tempo runs",
+          "threshold intervals",
+          "back-to-back long runs",
+          "vertical repeats"
+        ]
+      },
+      {
+        "name": "Taper",
+        "startWeek": 12,
+        "endWeek": 13,
+        "focus": "Volume reduction while maintaining sharpness",
+        "weeklyVolumeRange": [
+          390,
+          520
+        ],
+        "keyWorkouts": [
+          "race pace efforts",
+          "easy runs",
+          "strides"
+        ]
+      }
+    ],
+    "generatedAt": 1767926347560
+  },
+  "evaluation": {
+    "structural": 100,
+    "safety": 55,
+    "methodology": 87,
+    "overall": 77
+  },
+  "traces": [
+    {
+      "agentName": "Orchestrator",
+      "durationMs": 22727,
+      "inputTokens": 2422,
+      "outputTokens": 1632
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 7733,
+      "inputTokens": 1207,
+      "outputTokens": 726
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 7544,
+      "inputTokens": 1250,
+      "outputTokens": 726
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 9004,
+      "inputTokens": 1248,
+      "outputTokens": 901
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 7448,
+      "inputTokens": 1240,
+      "outputTokens": 726
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 9921,
+      "inputTokens": 1251,
+      "outputTokens": 1001
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 9834,
+      "inputTokens": 1250,
+      "outputTokens": 996
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 9728,
+      "inputTokens": 1252,
+      "outputTokens": 996
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 7694,
+      "inputTokens": 1245,
+      "outputTokens": 721
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 6933,
+      "inputTokens": 1263,
+      "outputTokens": 622
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 10080,
+      "inputTokens": 1266,
+      "outputTokens": 1004
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 9548,
+      "inputTokens": 1264,
+      "outputTokens": 952
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 9739,
+      "inputTokens": 1254,
+      "outputTokens": 950
+    },
+    {
+      "agentName": "WeekGenerator",
+      "durationMs": 9460,
+      "inputTokens": 1256,
+      "outputTokens": 925
+    }
+  ],
+  "generatedAt": "2026-01-09T02:39:07.561Z"
+}

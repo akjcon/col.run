@@ -37,8 +37,8 @@ const ChatInterface = forwardRef<
     {
       id: "welcome",
       role: "assistant",
-      content: userData?.generatedProfile?.recommendedPlan
-        ? `Hi! I'm your training assistant. I have access to your ${userData.generatedProfile.recommendedPlan.planType} plan and the full Training for the Uphill Athlete book. How can I help you today?`
+      content: userData?.activePlan
+        ? "Hi! I'm your training assistant. I have access to your training plan and the full Training for the Uphill Athlete book. How can I help you today?"
         : "Hi! I'm your training assistant. I have access to the full Training for the Uphill Athlete book. How can I help you today?",
       timestamp: new Date(),
     },

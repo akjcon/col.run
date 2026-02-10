@@ -6,7 +6,6 @@ import { store } from "./store";
 import { useGetUserDataQuery, useInitializeNewUserMutation } from "./store/api";
 import { useClerkFirebase } from "./clerk-firebase";
 import { useUser as useClerkUser } from "@clerk/nextjs";
-import { createDefaultUserData } from "./default-data";
 import { UserData } from "./types";
 
 interface UserContextType {
@@ -23,7 +22,6 @@ function UserContextProvider({ children }: { children: React.ReactNode }) {
   const { userId, isFirebaseReady } = useClerkFirebase();
   const { user } = useClerkUser();
 
-  // Skip query if no userId or Firebase not ready
   const {
     data: userData,
     isLoading,
@@ -65,11 +63,8 @@ function UserContextProvider({ children }: { children: React.ReactNode }) {
     initializeNewUser,
   ]);
 
-  // Use default data for non-authenticated users
-  const effectiveUserData = userId ? userData || null : createDefaultUserData();
-
   const contextValue: UserContextType = {
-    userData: effectiveUserData,
+    userData: userData || null,
     isLoading: userId ? isLoading : false,
     error: error ? String(error) : null,
     userId: userId || null,

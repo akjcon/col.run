@@ -1,5 +1,13 @@
 /**
  * Block Calculation Utilities
+ *
+ * Blocks can be in either "minutes" or "miles" units.
+ * - Distance-based (easy, longRun): miles
+ * - Time-based (intervals, tempo, warmUp, etc.): minutes
+ *
+ * For volume calculations that need a common unit, we convert miles to
+ * estimated minutes using an assumed pace. This is approximate but
+ * necessary for volume progression and safety checks.
  */
 
 import type { Block, BlockType, Day, EffortLevel, Week, Workout } from "./types";
@@ -13,6 +21,32 @@ const EFFORT_MAP: Record<EffortLevel, number> = {
   z4: 4,
   z5: 5,
 };
+
+// Default pace for converting miles to minutes (for volume calculations)
+// This is approximate - easy running pace for most recreational runners
+const DEFAULT_PACE_MIN_PER_MILE = 10;
+
+/**
+ * Convert a block's value to minutes (for volume calculations)
+ * If already in minutes, returns as-is. If in miles, converts using pace.
+ */
+export function blockValueToMinutes(block: Block, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
+  if (block.type === "rest") return 0;
+  if (block.unit === "minutes") return block.value;
+  // miles -> minutes
+  return block.value * paceMinPerMile;
+}
+
+/**
+ * Convert a block's value to miles (for distance calculations)
+ * If already in miles, returns as-is. If in minutes, converts using pace.
+ */
+export function blockValueToMiles(block: Block, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
+  if (block.type === "rest") return 0;
+  if (block.unit === "miles") return block.value;
+  // minutes -> miles
+  return block.value / paceMinPerMile;
+}
 
 // =============================================================================
 // Block Classification
@@ -53,10 +87,23 @@ export function getWorkoutBlocks(workout: Workout): Block[] {
 }
 
 /**
- * Calculates total minutes for a workout
+ * Calculates total minutes for a workout (converting miles to minutes as needed)
  */
-export function calculateWorkoutTotal(workout: Workout): number {
-  return getWorkoutBlocks(workout).reduce((sum, block) => sum + block.value, 0);
+export function calculateWorkoutTotal(workout: Workout, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
+  return getWorkoutBlocks(workout).reduce(
+    (sum, block) => sum + blockValueToMinutes(block, paceMinPerMile),
+    0
+  );
+}
+
+/**
+ * Calculates total miles for a workout (converting minutes to miles as needed)
+ */
+export function calculateWorkoutTotalMiles(workout: Workout, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
+  return getWorkoutBlocks(workout).reduce(
+    (sum, block) => sum + blockValueToMiles(block, paceMinPerMile),
+    0
+  );
 }
 
 /**
@@ -87,8 +134,15 @@ export function getDayBlocks(day: Day): Block[] {
 /**
  * Calculates total minutes for a day (across all workouts)
  */
-export function calculateDayTotal(day: Day): number {
-  return day.workouts.reduce((sum, workout) => sum + calculateWorkoutTotal(workout), 0);
+export function calculateDayTotal(day: Day, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
+  return day.workouts.reduce((sum, workout) => sum + calculateWorkoutTotal(workout, paceMinPerMile), 0);
+}
+
+/**
+ * Calculates total miles for a day (across all workouts)
+ */
+export function calculateDayTotalMiles(day: Day, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
+  return day.workouts.reduce((sum, workout) => sum + calculateWorkoutTotalMiles(workout, paceMinPerMile), 0);
 }
 
 /**
@@ -156,8 +210,15 @@ export function getWeekBlocks(week: Week): Block[] {
 /**
  * Calculates total minutes for a week
  */
-export function calculateWeekTotal(week: Week): number {
-  return week.days.reduce((sum, day) => sum + calculateDayTotal(day), 0);
+export function calculateWeekTotal(week: Week, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
+  return week.days.reduce((sum, day) => sum + calculateDayTotal(day, paceMinPerMile), 0);
+}
+
+/**
+ * Calculates total miles for a week
+ */
+export function calculateWeekTotalMiles(week: Week, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
+  return week.days.reduce((sum, day) => sum + calculateDayTotalMiles(day, paceMinPerMile), 0);
 }
 
 /**

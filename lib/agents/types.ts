@@ -6,7 +6,7 @@
  * - WeekGenerator: Focused context, tactical execution
  */
 
-import type { Week, Day, Block } from "@/lib/blocks";
+import type { Week } from "@/lib/blocks";
 
 // =============================================================================
 // Agent Base Types
@@ -34,9 +34,22 @@ export interface AgentResult<T> {
 // =============================================================================
 
 export interface AthleteProfile {
-  experience: "beginner" | "intermediate" | "advanced";
-  weeklyMileage: number;
-  longestRun: number;
+  // Current fitness (from recent Strava data)
+  experience: "beginner" | "intermediate" | "advanced" | "elite";
+  weeklyMileage: number; // Current weekly mileage
+  longestRun: number; // Longest run in last 12 weeks
+  ctl?: number; // Chronic Training Load
+  atl?: number; // Acute Training Load
+  thresholdPace?: number; // min/mile
+
+  // Experience/capability (from lifetime Strava data)
+  lifetimeMiles?: number;
+  longestRunEver?: number; // Longest run ever (not just recent)
+  peakWeeklyMileage?: number; // Peak weekly mileage ever
+  ultraExperience?: boolean;
+  trailExperience?: boolean;
+
+  // Legacy/optional
   marathonPR?: string;
   currentFitness?: string;
   background?: string;
@@ -68,6 +81,11 @@ export interface OrchestratorInput {
   goal: RaceGoal;
   planWeeks: number;
   constraints?: PlanConstraints;
+  // New: Pre-computed feasibility and requirements
+  raceRequirements?: RaceRequirementsSummary;
+  feasibility?: FeasibilitySummary;
+  // Aggregated feedback from previous plan reviews
+  feedbackContext?: string;
 }
 
 export interface PhaseTarget {
@@ -85,6 +103,8 @@ export interface WeeklyTarget {
   targetVolume: number; // minutes
   keyWorkoutType: string | null; // e.g., "tempo", "intervals", "longRun"
   notes?: string;
+  /** Detailed instructions for the week generator explaining workout rationale and specifics */
+  instructions?: string;
 }
 
 export interface OrchestratorOutput {
@@ -121,10 +141,31 @@ export interface WeekGeneratorOutput {
 // Pipeline Types
 // =============================================================================
 
+export interface RaceRequirementsSummary {
+  distanceMiles: number;
+  peakWeeklyMileage: { min: number; ideal: number; max: number };
+  peakLongRun: { min: number; ideal: number; max: number };
+  keyWorkouts: string[];
+  considerations: string[];
+}
+
+export interface FeasibilitySummary {
+  feasible: boolean;
+  riskLevel: "low" | "moderate" | "high" | "extreme";
+  suggestedApproach: string;
+  startingWeeklyMileage: number;
+  targetPeakMileage: number;
+  targetPeakLongRun: number;
+  warnings: string[];
+}
+
 export interface PlanGenerationInput {
   athlete: AthleteProfile;
   goal: RaceGoal;
   constraints?: PlanConstraints;
+  // New: Pre-computed feasibility and requirements
+  raceRequirements?: RaceRequirementsSummary;
+  feasibility?: FeasibilitySummary;
 }
 
 export interface PlanGenerationOutput {

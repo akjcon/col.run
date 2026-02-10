@@ -10,6 +10,7 @@ import type { Week } from "@/lib/blocks";
 import { evaluatePlan } from "@/lib/plan-evaluation";
 import { OrchestratorAgent } from "./orchestrator";
 import { WeekGeneratorAgent } from "./week-generator";
+import { getFeedbackContextForPrompt } from "@/lib/feedback/aggregator";
 import type {
   PlanGenerationInput,
   PlanGenerationOutput,
@@ -66,6 +67,17 @@ export class PlanGenerationPipeline {
     // Calculate plan length
     const planWeeks = this.calculatePlanWeeks(input);
 
+    // Fetch feedback context from previous reviews
+    let feedbackContext: string | undefined;
+    try {
+      feedbackContext = await getFeedbackContextForPrompt();
+      if (feedbackContext) {
+        console.log(`[Pipeline] Loaded feedback context from previous reviews`);
+      }
+    } catch (err) {
+      console.warn(`[Pipeline] Could not load feedback context:`, err);
+    }
+
     // Step 1: Run orchestrator for strategic planning
     console.log(`[Pipeline] Starting orchestrator for ${planWeeks}-week plan...`);
     const orchestratorResult = await this.orchestrator.execute({
@@ -73,6 +85,9 @@ export class PlanGenerationPipeline {
       goal: input.goal,
       planWeeks,
       constraints: input.constraints,
+      raceRequirements: input.raceRequirements,
+      feasibility: input.feasibility,
+      feedbackContext,
     });
 
     traces.push(orchestratorResult.trace);
@@ -83,6 +98,11 @@ export class PlanGenerationPipeline {
 
     const planStructure = orchestratorResult.data;
     console.log(`[Pipeline] Orchestrator complete. Phases: ${planStructure.phases.map(p => p.name).join(", ")}`);
+
+    // Fix volume progression violations in orchestrator output (10% rule is real)
+    fixVolumeProgression(planStructure.weeklyTargets);
+
+    console.log(`[Pipeline] Orchestrator targets: ${planStructure.weeklyTargets.map(t => `W${t.weekNumber}:${t.targetVolume}`).join(", ")}`);
 
     // Step 2: Generate each week
     console.log(`[Pipeline] Generating ${planWeeks} weeks...`);
@@ -111,8 +131,14 @@ export class PlanGenerationPipeline {
         traces.push(result.trace);
 
         if (result.success && result.week) {
-          weeks.push(result.week);
-          console.log(`[Pipeline] Week ${weekNum} complete`);
+          const target = planStructure.weeklyTargets[weekNum - 1]?.targetVolume || 0;
+          const week = result.week;
+
+          // Just log - trust the AI's judgment
+          const actual = calculateWeekVolume(week);
+          console.log(`[Pipeline] Week ${weekNum} complete: ${actual} min (target: ${target})`);
+
+          weeks.push(week);
         } else {
           console.error(`[Pipeline] Week ${weekNum} failed: ${result.error}`);
           // Create a placeholder rest week if generation fails
@@ -287,11 +313,65 @@ function createRestWeek(weekNumber: number, phase: string): Week {
     days: days.map(dayOfWeek => ({
       dayOfWeek,
       workouts: [{
-        blocks: [{ type: "rest" as const, value: 0, effortLevel: "z1" as const }],
+        blocks: [{ type: "rest" as const, value: 0, unit: "minutes" as const, effortLevel: "z1" as const }],
       }],
     })),
   };
 }
+
+/**
+ * Fix volume progression violations in orchestrator output.
+ * Ensures no week increases more than 10% from the reference volume.
+ * Reference volume = last non-recovery week's volume.
+ */
+function fixVolumeProgression(weeklyTargets: WeeklyTarget[]): void {
+  if (weeklyTargets.length === 0) return;
+
+  let referenceVolume = weeklyTargets[0].targetVolume;
+
+  for (let i = 1; i < weeklyTargets.length; i++) {
+    const target = weeklyTargets[i];
+    const isRecovery = target.phase.toLowerCase().includes("recovery");
+
+    if (isRecovery) {
+      // Recovery week - don't update reference, but ensure it's reduced
+      const minReduction = referenceVolume * 0.70; // At least 30% reduction
+      if (target.targetVolume > minReduction) {
+        target.targetVolume = Math.round(minReduction);
+      }
+    } else {
+      // Normal week - cap at 10% increase from reference
+      // Use 1.095 and floor to avoid rounding errors pushing over 10%
+      const maxAllowed = Math.floor(referenceVolume * 1.095);
+      if (target.targetVolume > maxAllowed) {
+        target.targetVolume = maxAllowed;
+      }
+      // Update reference for next iteration
+      referenceVolume = target.targetVolume;
+    }
+  }
+}
+
+
+
+/**
+ * Calculate total volume (minutes) for a week.
+ * Converts miles to minutes using assumed pace.
+ */
+function calculateWeekVolume(week: Week, paceMinPerMile = 10): number {
+  return week.days.reduce((sum, day) =>
+    sum + day.workouts.reduce((wSum, workout) =>
+      wSum + workout.blocks.reduce((bSum, block) => {
+        if (block.type === "rest") return bSum;
+        if (block.unit === "miles") {
+          return bSum + (block.value * paceMinPerMile);
+        }
+        return bSum + block.value;
+      }, 0),
+    0),
+  0);
+}
+
 
 // =============================================================================
 // Convenience Function

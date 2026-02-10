@@ -43,7 +43,6 @@ export const userApi = baseApi.injectEndpoints({
 
           // Get related data in parallel
           const [backgroundSnap, planSnap, chatSnap] = await Promise.all([
-            // Get latest training background
             getDocs(
               query(
                 collection(db, "users", userId, "backgrounds"),
@@ -51,7 +50,6 @@ export const userApi = baseApi.injectEndpoints({
                 limit(1)
               )
             ),
-            // Get active training plan
             getDocs(
               query(
                 collection(db, "users", userId, "trainingPlans"),
@@ -59,7 +57,6 @@ export const userApi = baseApi.injectEndpoints({
                 limit(1)
               )
             ),
-            // Get chat history
             getDocs(
               query(
                 collection(db, "users", userId, "chatHistory"),
@@ -79,11 +76,11 @@ export const userApi = baseApi.injectEndpoints({
             } as unknown as TrainingBackground) as TrainingBackground;
           }
 
-          let recommendedPlan: TrainingPlan | undefined;
+          let activePlan: TrainingPlan | undefined;
           if (!planSnap.empty) {
             const doc = planSnap.docs[0];
             const rawData = doc.data();
-            recommendedPlan = normalizeTimestamps({
+            activePlan = normalizeTimestamps({
               id: doc.id,
               ...rawData,
             } as unknown as TrainingPlan) as TrainingPlan;
@@ -102,16 +99,7 @@ export const userApi = baseApi.injectEndpoints({
           const userData: UserData = {
             profile,
             trainingBackground,
-            generatedProfile:
-              trainingBackground && recommendedPlan
-                ? {
-                    fitnessAssessment: "Generated from user input",
-                    recommendedPlan,
-                    strengths: [],
-                    focusAreas: [],
-                    aiAnalysis: "AI analysis pending",
-                  }
-                : undefined,
+            activePlan,
             chatHistory,
           };
 
@@ -178,7 +166,6 @@ export const userApi = baseApi.injectEndpoints({
         { type: "User", id: userId },
         "UserProfile",
       ],
-      // Optimistic update
       async onQueryStarted({ userId, updates }, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
           userApi.util.updateQueryData("getUserData", userId, (draft) => {

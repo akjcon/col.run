@@ -2,13 +2,15 @@
  * Block Validation Utilities
  */
 
-import type { Block, Day, Workout, Week } from "./types";
+import type { Block, Day, Workout, Week, BlockUnit } from "./types";
 import { VALID_BLOCK_TYPES, VALID_EFFORT_LEVELS } from "./types";
 
 export interface ValidationResult {
   valid: boolean;
   errors: string[];
 }
+
+const VALID_UNITS: BlockUnit[] = ["minutes", "miles", "seconds"];
 
 /**
  * Validates a single block
@@ -34,6 +36,13 @@ export function validateBlock(block: Block): ValidationResult {
 
   if (!VALID_EFFORT_LEVELS.includes(block.effortLevel)) {
     errors.push(`Invalid effort level: ${block.effortLevel}`);
+  }
+
+  // Validate unit field
+  if (!block.unit) {
+    errors.push(`Block missing unit field`);
+  } else if (!VALID_UNITS.includes(block.unit)) {
+    errors.push(`Invalid unit: ${block.unit}`);
   }
 
   return { valid: errors.length === 0, errors };

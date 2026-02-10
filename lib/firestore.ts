@@ -20,7 +20,6 @@ import {
   UserProfile,
   TrainingBackground,
   TrainingPlan,
-  GeneratedProfile,
   ChatMessage,
 } from "./types";
 
@@ -161,7 +160,7 @@ export async function saveTrainingPlan(
     ...plan,
     userId,
     generatedAt: serverTimestamp(),
-    isActive: true, // New plans are active by default
+    isActive: true,
   });
 
   // Deactivate other plans
@@ -288,7 +287,7 @@ export async function getChatHistory(
           ...doc.data(),
         }) as ChatMessage
     )
-    .reverse(); // Return in chronological order
+    .reverse();
 }
 
 // Complete User Data Operations
@@ -308,21 +307,10 @@ export async function getUserData(
       return null;
     }
 
-    let generatedProfile: GeneratedProfile | undefined;
-    if (background && plan) {
-      generatedProfile = {
-        fitnessAssessment: "Generated from user input", // This would come from LLM
-        recommendedPlan: plan,
-        strengths: [], // This would come from LLM analysis
-        focusAreas: [], // This would come from LLM analysis
-        aiAnalysis: "AI analysis pending", // This would come from LLM
-      };
-    }
-
     return {
       profile,
       trainingBackground: background || undefined,
-      generatedProfile,
+      activePlan: plan || undefined,
       chatHistory,
     };
   } catch (error) {

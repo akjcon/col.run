@@ -1,0 +1,165 @@
+{
+  "description": "A BAD 10-week 50k plan - volumes way too low, long runs insufficient, no race specificity",
+  "raceInfo": {
+    "distance": "50k",
+    "distanceMiles": 31,
+    "elevation": 6000
+  },
+  "athleteInfo": {
+    "currentWeeklyMileage": 10,
+    "peakWeeklyMileage": 55,
+    "longestRunEver": 31,
+    "experience": "advanced"
+  },
+  "expectedScores": {
+    "structuralMin": 100,
+    "safetyMax": 50,
+    "methodologyMax": 60,
+    "overallMax": 50,
+    "raceAppropriateness": "fail"
+  },
+  "knownIssues": [
+    "Peak weekly mileage (15mi) is ~27% of minimum needed (55mi) for 50k",
+    "Peak long run (4mi) is ~18% of minimum needed (22mi) for 50k",
+    "No tempo or interval workouts - zero race specificity",
+    "Volume doesn't progress meaningfully",
+    "This plan would lead to DNF or injury at a 50k"
+  ],
+  "plan": {
+    "id": "test-bad-50k",
+    "userId": "test-user",
+    "totalWeeks": 10,
+    "weeks": [
+      {
+        "weekNumber": 1,
+        "phase": "Base",
+        "days": [
+          { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] }
+        ]
+      },
+      {
+        "weekNumber": 2,
+        "phase": "Base",
+        "days": [
+          { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 1, "unit": "miles", "effortLevel": "z1" }] }] }
+        ]
+      },
+      {
+        "weekNumber": 3,
+        "phase": "Base",
+        "days": [
+          { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 1, "unit": "miles", "effortLevel": "z1" }] }] }
+        ]
+      },
+      {
+        "weekNumber": 4,
+        "phase": "Recovery",
+        "days": [
+          { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 2, "unit": "miles", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] }
+        ]
+      },
+      {
+        "weekNumber": 5,
+        "phase": "Build",
+        "days": [
+          { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 4, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z1" }] }] }
+        ]
+      },
+      {
+        "weekNumber": 6,
+        "phase": "Build",
+        "days": [
+          { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 4, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z1" }] }] }
+        ]
+      },
+      {
+        "weekNumber": 7,
+        "phase": "Build",
+        "days": [
+          { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 4, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 3, "unit": "miles", "effortLevel": "z1" }] }] }
+        ]
+      },
+      {
+        "weekNumber": 8,
+        "phase": "Peak",
+        "days": [
+          { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 4, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 4, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 4, "unit": "miles", "effortLevel": "z1" }] }] }
+        ]
+      },
+      {
+        "weekNumber": 9,
+        "phase": "Taper",
+        "days": [
+          { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "longRun", "value": 3, "unit": "miles", "effortLevel": "z2" }] }] },
+          { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z1" }] }] }
+        ]
+      },
+      {
+        "weekNumber": 10,
+        "phase": "Race",
+        "days": [
+          { "dayOfWeek": "Monday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Tuesday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Wednesday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Thursday", "workouts": [{ "blocks": [{ "type": "easy", "value": 2, "unit": "miles", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Friday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Saturday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] },
+          { "dayOfWeek": "Sunday", "workouts": [{ "blocks": [{ "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }] }] }
+        ]
+      }
+    ]
+  }
+}

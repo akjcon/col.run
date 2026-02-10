@@ -1,63 +1,94 @@
-import { calculateWorkoutDates } from "@/lib/plan-utils";
-import type { Workout, WeekPlan } from "@/lib/types";
+/**
+ * V2 Date Utilities for Training Plans
+ *
+ * Assigns dates to Day objects based on plan start date + week number + dayOfWeek.
+ */
 
-export function getTodaysWorkout(
-  weeksWithDates: Array<{ workouts: Workout[] }>
-): Workout | undefined {
-  const today = new Date();
-  const todayLocal = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
-  );
+import type { Week, Day } from "@/lib/blocks/types";
 
-  return weeksWithDates
-    .flatMap((week) => week.workouts)
-    .find((workout) => {
-      if (!workout.date) return false;
-      const workoutDate = new Date(workout.date);
-      const workoutLocal = new Date(
-        workoutDate.getFullYear(),
-        workoutDate.getMonth(),
-        workoutDate.getDate()
-      );
-      return workoutLocal.getTime() === todayLocal.getTime();
-    });
-}
+const DAY_MAP: Record<string, number> = {
+  Monday: 0,
+  Tuesday: 1,
+  Wednesday: 2,
+  Thursday: 3,
+  Friday: 4,
+  Saturday: 5,
+  Sunday: 6,
+};
 
-export function getTomorrowsWorkout(
-  weeksWithDates: Array<{ workouts: Workout[] }>
-): Workout | undefined {
-  const today = new Date();
-  const tomorrow = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate() + 1
-  );
-
-  return weeksWithDates
-    .flatMap((week) => week.workouts)
-    .find((workout) => {
-      if (!workout.date) return false;
-      const workoutDate = new Date(workout.date);
-      const workoutLocal = new Date(
-        workoutDate.getFullYear(),
-        workoutDate.getMonth(),
-        workoutDate.getDate()
-      );
-      return workoutLocal.getTime() === tomorrow.getTime();
-    });
-}
-
+/**
+ * Assign date fields to each Day in the plan based on startDate.
+ * Returns a new array of weeks with dates populated on each day.
+ */
 export function getWeeksWithDates(
   startDate: number | undefined,
   generatedAt: number | undefined,
-  weeks: WeekPlan[] | undefined
-): Array<{ weekNumber: number; workouts: Workout[] }> {
-  if (weeks && startDate) {
-    return calculateWorkoutDates(startDate, weeks);
-  } else if (generatedAt && weeks) {
-    return calculateWorkoutDates(generatedAt, weeks);
+  weeks: Week[] | undefined
+): Week[] {
+  if (!weeks || weeks.length === 0) return [];
+
+  const baseDate = startDate || generatedAt;
+  if (!baseDate) return weeks;
+
+  // Find the Monday of the week containing the base date
+  const baseDateObj = new Date(baseDate);
+  const dayOfWeek = baseDateObj.getDay(); // 0=Sun, 1=Mon...
+  const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const firstWeekMonday = new Date(baseDateObj);
+  firstWeekMonday.setDate(baseDateObj.getDate() - daysFromMonday);
+  firstWeekMonday.setHours(0, 0, 0, 0);
+
+  return weeks.map((week) => ({
+    ...week,
+    days: week.days.map((day) => {
+      const dayOffset = DAY_MAP[day.dayOfWeek] ?? 0;
+      const weekOffset = (week.weekNumber - 1) * 7;
+      const dayDate = new Date(firstWeekMonday);
+      dayDate.setDate(firstWeekMonday.getDate() + weekOffset + dayOffset);
+      return {
+        ...day,
+        date: dayDate.getTime(),
+      };
+    }),
+  }));
+}
+
+/**
+ * Find the Day matching today's date from weeks with dates assigned.
+ */
+export function getTodaysDay(weeksWithDates: Week[]): Day | undefined {
+  const today = new Date();
+  const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  for (const week of weeksWithDates) {
+    for (const day of week.days) {
+      if (!day.date) continue;
+      const dayDate = new Date(day.date);
+      const dayLocal = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
+      if (dayLocal.getTime() === todayLocal.getTime()) {
+        return day;
+      }
+    }
   }
-  return [];
+  return undefined;
+}
+
+/**
+ * Find the Day matching tomorrow's date from weeks with dates assigned.
+ */
+export function getTomorrowsDay(weeksWithDates: Week[]): Day | undefined {
+  const today = new Date();
+  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+  for (const week of weeksWithDates) {
+    for (const day of week.days) {
+      if (!day.date) continue;
+      const dayDate = new Date(day.date);
+      const dayLocal = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
+      if (dayLocal.getTime() === tomorrow.getTime()) {
+        return day;
+      }
+    }
+  }
+  return undefined;
 }

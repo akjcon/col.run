@@ -6,8 +6,13 @@
  */
 
 import { BaseAgent, extractJSON } from "./base";
-import type { Week, Day, Workout, Block, BlockType, EffortLevel } from "@/lib/blocks";
-import { validateWeek, VALID_BLOCK_TYPES, VALID_EFFORT_LEVELS } from "@/lib/blocks";
+import type { Week, Day, Workout, Block, BlockType, EffortLevel, BlockUnit } from "@/lib/blocks";
+import {
+  validateWeek,
+  VALID_BLOCK_TYPES,
+  VALID_EFFORT_LEVELS,
+  getDefaultUnit,
+} from "@/lib/blocks";
 import type { WeekGeneratorInput, WeekGeneratorOutput } from "./types";
 
 // =============================================================================
@@ -41,6 +46,13 @@ export class WeekGeneratorAgent extends BaseAgent<WeekGeneratorInput, WeekGenera
     const blockTypesStr = VALID_BLOCK_TYPES.join(", ");
     const effortLevelsStr = VALID_EFFORT_LEVELS.join(", ");
 
+    // Convert target volume (minutes) to approximate miles for guidance
+    // Use athlete's pace if available, otherwise default 10 min/mile
+    const paceMinPerMile = input.athleteProfile.thresholdPace
+      ? input.athleteProfile.thresholdPace * 1.3 // Easy pace ~30% slower than threshold
+      : 10;
+    const targetMiles = Math.round(input.target.targetVolume / paceMinPerMile);
+
     return `You are an expert trail running coach creating detailed daily workouts for a single training week.
 
 Your role is TACTICAL EXECUTION. You will generate the specific workout blocks for each day of the week.
@@ -48,18 +60,32 @@ Your role is TACTICAL EXECUTION. You will generate the specific workout blocks f
 BLOCK STRUCTURE:
 Each workout is composed of blocks. A block has:
 - type: One of [${blockTypesStr}]
-- value: Duration in minutes (must be > 0, except rest which can be 0)
+- value: DEPENDS ON TYPE (see below)
+- unit: "miles" for easy/longRun, "minutes" or "seconds" for workouts
 - effortLevel: One of [${effortLevelsStr}]
+- notes: (optional) Additional instructions, e.g., "on steep hill", "at race pace"
+- repeat: (optional) For interval workouts, specifies repetitions:
+  - times: number of repetitions
+  - restBetween: { value, unit, effortLevel } for recovery between reps
+
+CRITICAL - VALUE UNITS BY BLOCK TYPE:
+- easy, longRun: value is in MILES (e.g., 5 for "5 miles easy") - use unit="miles"
+- warmUp, intervals, tempo, recovery, coolDown: value is in MINUTES - use unit="minutes"
+- rest: value=0, unit="minutes"
 
 BLOCK TYPE DEFINITIONS:
-- warmUp: Pre-workout warm-up (typically z1)
-- easy: Easy aerobic running (z1-z2)
-- tempo: Sustained threshold effort (z3)
-- intervals: High intensity repeats (z4-z5)
-- recovery: Recovery jog between efforts (z1)
-- longRun: Extended aerobic run (z1-z2)
-- coolDown: Post-workout cool-down (z1)
-- rest: Complete rest day (value=0, effortLevel=z1)
+- warmUp: Pre-workout warm-up, ~10min (unit=minutes) - ONLY for tempo/interval days
+- easy: Easy aerobic running (unit=MILES, round to whole numbers) - NO warmup/cooldown needed
+- tempo: Sustained threshold effort (unit=minutes)
+- intervals: High intensity repeats (unit=minutes for total interval time)
+- recovery: Recovery jog between efforts, ~5min (unit=minutes)
+- longRun: Extended aerobic run (unit=MILES, round to whole numbers) - NO warmup/cooldown needed
+- coolDown: Post-workout cool-down, ~5-10min (unit=minutes) - ONLY for tempo/interval days
+- rest: Complete rest day (value=0, unit=minutes)
+
+ROUNDING RULES:
+- Miles MUST be whole numbers (1, 2, 3, ..., 20) - NO decimals like 5.5 or 7.3
+- Minutes can be any reasonable value (5, 10, 15, 20, 25, 30, etc.)
 
 EFFORT ZONES:
 - z1: Very easy, conversational
@@ -68,8 +94,13 @@ EFFORT ZONES:
 - z4: Hard, threshold to VO2max
 - z5: Very hard, max effort intervals
 
-METHODOLOGY GUIDANCE:
-${input.methodology}
+CORE TRAINING PRINCIPLES:
+- 80% of training at z1-z2 (easy/aerobic), 20% at z3-z5 (hard)
+- Never schedule hard workouts on consecutive days
+- Long runs build aerobic endurance - keep mostly z2
+- Recovery runs are very easy (z1)
+- Hill workouts build strength for mountain races
+- Back-to-back weekends: split long run across Sat+Sun, neither day extreme
 
 OUTPUT FORMAT:
 Return a JSON object with this structure:
@@ -83,7 +114,7 @@ Return a JSON object with this structure:
         "workouts": [
           {
             "blocks": [
-              { "type": "rest", "value": 0, "effortLevel": "z1" }
+              { "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }
             ]
           }
         ]
@@ -93,9 +124,41 @@ Return a JSON object with this structure:
         "workouts": [
           {
             "blocks": [
-              { "type": "warmUp", "value": 10, "effortLevel": "z1" },
-              { "type": "easy", "value": 35, "effortLevel": "z2" },
-              { "type": "coolDown", "value": 5, "effortLevel": "z1" }
+              { "type": "easy", "value": 5, "unit": "miles", "effortLevel": "z2" }
+            ]
+          }
+        ]
+      },
+      {
+        "dayOfWeek": "Wednesday",
+        "workouts": [
+          {
+            "blocks": [
+              { "type": "warmUp", "value": 10, "unit": "minutes", "effortLevel": "z1" },
+              { "type": "intervals", "value": 30, "unit": "seconds", "effortLevel": "z5", "notes": "hill sprints", "repeat": { "times": 8, "restBetween": { "value": 90, "unit": "seconds", "effortLevel": "z1" } } },
+              { "type": "coolDown", "value": 10, "unit": "minutes", "effortLevel": "z1" }
+            ]
+          }
+        ]
+      },
+      {
+        "dayOfWeek": "Thursday",
+        "workouts": [
+          {
+            "blocks": [
+              { "type": "warmUp", "value": 10, "unit": "minutes", "effortLevel": "z1" },
+              { "type": "tempo", "value": 5, "unit": "minutes", "effortLevel": "z3", "repeat": { "times": 4, "restBetween": { "value": 2, "unit": "minutes", "effortLevel": "z1" } } },
+              { "type": "coolDown", "value": 10, "unit": "minutes", "effortLevel": "z1" }
+            ]
+          }
+        ]
+      },
+      {
+        "dayOfWeek": "Saturday",
+        "workouts": [
+          {
+            "blocks": [
+              { "type": "longRun", "value": 12, "unit": "miles", "effortLevel": "z2", "notes": "on hilly terrain if possible" }
             ]
           }
         ]
@@ -106,25 +169,46 @@ Return a JSON object with this structure:
 
 CRITICAL RULES:
 1. Include all 7 days (Monday through Sunday)
-2. Total weekly volume should be approximately ${input.target.targetVolume} minutes
-3. Rest days: Use a single block with type="rest", value=0, effortLevel="z1"
-4. Hard workouts (tempo, intervals) need warmUp and coolDown blocks
-5. 80/20 rule: ~80% of volume should be z1-z2, ~20% z3-z5
-6. Don't schedule hard workouts on consecutive days
-7. Long run typically on weekend`;
+2. Target weekly volume: ~${targetMiles} miles (${input.target.targetVolume} min at ~${Math.round(paceMinPerMile)} min/mile)
+   - easy/longRun blocks: use MILES (whole numbers only!)
+   - workout blocks (warmUp, intervals, tempo, coolDown): use MINUTES
+3. Rest days: Use a single block with type="rest", value=0, unit="minutes", effortLevel="z1"
+4. Easy runs and long runs: JUST the single easy/longRun block, NO warmUp/coolDown
+5. Hard workouts ONLY (tempo, intervals): Include warmUp and coolDown blocks
+6. 80/20 rule: ~80% of volume should be z1-z2, ~20% z3-z5
+7. Don't schedule hard workouts on consecutive days
+8. Long run typically on weekend
+
+VOLUME ESTIMATION:
+- Assume ~${Math.round(paceMinPerMile)} min/mile for easy running
+- Target: ~${targetMiles} total miles across the week`;
   }
 
   protected buildUserMessage(input: WeekGeneratorInput): string {
     const { weekNumber, target, phase, previousWeek, constraints, athleteProfile } = input;
+
+    // Calculate approximate miles target
+    const paceMinPerMile = athleteProfile.thresholdPace
+      ? athleteProfile.thresholdPace * 1.3
+      : 10;
+    const targetMiles = Math.round(target.targetVolume / paceMinPerMile);
+    const longRunMiles = Math.round(targetMiles * 0.35); // Long run ~35% of weekly volume
 
     let message = `Generate week ${weekNumber} of the training plan.
 
 WEEK TARGET:
 - Week: ${weekNumber}
 - Phase: ${target.phase}
-- Target volume: ${target.targetVolume} minutes
+- Target volume: ~${targetMiles} miles (~${target.targetVolume} minutes)
 - Key workout: ${target.keyWorkoutType || "None specified"}
 - Notes: ${target.notes || "None"}
+${target.instructions ? `
+ORCHESTRATOR INSTRUCTIONS (FOLLOW THESE CAREFULLY):
+${target.instructions}
+
+IMPORTANT: The above instructions come from the strategic planning agent who has full book context.
+Follow these specific prescriptions exactly, including any back-to-back splits, interval formats, and hill workouts.
+` : ""}
 
 PHASE CONTEXT:
 - Phase name: ${phase.name}
@@ -154,6 +238,18 @@ PREFERRED LONG RUN DAY: ${constraints.preferredLongRunDay}`;
     }
 
     message += `
+
+VOLUME DISTRIBUTION (in miles - use whole numbers!):
+- Total target: ~${targetMiles} miles
+- Long run: ${longRunMiles} miles (on weekend)
+- Remaining: ${targetMiles - longRunMiles} miles split across 3-4 other run days
+- Include 2-3 rest days
+- Easy runs: 4-8 miles each (whole numbers!)
+- Warmup/cooldown: 5-10 minutes each
+
+REMEMBER:
+- easy/longRun blocks use unit="miles" with WHOLE NUMBER values
+- warmUp/intervals/tempo/recovery/coolDown use unit="minutes"
 
 Return ONLY the JSON object, no additional text.`;
 
@@ -236,7 +332,12 @@ function normalizeWeek(week: Week): Week {
     return {
       dayOfWeek,
       workouts: [{
-        blocks: [{ type: "rest" as BlockType, value: 0, effortLevel: "z1" as EffortLevel }],
+        blocks: [{
+          type: "rest" as BlockType,
+          value: 0,
+          unit: "minutes" as BlockUnit,
+          effortLevel: "z1" as EffortLevel
+        }],
       }],
     };
   });
@@ -259,11 +360,41 @@ function normalizeWorkout(workout: Workout): Workout {
 
 /**
  * Normalize a single block
+ * - Adds unit field based on block type if missing
+ * - Rounds values appropriately (miles to whole numbers, minutes to 5s)
  */
 function normalizeBlock(block: Block): Block {
-  return {
+  // Determine correct unit for this block type
+  const unit: BlockUnit = block.unit || getDefaultUnit(block.type);
+
+  // Round value appropriately
+  let value: number;
+  if (block.type === "rest") {
+    value = 0;
+  } else if (unit === "miles") {
+    // Miles should be whole numbers
+    value = Math.max(1, Math.round(block.value));
+  } else {
+    // Minutes - round to nearest 5 for cleaner workouts
+    value = Math.max(5, Math.round(block.value / 5) * 5);
+  }
+
+  const normalized: Block = {
     type: block.type,
-    value: Math.max(0, Math.round(block.value)),
+    value,
+    unit,
     effortLevel: block.effortLevel,
   };
+
+  // Preserve notes if present
+  if (block.notes) {
+    normalized.notes = block.notes;
+  }
+
+  // Preserve repeat structure if present
+  if (block.repeat) {
+    normalized.repeat = block.repeat;
+  }
+
+  return normalized;
 }

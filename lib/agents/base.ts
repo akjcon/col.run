@@ -64,7 +64,8 @@ export abstract class BaseAgent<TInput, TOutput> {
   /**
    * Validate input before processing
    */
-  protected validateInput(input: TInput): { valid: boolean; error?: string } {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected validateInput(_input: TInput): { valid: boolean; error?: string } {
     // Default: accept all input
     // Override in subclasses for specific validation
     return { valid: true };
@@ -73,7 +74,8 @@ export abstract class BaseAgent<TInput, TOutput> {
   /**
    * Validate output before returning
    */
-  protected validateOutput(output: TOutput): { valid: boolean; error?: string } {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected validateOutput(_output: TOutput): { valid: boolean; error?: string } {
     // Default: accept all output
     // Override in subclasses for specific validation
     return { valid: true };

@@ -8,6 +8,7 @@ import {
   getUserData,
   saveChatMessage,
 } from "@/lib/firestore";
+import { getAdminDb } from "@/lib/firebase-admin";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -55,6 +56,25 @@ export async function POST(req: NextRequest) {
         lastMessage.content
       );
       return NextResponse.json({ message: response });
+    }
+
+    // Read athlete snapshot for enriched coaching context
+    try {
+      const adminDb = getAdminDb();
+      const snapshotDoc = await adminDb
+        .collection("users")
+        .doc(userId)
+        .collection("athleteSnapshot")
+        .doc("current")
+        .get();
+
+      if (snapshotDoc.exists) {
+        const snap = snapshotDoc.data()!;
+        // Attach snapshot to userData so LLM gets the full picture
+        (userData as unknown as Record<string, unknown>).athleteSnapshot = snap;
+      }
+    } catch (err) {
+      console.warn("Could not read athlete snapshot for chat:", err);
     }
 
     // Determine which LLM to use based on the message content
