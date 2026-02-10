@@ -5,15 +5,9 @@ export default function SignInPage() {
     <div className="h-full bg-neutral-50">
       <div className="px-4 py-6 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-md">
-          {/* Header with col branding */}
-          <div className="mb-8 text-center">
-            <h1 className="mb-2 font-serif text-3xl font-medium tracking-tight text-neutral-900 sm:text-4xl">
-              col
-            </h1>
-            <div className="mb-6 font-serif text-xs tracking-[0.2em] text-neutral-500">
-              /kɒl/
-            </div>
-            <h2 className="mb-3 font-serif text-xl font-light leading-tight tracking-tight text-neutral-900 sm:text-2xl">
+          {/* Header */}
+          <div className="mb-6 text-center">
+            <h2 className="mb-2 font-serif text-xl font-light leading-tight tracking-tight text-neutral-900 sm:text-2xl">
               Welcome back
             </h2>
             <p className="font-serif text-sm leading-relaxed text-neutral-600">
@@ -27,13 +21,6 @@ export default function SignInPage() {
             <SignIn />
           </div>
 
-          {/* Footer text */}
-          <div className="mt-6 text-center">
-            <p className="font-serif text-xs text-neutral-500">
-              &quot;Every great ascent begins with
-              understanding the col ahead&quot;
-            </p>
-          </div>
         </div>
       </div>
     </div>

@@ -93,7 +93,7 @@ export default function Home() {
             {/* Main Content */}
             <div className="lg:col-span-8">
               <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-6 lg:p-12">
-                <h2 className="mb-3 font-serif text-xl font-light leading-tight tracking-tight text-neutral-900 sm:mb-4 sm:text-2xl md:text-3xl lg:mb-8 lg:text-4xl xl:text-5xl">
+                <h2 className="mb-3 font-serif text-lg font-light leading-tight tracking-tight text-neutral-900 sm:mb-4 sm:text-xl md:text-2xl lg:mb-8 lg:text-3xl xl:text-4xl">
                   Personalized trail running plans for every level
                 </h2>
 
