@@ -1,6 +1,7 @@
 import { Calendar, TrendingUp, Flag } from "lucide-react";
 import { Skeleton } from "@/components/ui/loading-spinner";
 import { formatRaceCountdown } from "@/lib/plan-utils";
+import { AskCoachButton } from "@/components/AskCoachButton";
 
 interface ProgressOverviewProps {
   currentWeek: number;
@@ -88,6 +89,23 @@ export function ProgressOverview({
             </span>
           </div>
         )}
+
+        <div className="mt-3">
+          <AskCoachButton
+            context={{
+              page: "overview",
+              trigger: "progress",
+              progress: {
+                currentWeek,
+                totalWeeks,
+                phaseName: currentPhase?.name,
+                thisWeekMiles,
+                raceDistance,
+                raceDate,
+              },
+            }}
+          />
+        </div>
       </div>
 
       {/* Bottom row — mileage + race */}

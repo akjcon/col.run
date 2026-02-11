@@ -89,6 +89,28 @@ export interface WorkoutLog {
 }
 
 // Athlete Snapshot — denormalized doc for AI features (chat, plan gen, coaching)
+// Chat context — passed from UI to ChatDrawer + API
+export interface ChatContext {
+  page: "home" | "overview" | "calendar";
+  trigger: "sidebar" | "workout" | "tomorrow" | "progress" | "phase";
+  workout?: {
+    title: string;
+    miles?: number;
+    minutes?: number;
+    effortLevel?: string;
+    blocks?: string[];
+    isCompleted?: boolean;
+  };
+  progress?: {
+    currentWeek: number;
+    totalWeeks: number;
+    phaseName?: string;
+    thisWeekMiles?: number;
+    raceDistance?: string;
+    raceDate?: number;
+  };
+}
+
 export interface AthleteSnapshot {
   updatedAt: number;
 

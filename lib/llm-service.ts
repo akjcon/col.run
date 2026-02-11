@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { UserData } from "./types";
+import { UserData, ChatContext } from "./types";
 import { calculateCurrentWeek } from "./plan-utils";
 
 // Initialize Anthropic client
@@ -188,4 +188,69 @@ export function shouldUseFullContext(message: string): boolean {
 
   const lowerMessage = message.toLowerCase();
   return fullContextKeywords.some((keyword) => lowerMessage.includes(keyword));
+}
+
+// Build a human-readable context section from ChatContext
+export function buildContextPrompt(context: ChatContext): string {
+  const lines: string[] = [];
+
+  if (context.trigger === "workout" && context.workout) {
+    const w = context.workout;
+    lines.push(
+      `The athlete is looking at: Today's Workout — "${w.title}"${w.miles ? ` (${w.miles} miles` : ""}${w.minutes ? `, ~${w.minutes} min` : ""}${w.effortLevel ? `, ${w.effortLevel}` : ""}${w.miles ? ")" : ""}`
+    );
+    if (w.blocks?.length) {
+      lines.push(`Workout blocks: ${w.blocks.join(", ")}`);
+    }
+    if (w.isCompleted) {
+      lines.push("This workout has already been completed.");
+    }
+    lines.push('They clicked "Ask Coach" on this workout.');
+  } else if (context.trigger === "tomorrow" && context.workout) {
+    const w = context.workout;
+    lines.push(
+      `The athlete is looking at: Tomorrow's Workout — "${w.title}"${w.miles ? ` (${w.miles} miles` : ""}${w.minutes ? `, ~${w.minutes} min` : ""}${w.effortLevel ? `, ${w.effortLevel}` : ""}${w.miles ? ")" : ""}`
+    );
+    lines.push('They clicked "Ask Coach" on tomorrow\'s workout.');
+  } else if (context.trigger === "progress" && context.progress) {
+    const p = context.progress;
+    lines.push(
+      `The athlete is viewing their training progress: Week ${p.currentWeek} of ${p.totalWeeks}`
+    );
+    if (p.phaseName) lines.push(`Current phase: ${p.phaseName}`);
+    if (p.thisWeekMiles) lines.push(`This week's planned mileage: ${p.thisWeekMiles} miles`);
+    if (p.raceDistance) lines.push(`Goal race: ${p.raceDistance}`);
+    lines.push('They clicked "Ask Coach" on their progress overview.');
+  } else if (context.trigger === "sidebar") {
+    lines.push("The athlete opened the coach from the sidebar (general question).");
+  }
+
+  return lines.length > 0 ? `\nCURRENT CONTEXT:\n${lines.join("\n")}` : "";
+}
+
+// Streaming chat response — returns the Anthropic stream object for the API route to consume
+export async function streamChatResponse(
+  messages: Array<{ role: "user" | "assistant"; content: string }>,
+  userData: UserData,
+  context?: ChatContext | null
+) {
+  const bookContent = await getBookContent();
+  let systemPrompt = generateChatPrompt(userData);
+
+  if (context) {
+    systemPrompt += buildContextPrompt(context);
+  }
+
+  systemPrompt += `\n\nBOOK REFERENCE:\n${bookContent}`;
+
+  return anthropic.messages.stream({
+    model: "claude-sonnet-4-5-20250929",
+    max_tokens: 1500,
+    temperature: 0.7,
+    system: systemPrompt,
+    messages: messages.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+    })),
+  });
 }

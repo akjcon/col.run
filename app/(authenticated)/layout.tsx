@@ -7,6 +7,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import OnboardingGuard from "@/components/OnboardingGuard";
+import { ChatProvider } from "@/lib/chat-context";
+import { MobileChatDrawer, DesktopChatPanel } from "@/components/ChatDrawer";
 
 export default function AuthenticatedLayout({
   children,
@@ -29,7 +31,7 @@ export default function AuthenticatedLayout({
   const content = isOnboarding ? children : <OnboardingGuard>{children}</OnboardingGuard>;
 
   return (
-    <>
+    <ChatProvider>
       {/* Mobile navigation */}
       <div className="md:hidden">
         <MobileNav />
@@ -70,7 +72,11 @@ export default function AuthenticatedLayout({
             )}
           </main>
         </div>
+        <DesktopChatPanel />
       </div>
-    </>
+
+      {/* Mobile chat drawer (Vaul overlay) */}
+      <MobileChatDrawer />
+    </ChatProvider>
   );
 }

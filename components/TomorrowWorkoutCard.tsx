@@ -14,6 +14,7 @@ import {
   calculateDayTotalMiles,
   calculateDayTotal,
 } from "@/lib/blocks/calculations";
+import { AskCoachButton } from "@/components/AskCoachButton";
 
 export function TomorrowWorkoutCard() {
   const { userId } = useUser();
@@ -131,6 +132,22 @@ export function TomorrowWorkoutCard() {
                 {summary}
               </p>
             )}
+
+            {/* Ask Coach */}
+            <div className="mt-3">
+              <AskCoachButton
+                context={{
+                  page: "home",
+                  trigger: "tomorrow",
+                  workout: {
+                    title,
+                    miles: totalMiles,
+                    minutes: Math.round(totalMinutes),
+                    effortLevel: zoneText,
+                  },
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -79,43 +79,10 @@ export const chatApi = baseApi.injectEndpoints({
       providesTags: ["ChatHistory"],
     }),
 
-    // Send chat message (combines LLM call with saving)
-    sendChatMessage: builder.mutation<
-      { message: string },
-      {
-        userId?: string;
-        messages: Array<{ role: "user" | "assistant"; content: string }>;
-      }
-    >({
-      queryFn: async ({ userId, messages }) => {
-        try {
-          const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ messages, userId }),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.details || "Failed to send chat message");
-          }
-
-          const result = await response.json();
-          return { data: result };
-        } catch (error) {
-          return { error: handleFirestoreError(error, "send chat message") };
-        }
-      },
-      invalidatesTags: (result, error, { userId }) =>
-        userId ? [{ type: "User", id: userId }, "ChatHistory"] : [],
-    }),
   }),
 });
 
 export const {
   useSaveChatMessageMutation,
   useGetChatHistoryQuery,
-  useSendChatMessageMutation,
 } = chatApi;

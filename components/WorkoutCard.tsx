@@ -25,6 +25,7 @@ import {
   calculateDayTotalMiles,
   calculateDayTotal,
 } from "@/lib/blocks/calculations";
+import { AskCoachButton } from "@/components/AskCoachButton";
 
 interface WorkoutCardProps {
   todaysDay: Day | null;
@@ -224,6 +225,24 @@ export function WorkoutCard({
               </div>
             </div>
           )}
+
+          {/* Ask Coach */}
+          <div className="px-6 pb-4">
+            <AskCoachButton
+              context={{
+                page: "home",
+                trigger: "workout",
+                workout: {
+                  title,
+                  miles: totalMiles,
+                  minutes: Math.round(totalMinutes),
+                  effortLevel: zoneText,
+                  blocks: allBlocks.map((b) => formatBlock(b)),
+                  isCompleted: isWorkoutDone,
+                },
+              }}
+            />
+          </div>
 
           {/* Action Button - Only show when workout not done */}
           {!isWorkoutDone && (
