@@ -465,9 +465,15 @@ function FitnessStep({
       const response = await fetch(
         "/api/v2/strava/connect?returnTo=onboarding"
       );
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch {
+      const data = await response.json();
+
+      if (!response.ok || !data.url) {
+        throw new Error(data.error || "No authorization URL returned");
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("Strava connect error:", err);
       setStravaError("Failed to connect to Strava. Please try again.");
       setConnectingStrava(false);
     }

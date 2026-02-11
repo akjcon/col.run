@@ -28,9 +28,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ url: authUrl });
   } catch (error) {
-    console.error("Error initiating Strava OAuth:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error initiating Strava OAuth:", message);
     return NextResponse.json(
-      { error: "Failed to initiate Strava connection" },
+      { error: message },
       { status: 500 }
     );
   }
