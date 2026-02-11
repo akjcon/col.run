@@ -3,9 +3,12 @@
 import { useUser } from "@clerk/nextjs";
 import { SideNav } from "@/components/navigation/SideNav";
 import { MobileNav } from "@/components/navigation/MobileNav";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import OnboardingGuard from "@/components/OnboardingGuard";
+import { ChatProvider } from "@/lib/chat-context";
+import { MobileChatDrawer, DesktopChatPanel } from "@/components/ChatDrawer";
 
 export default function AuthenticatedLayout({
   children,
@@ -14,67 +17,66 @@ export default function AuthenticatedLayout({
 }) {
   const { isSignedIn, isLoaded } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    // Only redirect if we've loaded and confirmed user is not signed in
     if (isLoaded && isSignedIn === false) {
       router.push("/");
     }
   }, [isLoaded, isSignedIn, router]);
 
-  // Always show the navigation structure
+  // Don't wrap onboarding page with OnboardingGuard (would cause redirect loop)
+  const isOnboarding = pathname === "/onboarding";
+
+  const content = isOnboarding ? children : <OnboardingGuard>{children}</OnboardingGuard>;
+
   return (
-    <>
-      {/* Mobile navigation - always visible on mobile */}
+    <ChatProvider>
+      {/* Mobile navigation */}
       <div className="md:hidden">
         <MobileNav />
       </div>
 
-      {/* Mobile content - with padding for fixed nav */}
+      {/* Mobile content */}
       <div className="md:hidden min-h-screen pt-14">
         <main className="container mx-auto px-4 py-6">
-          {/* Show loading spinner while checking auth */}
           {!isLoaded ? (
             <div className="flex items-center justify-center min-h-[50vh]">
               <LoadingSpinner variant="inline" />
             </div>
           ) : isSignedIn === false ? (
-            // This should rarely show as the redirect will happen
             <div className="flex items-center justify-center min-h-[50vh]">
               <LoadingSpinner variant="inline" />
             </div>
           ) : (
-            // Show children when authenticated
-            children
+            content
           )}
         </main>
       </div>
 
       {/* Desktop layout with sidebar */}
       <div className="hidden md:flex h-screen overflow-hidden">
-        {/* Sidebar */}
         <SideNav />
-
-        {/* Main content area */}
         <div className="flex-1 overflow-auto">
           <main className="container mx-auto px-4 py-6">
-            {/* Show loading spinner while checking auth */}
             {!isLoaded ? (
               <div className="flex items-center justify-center min-h-[50vh]">
                 <LoadingSpinner variant="inline" />
               </div>
             ) : isSignedIn === false ? (
-              // This should rarely show as the redirect will happen
               <div className="flex items-center justify-center min-h-[50vh]">
                 <LoadingSpinner variant="inline" />
               </div>
             ) : (
-              // Show children when authenticated
-              children
+              content
             )}
           </main>
         </div>
+        <DesktopChatPanel />
       </div>
-    </>
+
+      {/* Mobile chat drawer (Vaul overlay) */}
+      <MobileChatDrawer />
+    </ChatProvider>
   );
 }

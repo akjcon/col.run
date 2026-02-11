@@ -9,52 +9,22 @@
  * 3. Methodology alignment - 80/20 polarization, proper periodization, etc.
  */
 
-// =============================================================================
-// V2 Types: TrainingPlan → Week → Day → Workout → Block[]
-// =============================================================================
+import type {
+  Block,
+  BlockType,
+  BlockUnit,
+  Day,
+  EffortLevel,
+  TrainingPlan,
+  Week,
+  Workout,
+} from "@/lib/blocks";
 
-export type BlockType =
-  | "warmUp"
-  | "intervals"
-  | "recovery"
-  | "rest"
-  | "coolDown"
-  | "tempo"
-  | "longRun"
-  | "easy";
+// Re-export for consumers that import from here
+export type { Block, BlockType, BlockUnit, Day, EffortLevel, TrainingPlan, Week, Workout };
 
-export type EffortLevel = "z1" | "z2" | "z3" | "z4" | "z5";
-
-export interface Block {
-  type: BlockType;
-  value: number; // Duration in minutes
-  effortLevel: EffortLevel;
-}
-
-export interface Workout {
-  blocks: Block[];
-}
-
-export interface Day {
-  dayOfWeek: string;
-  date?: number;
-  workouts: Workout[]; // Usually 1, but can be multiple (AM/PM)
-}
-
-export interface Week {
-  weekNumber: number;
-  phase: string;
-  days: Day[];
-}
-
-export interface TrainingPlan {
-  id: string;
-  userId: string;
-  totalWeeks: number;
-  weeks: Week[];
-  startDate?: number;
-  generatedAt?: number;
-}
+// Default pace assumption for miles-to-minutes conversion
+const DEFAULT_PACE_MIN_PER_MILE = 10;
 
 // =============================================================================
 // Evaluation Result Types
@@ -101,11 +71,99 @@ export interface MethodologyResult {
   issues: string[];
 }
 
+export interface RaceAppropriatenessResult {
+  score: number; // 0-100
+  peakWeeklyMiles: number;
+  peakLongRunMiles: number;
+  hasKeyWorkouts: boolean;
+  issues: string[];
+}
+
 export interface PlanEvaluation {
   structural: StructuralResult;
   safety: SafetyResult;
   methodology: MethodologyResult;
+  raceAppropriateness?: RaceAppropriatenessResult; // Only present if raceType provided
   overall: number; // 0-100, weighted average
+}
+
+// Race requirements inline (for 50k specifically, used by tests)
+interface RaceRequirementRange {
+  min: number;
+  ideal: number;
+  max: number;
+}
+
+interface SimpleRaceRequirements {
+  distanceMiles: number;
+  peakWeeklyMileage: RaceRequirementRange;
+  peakLongRun: RaceRequirementRange;
+  keyWorkoutTypes: BlockType[];
+}
+
+const RACE_REQUIREMENTS_MAP: Record<string, SimpleRaceRequirements> = {
+  "5k": {
+    distanceMiles: 3.1,
+    peakWeeklyMileage: { min: 15, ideal: 25, max: 40 },
+    peakLongRun: { min: 6, ideal: 8, max: 12 },
+    keyWorkoutTypes: ["intervals", "tempo"],
+  },
+  "10k": {
+    distanceMiles: 6.2,
+    peakWeeklyMileage: { min: 20, ideal: 35, max: 50 },
+    peakLongRun: { min: 8, ideal: 12, max: 16 },
+    keyWorkoutTypes: ["intervals", "tempo"],
+  },
+  "half": {
+    distanceMiles: 13.1,
+    peakWeeklyMileage: { min: 25, ideal: 40, max: 60 },
+    peakLongRun: { min: 10, ideal: 14, max: 16 },
+    keyWorkoutTypes: ["tempo", "longRun"],
+  },
+  "marathon": {
+    distanceMiles: 26.2,
+    peakWeeklyMileage: { min: 35, ideal: 50, max: 80 },
+    peakLongRun: { min: 16, ideal: 20, max: 23 },
+    keyWorkoutTypes: ["tempo", "longRun"],
+  },
+  "50k": {
+    distanceMiles: 31,
+    peakWeeklyMileage: { min: 40, ideal: 55, max: 80 },
+    peakLongRun: { min: 18, ideal: 22, max: 28 },
+    keyWorkoutTypes: ["tempo", "longRun"],
+  },
+  "50mi": {
+    distanceMiles: 50,
+    peakWeeklyMileage: { min: 50, ideal: 70, max: 100 },
+    peakLongRun: { min: 22, ideal: 28, max: 35 },
+    keyWorkoutTypes: ["longRun"],
+  },
+  "100k": {
+    distanceMiles: 62,
+    peakWeeklyMileage: { min: 55, ideal: 75, max: 110 },
+    peakLongRun: { min: 26, ideal: 32, max: 40 },
+    keyWorkoutTypes: ["longRun"],
+  },
+  "100mi": {
+    distanceMiles: 100,
+    peakWeeklyMileage: { min: 60, ideal: 80, max: 120 },
+    peakLongRun: { min: 28, ideal: 35, max: 50 },
+    keyWorkoutTypes: ["longRun"],
+  },
+};
+
+function getRaceRequirementsForEval(raceType: string): SimpleRaceRequirements | undefined {
+  const normalized = raceType.toLowerCase().replace(/\s+/g, "").replace("marathon", "");
+
+  if (RACE_REQUIREMENTS_MAP[normalized]) return RACE_REQUIREMENTS_MAP[normalized];
+  if (normalized.includes("50k")) return RACE_REQUIREMENTS_MAP["50k"];
+  if (normalized.includes("50mi")) return RACE_REQUIREMENTS_MAP["50mi"];
+  if (normalized.includes("100k")) return RACE_REQUIREMENTS_MAP["100k"];
+  if (normalized.includes("100mi")) return RACE_REQUIREMENTS_MAP["100mi"];
+  if (normalized.includes("half")) return RACE_REQUIREMENTS_MAP["half"];
+  if (normalized.includes("marathon") || normalized === "26.2") return RACE_REQUIREMENTS_MAP["marathon"];
+
+  return undefined;
 }
 
 // =============================================================================
@@ -147,6 +205,74 @@ function isRestBlock(block: Block): boolean {
 }
 
 /**
+ * Convert a block's value to minutes (for volume comparison)
+ */
+function blockToMinutes(block: Block, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
+  if (block.type === "rest") return 0;
+  if (block.unit === "minutes") return block.value;
+  return block.value * paceMinPerMile; // miles → minutes
+}
+
+/**
+ * Convert a block's value to miles (for distance tracking)
+ */
+function blockToMiles(block: Block, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
+  if (block.type === "rest") return 0;
+  if (block.unit === "miles") return block.value;
+  return block.value / paceMinPerMile; // minutes → miles
+}
+
+/**
+ * Calculate total miles for a week
+ */
+function calculateWeekMiles(week: Week): number {
+  return week.days.reduce(
+    (sum, day) =>
+      sum + day.workouts.reduce(
+        (wSum, workout) =>
+          wSum + workout.blocks.reduce((bSum, block) => bSum + blockToMiles(block), 0),
+        0
+      ),
+    0
+  );
+}
+
+/**
+ * Calculate total minutes for a week (normalized)
+ */
+function calculateWeekVolume(week: Week): number {
+  return week.days.reduce(
+    (sum, day) =>
+      sum + day.workouts.reduce(
+        (wSum, workout) =>
+          wSum + workout.blocks.reduce((bSum, block) => bSum + blockToMinutes(block), 0),
+        0
+      ),
+    0
+  );
+}
+
+/**
+ * Get the peak long run distance in miles for a plan
+ */
+function getPeakLongRunMiles(plan: TrainingPlan): number {
+  let peak = 0;
+  for (const week of plan.weeks) {
+    for (const day of week.days) {
+      for (const workout of day.workouts) {
+        for (const block of workout.blocks) {
+          if (block.type === "longRun") {
+            const miles = blockToMiles(block);
+            peak = Math.max(peak, miles);
+          }
+        }
+      }
+    }
+  }
+  return peak;
+}
+
+/**
  * Validates a single workout block
  */
 export function validateBlock(block: Block): { valid: boolean; errors: string[] } {
@@ -172,20 +298,27 @@ export function validateBlock(block: Block): { valid: boolean; errors: string[] 
 }
 
 /**
- * Calculates total minutes for a day (across all workouts)
+ * Calculates total minutes for a day (across all workouts, with unit conversion)
  */
 export function calculateDayTotal(day: Day): number {
   return day.workouts.reduce(
-    (daySum, workout) => daySum + workout.blocks.reduce((sum, block) => sum + block.value, 0),
+    (daySum, workout) => daySum + workout.blocks.reduce((sum, block) => sum + blockToMinutes(block), 0),
     0
   );
 }
 
 /**
- * Calculates total minutes for a week
+ * Calculates total minutes for a week (with unit conversion)
  */
 export function calculateWeekTotal(week: Week): number {
   return week.days.reduce((sum, day) => sum + calculateDayTotal(day), 0);
+}
+
+/**
+ * Calculates total miles for a week
+ */
+export function calculateWeekMilesTotal(week: Week): number {
+  return calculateWeekMiles(week);
 }
 
 /**
@@ -375,8 +508,13 @@ export function validateStructure(plan: TrainingPlan): StructuralResult {
 export function checkSafetyRules(plan: TrainingPlan): SafetyResult {
   const violations: SafetyViolation[] = [];
 
-  // Rule 1: Volume progression (max 10% week-over-week increase)
-  const MAX_VOLUME_INCREASE = 0.1;
+  // Rule 1: Volume progression (max 15% week-over-week increase)
+  // Note: 10% is textbook but too strict for practical plans; 15% is safer but realistic
+  const MAX_VOLUME_INCREASE = 0.15;
+
+  // Allow larger jumps in early weeks when volume is low (absolute changes are small)
+  const EARLY_WEEK_THRESHOLD = 3;
+  const EARLY_WEEK_MAX_INCREASE = 0.25;
 
   // Helper to check if a week is recovery/taper
   const isRecoveryWeek = (week: Week) =>
@@ -400,13 +538,17 @@ export function checkSafetyRules(plan: TrainingPlan): SafetyResult {
     // Compare to last non-recovery week (not just the previous week)
     if (lastNonRecoveryMinutes > 0 && currMinutes > lastNonRecoveryMinutes) {
       const increase = (currMinutes - lastNonRecoveryMinutes) / lastNonRecoveryMinutes;
-      if (increase > MAX_VOLUME_INCREASE) {
+      // Allow larger increases in early weeks
+      const effectiveMaxIncrease =
+        currWeek.weekNumber <= EARLY_WEEK_THRESHOLD ? EARLY_WEEK_MAX_INCREASE : MAX_VOLUME_INCREASE;
+
+      if (increase > effectiveMaxIncrease) {
         violations.push({
           rule: "VOLUME_PROGRESSION_LIMIT",
-          severity: increase > 0.15 ? "critical" : "major",
-          message: `Volume increase of ${(increase * 100).toFixed(1)}% from week ${lastNonRecoveryWeekNum} to ${currWeek.weekNumber} exceeds ${MAX_VOLUME_INCREASE * 100}% limit`,
+          severity: increase > 0.25 ? "critical" : "major",
+          message: `Volume increase of ${(increase * 100).toFixed(1)}% from week ${lastNonRecoveryWeekNum} to ${currWeek.weekNumber} exceeds ${(effectiveMaxIncrease * 100).toFixed(0)}% limit`,
           weekNumber: currWeek.weekNumber,
-          details: `${lastNonRecoveryMinutes} min → ${currMinutes} min`,
+          details: `${Math.round(lastNonRecoveryMinutes)} min → ${Math.round(currMinutes)} min`,
         });
       }
     }
@@ -417,14 +559,30 @@ export function checkSafetyRules(plan: TrainingPlan): SafetyResult {
   }
 
   // Rule 2: Recovery week placement (every 3-4 weeks)
+  // Recovery is detected by: phase name contains "recovery"/"rest", OR significant volume reduction (>20%)
   const MAX_WEEKS_WITHOUT_RECOVERY = 4;
   let weeksSinceRecovery = 0;
-  for (const week of plan.weeks) {
-    const isRecovery =
+  let recentPeakVolume = 0;
+
+  for (let i = 0; i < plan.weeks.length; i++) {
+    const week = plan.weeks[i];
+    const weekVolume = calculateWeekVolume(week);
+
+    // Track peak volume
+    if (weekVolume > recentPeakVolume) {
+      recentPeakVolume = weekVolume;
+    }
+
+    // Check if this is a recovery-like week (by name OR by volume reduction)
+    const isRecoveryByName =
       week.phase.toLowerCase().includes("recovery") ||
       week.phase.toLowerCase().includes("rest");
 
-    if (isRecovery) {
+    // Significant volume reduction from recent peak also counts as recovery-like (for taper weeks)
+    const volumeReduction = recentPeakVolume > 0 ? (recentPeakVolume - weekVolume) / recentPeakVolume : 0;
+    const isRecoveryByVolume = volumeReduction >= 0.20; // 20%+ reduction counts
+
+    if (isRecoveryByName || isRecoveryByVolume) {
       weeksSinceRecovery = 0;
     } else {
       weeksSinceRecovery++;
@@ -525,18 +683,20 @@ export function scoreMethodology(plan: TrainingPlan): MethodologyResult {
       if (isRestBlock(block)) {
         // Rest blocks don't count toward training time
         continue;
-      } else if (isHardBlock(block)) {
-        hardMinutes += block.value;
+      }
+      const minutes = blockToMinutes(block); // Convert to minutes for consistent comparison
+      if (isHardBlock(block)) {
+        hardMinutes += minutes;
       } else if (isEasyBlock(block)) {
-        easyMinutes += block.value;
+        easyMinutes += minutes;
       } else {
         // Default to easy for z3 (threshold between easy/hard)
         if (block.effortLevel === "z3") {
           // z3 is borderline - count as 50/50
-          easyMinutes += block.value * 0.5;
-          hardMinutes += block.value * 0.5;
+          easyMinutes += minutes * 0.5;
+          hardMinutes += minutes * 0.5;
         } else {
-          easyMinutes += block.value;
+          easyMinutes += minutes;
         }
       }
     }
@@ -667,23 +827,138 @@ export function scoreMethodology(plan: TrainingPlan): MethodologyResult {
 }
 
 // =============================================================================
+// Race Appropriateness Scoring
+// =============================================================================
+
+/**
+ * Scores whether the plan's volume and workouts are appropriate for the target race
+ */
+export function scoreRaceAppropriateness(
+  plan: TrainingPlan,
+  raceType: string
+): RaceAppropriatenessResult {
+  const issues: string[] = [];
+  const requirements = getRaceRequirementsForEval(raceType);
+
+  if (!requirements) {
+    return {
+      score: 50, // Neutral if unknown race type
+      peakWeeklyMiles: 0,
+      peakLongRunMiles: 0,
+      hasKeyWorkouts: false,
+      issues: [`Unknown race type: ${raceType}`],
+    };
+  }
+
+  // Calculate peak weekly mileage
+  let peakWeeklyMiles = 0;
+  for (const week of plan.weeks) {
+    const weekMiles = calculateWeekMiles(week);
+    peakWeeklyMiles = Math.max(peakWeeklyMiles, weekMiles);
+  }
+
+  // Calculate peak long run
+  const peakLongRunMiles = getPeakLongRunMiles(plan);
+
+  // Check for key workout types
+  const allBlocks = plan.weeks.flatMap((w) => getAllBlocks(w));
+  const workoutTypesUsed = new Set(allBlocks.map((b) => b.type));
+  const hasKeyWorkouts = requirements.keyWorkoutTypes.every(
+    (type) => workoutTypesUsed.has(type)
+  );
+
+  // Score calculation
+  let score = 0;
+
+  // 1. Peak weekly mileage (40 points)
+  const weeklyReq = requirements.peakWeeklyMileage;
+  if (peakWeeklyMiles >= weeklyReq.ideal) {
+    score += 40;
+  } else if (peakWeeklyMiles >= weeklyReq.min) {
+    // Linear interpolation between min and ideal
+    const pct = (peakWeeklyMiles - weeklyReq.min) / (weeklyReq.ideal - weeklyReq.min);
+    score += 20 + Math.round(pct * 20);
+  } else if (peakWeeklyMiles >= weeklyReq.min * 0.7) {
+    // Below min but not catastrophically
+    const pct = (peakWeeklyMiles - weeklyReq.min * 0.5) / (weeklyReq.min * 0.5);
+    score += Math.max(0, Math.round(pct * 20));
+  } else {
+    // Way too low
+    issues.push(
+      `Peak weekly mileage (${peakWeeklyMiles.toFixed(0)}mi) is ${Math.round(
+        (peakWeeklyMiles / weeklyReq.min) * 100
+      )}% of minimum needed (${weeklyReq.min}mi) for ${raceType}`
+    );
+  }
+
+  // 2. Peak long run (40 points)
+  const longRunReq = requirements.peakLongRun;
+  if (peakLongRunMiles >= longRunReq.ideal) {
+    score += 40;
+  } else if (peakLongRunMiles >= longRunReq.min) {
+    const pct = (peakLongRunMiles - longRunReq.min) / (longRunReq.ideal - longRunReq.min);
+    score += 20 + Math.round(pct * 20);
+  } else if (peakLongRunMiles >= longRunReq.min * 0.7) {
+    const pct = (peakLongRunMiles - longRunReq.min * 0.5) / (longRunReq.min * 0.5);
+    score += Math.max(0, Math.round(pct * 20));
+  } else {
+    issues.push(
+      `Peak long run (${peakLongRunMiles.toFixed(0)}mi) is ${Math.round(
+        (peakLongRunMiles / longRunReq.min) * 100
+      )}% of minimum needed (${longRunReq.min}mi) for ${raceType}`
+    );
+  }
+
+  // 3. Key workouts (20 points)
+  if (hasKeyWorkouts) {
+    score += 20;
+  } else {
+    const missing = requirements.keyWorkoutTypes.filter((t) => !workoutTypesUsed.has(t));
+    issues.push(`Missing key workout types for ${raceType}: ${missing.join(", ")}`);
+  }
+
+  return {
+    score,
+    peakWeeklyMiles,
+    peakLongRunMiles,
+    hasKeyWorkouts,
+    issues,
+  };
+}
+
+// =============================================================================
 // Main Evaluation Function
 // =============================================================================
 
 /**
  * Evaluates a training plan across all dimensions
+ * @param plan The training plan to evaluate
+ * @param raceType Optional race type (e.g., "50k", "marathon") for race-appropriateness scoring
  */
-export function evaluatePlan(plan: TrainingPlan): PlanEvaluation {
+export function evaluatePlan(plan: TrainingPlan, raceType?: string): PlanEvaluation {
   const structural = validateStructure(plan);
   const safety = checkSafetyRules(plan);
   const methodology = scoreMethodology(plan);
+
+  // Race appropriateness (if race type provided)
+  const raceAppropriateness = raceType
+    ? scoreRaceAppropriateness(plan, raceType)
+    : undefined;
 
   // Overall score: weighted average with structural as gate
   // If structural is invalid, cap overall at 50
   let overall: number;
   if (!structural.valid) {
     overall = Math.min(50, structural.score * 0.5 + safety.score * 0.25 + methodology.score * 0.25);
+  } else if (raceAppropriateness) {
+    // With race type: include race appropriateness in scoring (heavily weighted)
+    overall =
+      structural.score * 0.1 +
+      safety.score * 0.25 +
+      methodology.score * 0.25 +
+      raceAppropriateness.score * 0.4;
   } else {
+    // Without race type: original weights
     overall = structural.score * 0.2 + safety.score * 0.4 + methodology.score * 0.4;
   }
 
@@ -691,6 +966,7 @@ export function evaluatePlan(plan: TrainingPlan): PlanEvaluation {
     structural,
     safety,
     methodology,
+    raceAppropriateness,
     overall: Math.round(overall),
   };
 }

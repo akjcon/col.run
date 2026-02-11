@@ -1,9 +1,7 @@
 import {
   Home,
-  Target,
-  Dumbbell,
-  MessageCircle,
-  Calendar,
+  BarChart3,
+  CalendarDays,
   LucideIcon,
 } from "lucide-react";
 
@@ -25,22 +23,12 @@ export const navigationItems: NavItem[] = [
   {
     href: "/overview",
     label: "Overview",
-    icon: Target,
+    icon: BarChart3,
   },
   {
-    href: "/phase",
-    label: "Phases",
-    icon: Calendar,
-  },
-  {
-    href: "/strength",
-    label: "Strength",
-    icon: Dumbbell,
-  },
-  {
-    href: "/chat",
-    label: "AI Chat",
-    icon: MessageCircle,
+    href: "/calendar",
+    label: "Calendar",
+    icon: CalendarDays,
   },
 ];
 

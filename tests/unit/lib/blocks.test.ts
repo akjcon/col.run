@@ -34,41 +34,41 @@ import {
 describe("Block Validation", () => {
   describe("validateBlock", () => {
     it("accepts valid block", () => {
-      const block: Block = { type: "warmUp", value: 10, effortLevel: "z1" };
+      const block: Block = { type: "warmUp", value: 10, unit: "minutes", effortLevel: "z1" };
       const result = validateBlock(block);
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
 
     it("rejects block with invalid type", () => {
-      const block = { type: "invalid", value: 10, effortLevel: "z1" } as Block;
+      const block = { type: "invalid", value: 10, unit: "minutes", effortLevel: "z1" } as Block;
       const result = validateBlock(block);
       expect(result.valid).toBe(false);
       expect(result.errors.some((e) => e.includes("type"))).toBe(true);
     });
 
     it("rejects block with value <= 0 (non-rest)", () => {
-      const block: Block = { type: "easy", value: 0, effortLevel: "z2" };
+      const block: Block = { type: "easy", value: 0, unit: "miles", effortLevel: "z2" };
       const result = validateBlock(block);
       expect(result.valid).toBe(false);
       expect(result.errors.some((e) => e.includes("value"))).toBe(true);
     });
 
     it("accepts rest block with value = 0", () => {
-      const block: Block = { type: "rest", value: 0, effortLevel: "z1" };
+      const block: Block = { type: "rest", value: 0, unit: "minutes", effortLevel: "z1" };
       const result = validateBlock(block);
       expect(result.valid).toBe(true);
     });
 
     it("rejects block with invalid effortLevel", () => {
-      const block = { type: "easy", value: 30, effortLevel: "z6" } as Block;
+      const block = { type: "easy", value: 30, unit: "minutes", effortLevel: "z6" } as Block;
       const result = validateBlock(block);
       expect(result.valid).toBe(false);
       expect(result.errors.some((e) => e.includes("effort"))).toBe(true);
     });
 
     it("rejects block with negative value", () => {
-      const block: Block = { type: "easy", value: -10, effortLevel: "z2" };
+      const block: Block = { type: "easy", value: -10, unit: "miles", effortLevel: "z2" };
       const result = validateBlock(block);
       expect(result.valid).toBe(false);
     });
@@ -78,9 +78,9 @@ describe("Block Validation", () => {
     it("accepts valid workout with multiple blocks", () => {
       const workout: Workout = {
         blocks: [
-          { type: "warmUp", value: 10, effortLevel: "z1" },
-          { type: "intervals", value: 20, effortLevel: "z4" },
-          { type: "coolDown", value: 10, effortLevel: "z1" },
+          { type: "warmUp", value: 10, unit: "minutes", effortLevel: "z1" },
+          { type: "intervals", value: 20, unit: "minutes", effortLevel: "z4" },
+          { type: "coolDown", value: 10, unit: "minutes", effortLevel: "z1" },
         ],
       };
       const result = validateWorkout(workout);
@@ -90,8 +90,8 @@ describe("Block Validation", () => {
     it("rejects workout with invalid block", () => {
       const workout: Workout = {
         blocks: [
-          { type: "warmUp", value: 10, effortLevel: "z1" },
-          { type: "easy", value: -5, effortLevel: "z2" }, // Invalid
+          { type: "warmUp", value: 10, unit: "minutes", effortLevel: "z1" },
+          { type: "easy", value: -5, unit: "miles", effortLevel: "z2" }, // Invalid
         ],
       };
       const result = validateWorkout(workout);
@@ -103,7 +103,7 @@ describe("Block Validation", () => {
     it("accepts valid day", () => {
       const day: Day = {
         dayOfWeek: "Monday",
-        workouts: [{ blocks: [{ type: "rest", value: 0, effortLevel: "z1" }] }],
+        workouts: [{ blocks: [{ type: "rest", value: 0, unit: "minutes", effortLevel: "z1" }] }],
       };
       const result = validateDay(day);
       expect(result.valid).toBe(true);
@@ -111,7 +111,7 @@ describe("Block Validation", () => {
 
     it("rejects day missing dayOfWeek", () => {
       const day = {
-        workouts: [{ blocks: [{ type: "rest", value: 0, effortLevel: "z1" }] }],
+        workouts: [{ blocks: [{ type: "rest", value: 0, unit: "minutes", effortLevel: "z1" }] }],
       } as Day;
       const result = validateDay(day);
       expect(result.valid).toBe(false);
@@ -122,70 +122,71 @@ describe("Block Validation", () => {
 describe("Block Classification", () => {
   describe("isRestBlock", () => {
     it("returns true for rest blocks", () => {
-      expect(isRestBlock({ type: "rest", value: 0, effortLevel: "z1" })).toBe(true);
+      expect(isRestBlock({ type: "rest", value: 0, unit: "minutes", effortLevel: "z1" })).toBe(true);
     });
 
     it("returns false for non-rest blocks", () => {
-      expect(isRestBlock({ type: "easy", value: 30, effortLevel: "z2" })).toBe(false);
+      expect(isRestBlock({ type: "easy", value: 3, unit: "miles", effortLevel: "z2" })).toBe(false);
     });
   });
 
   describe("isHardBlock", () => {
     it("returns true for intervals", () => {
-      expect(isHardBlock({ type: "intervals", value: 20, effortLevel: "z4" })).toBe(true);
+      expect(isHardBlock({ type: "intervals", value: 20, unit: "minutes", effortLevel: "z4" })).toBe(true);
     });
 
     it("returns true for tempo", () => {
-      expect(isHardBlock({ type: "tempo", value: 30, effortLevel: "z3" })).toBe(true);
+      expect(isHardBlock({ type: "tempo", value: 30, unit: "minutes", effortLevel: "z3" })).toBe(true);
     });
 
     it("returns true for z4 effort", () => {
-      expect(isHardBlock({ type: "easy", value: 30, effortLevel: "z4" })).toBe(true);
+      expect(isHardBlock({ type: "easy", value: 3, unit: "miles", effortLevel: "z4" })).toBe(true);
     });
 
     it("returns true for z5 effort", () => {
-      expect(isHardBlock({ type: "longRun", value: 90, effortLevel: "z5" })).toBe(true);
+      expect(isHardBlock({ type: "longRun", value: 9, unit: "miles", effortLevel: "z5" })).toBe(true);
     });
 
     it("returns false for easy z2 block", () => {
-      expect(isHardBlock({ type: "easy", value: 30, effortLevel: "z2" })).toBe(false);
+      expect(isHardBlock({ type: "easy", value: 3, unit: "miles", effortLevel: "z2" })).toBe(false);
     });
   });
 
   describe("isEasyBlock", () => {
     it("returns true for easy z1 block", () => {
-      expect(isEasyBlock({ type: "easy", value: 30, effortLevel: "z1" })).toBe(true);
+      expect(isEasyBlock({ type: "easy", value: 3, unit: "miles", effortLevel: "z1" })).toBe(true);
     });
 
     it("returns true for warmUp z1 block", () => {
-      expect(isEasyBlock({ type: "warmUp", value: 15, effortLevel: "z1" })).toBe(true);
+      expect(isEasyBlock({ type: "warmUp", value: 15, unit: "minutes", effortLevel: "z1" })).toBe(true);
     });
 
     it("returns true for longRun z2 block", () => {
-      expect(isEasyBlock({ type: "longRun", value: 90, effortLevel: "z2" })).toBe(true);
+      expect(isEasyBlock({ type: "longRun", value: 9, unit: "miles", effortLevel: "z2" })).toBe(true);
     });
 
     it("returns false for easy z5 block (hard effort)", () => {
-      expect(isEasyBlock({ type: "easy", value: 30, effortLevel: "z5" })).toBe(false);
+      expect(isEasyBlock({ type: "easy", value: 3, unit: "miles", effortLevel: "z5" })).toBe(false);
     });
 
     it("returns false for tempo block", () => {
-      expect(isEasyBlock({ type: "tempo", value: 30, effortLevel: "z3" })).toBe(false);
+      expect(isEasyBlock({ type: "tempo", value: 30, unit: "minutes", effortLevel: "z3" })).toBe(false);
     });
   });
 });
 
 describe("Workout Calculations", () => {
+  // All blocks in minutes for consistent calculations
   const structuredWorkout: Workout = {
     blocks: [
-      { type: "warmUp", value: 10, effortLevel: "z1" },
-      { type: "intervals", value: 20, effortLevel: "z4" },
-      { type: "coolDown", value: 10, effortLevel: "z1" },
+      { type: "warmUp", value: 10, unit: "minutes", effortLevel: "z1" },
+      { type: "intervals", value: 20, unit: "minutes", effortLevel: "z4" },
+      { type: "coolDown", value: 10, unit: "minutes", effortLevel: "z1" },
     ],
   };
 
   describe("calculateWorkoutTotal", () => {
-    it("sums block values", () => {
+    it("sums block values (minutes)", () => {
       expect(calculateWorkoutTotal(structuredWorkout)).toBe(40);
     });
 
@@ -202,7 +203,7 @@ describe("Workout Calculations", () => {
 
     it("returns 0 for workout with only rest", () => {
       const restWorkout: Workout = {
-        blocks: [{ type: "rest", value: 0, effortLevel: "z1" }],
+        blocks: [{ type: "rest", value: 0, unit: "minutes", effortLevel: "z1" }],
       };
       expect(calculateWorkoutEffort(restWorkout)).toBe(0);
     });
@@ -210,14 +211,15 @@ describe("Workout Calculations", () => {
 });
 
 describe("Day Calculations", () => {
+  // All blocks in minutes for consistent calculations
   const runDay: Day = {
     dayOfWeek: "Tuesday",
     workouts: [
       {
         blocks: [
-          { type: "warmUp", value: 10, effortLevel: "z1" },
-          { type: "intervals", value: 20, effortLevel: "z4" },
-          { type: "coolDown", value: 10, effortLevel: "z1" },
+          { type: "warmUp", value: 10, unit: "minutes", effortLevel: "z1" },
+          { type: "intervals", value: 20, unit: "minutes", effortLevel: "z4" },
+          { type: "coolDown", value: 10, unit: "minutes", effortLevel: "z1" },
         ],
       },
     ],
@@ -225,16 +227,16 @@ describe("Day Calculations", () => {
 
   const restDay: Day = {
     dayOfWeek: "Monday",
-    workouts: [{ blocks: [{ type: "rest", value: 0, effortLevel: "z1" }] }],
+    workouts: [{ blocks: [{ type: "rest", value: 0, unit: "minutes", effortLevel: "z1" }] }],
   };
 
   const easyDay: Day = {
     dayOfWeek: "Wednesday",
-    workouts: [{ blocks: [{ type: "easy", value: 45, effortLevel: "z2" }] }],
+    workouts: [{ blocks: [{ type: "easy", value: 45, unit: "minutes", effortLevel: "z2" }] }],
   };
 
   describe("calculateDayTotal", () => {
-    it("sums all block values across workouts", () => {
+    it("sums all block values across workouts (in minutes)", () => {
       expect(calculateDayTotal(runDay)).toBe(40);
     });
 
@@ -289,28 +291,29 @@ describe("Day Calculations", () => {
 });
 
 describe("Week Calculations", () => {
+  // All blocks in minutes for consistent calculations
   const testWeek: Week = {
     weekNumber: 1,
     phase: "Base",
     days: [
-      { dayOfWeek: "Monday", workouts: [{ blocks: [{ type: "rest", value: 0, effortLevel: "z1" }] }] },
-      { dayOfWeek: "Tuesday", workouts: [{ blocks: [{ type: "easy", value: 45, effortLevel: "z2" }] }] },
-      { dayOfWeek: "Wednesday", workouts: [{ blocks: [{ type: "easy", value: 40, effortLevel: "z2" }] }] },
+      { dayOfWeek: "Monday", workouts: [{ blocks: [{ type: "rest", value: 0, unit: "minutes", effortLevel: "z1" }] }] },
+      { dayOfWeek: "Tuesday", workouts: [{ blocks: [{ type: "easy", value: 45, unit: "minutes", effortLevel: "z2" }] }] },
+      { dayOfWeek: "Wednesday", workouts: [{ blocks: [{ type: "easy", value: 40, unit: "minutes", effortLevel: "z2" }] }] },
       {
         dayOfWeek: "Thursday",
         workouts: [
           {
             blocks: [
-              { type: "warmUp", value: 10, effortLevel: "z1" },
-              { type: "tempo", value: 20, effortLevel: "z3" },
-              { type: "coolDown", value: 10, effortLevel: "z1" },
+              { type: "warmUp", value: 10, unit: "minutes", effortLevel: "z1" },
+              { type: "tempo", value: 20, unit: "minutes", effortLevel: "z3" },
+              { type: "coolDown", value: 10, unit: "minutes", effortLevel: "z1" },
             ],
           },
         ],
       },
-      { dayOfWeek: "Friday", workouts: [{ blocks: [{ type: "rest", value: 0, effortLevel: "z1" }] }] },
-      { dayOfWeek: "Saturday", workouts: [{ blocks: [{ type: "longRun", value: 90, effortLevel: "z2" }] }] },
-      { dayOfWeek: "Sunday", workouts: [{ blocks: [{ type: "easy", value: 30, effortLevel: "z1" }] }] },
+      { dayOfWeek: "Friday", workouts: [{ blocks: [{ type: "rest", value: 0, unit: "minutes", effortLevel: "z1" }] }] },
+      { dayOfWeek: "Saturday", workouts: [{ blocks: [{ type: "longRun", value: 90, unit: "minutes", effortLevel: "z2" }] }] },
+      { dayOfWeek: "Sunday", workouts: [{ blocks: [{ type: "easy", value: 30, unit: "minutes", effortLevel: "z1" }] }] },
     ],
   };
 

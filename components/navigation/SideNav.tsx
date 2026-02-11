@@ -7,10 +7,14 @@ import { UserProfile } from "./UserProfile";
 import { ToggleButton } from "./ToggleButton";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { MessageCircle } from "lucide-react";
+import { useChatContext } from "@/lib/chat-context";
+import { Tooltip } from "./Tooltip";
 
 export function SideNav() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const { toggleChat } = useChatContext();
 
   // Load expanded state from localStorage on mount
   useEffect(() => {
@@ -71,8 +75,41 @@ export function SideNav() {
         ))}
       </nav>
 
+      {/* Coach Button */}
+      <div className="mt-auto px-2 pb-2">
+        <Tooltip
+          content={isExpanded ? undefined : "Coach"}
+          side="right"
+          align="center"
+        >
+          <button
+            onClick={toggleChat}
+            className="group relative flex w-full items-center rounded-lg py-2 transition-all ease-out hover:bg-neutral-50 active:scale-[0.985] h-10"
+          >
+            <div className="flex w-10 shrink-0 items-center justify-center">
+              <MessageCircle className="h-4 w-4 shrink-0 text-neutral-600 transition group-hover:text-neutral-900" />
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    variants={textVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                    className="whitespace-nowrap text-sm text-neutral-700 group-hover:text-neutral-900"
+                  >
+                    Coach
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </button>
+        </Tooltip>
+      </div>
+
       {/* User Profile */}
-      <div className="mt-auto border-t border-neutral-200 p-3">
+      <div className="border-t border-neutral-200 p-3">
         <UserProfile isExpanded={isExpanded} />
       </div>
     </motion.aside>

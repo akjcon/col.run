@@ -2,15 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
 import Image from "next/image";
 import { navigationItems } from "./constants";
+import { useChatContext } from "@/lib/chat-context";
 
 export function MobileNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isSignedIn, user } = useUser();
+  const { toggleChat } = useChatContext();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -133,6 +135,16 @@ export function MobileNav() {
                   </Link>
                 );
               })}
+              <button
+                onClick={() => {
+                  closeMobileMenu();
+                  toggleChat();
+                }}
+                className="flex w-full items-center space-x-3 rounded-lg p-3 transition-colors hover:bg-neutral-50"
+              >
+                <MessageCircle className="h-5 w-5 text-neutral-600" />
+                <span className="font-medium text-neutral-700">Coach</span>
+              </button>
             </nav>
           )}
         </div>

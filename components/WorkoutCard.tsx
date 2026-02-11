@@ -8,15 +8,27 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WorkoutCompletionModal from "@/components/WorkoutCompletionModal";
-import { getZoneColor, getZoneText, extractWorkoutMetrics } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import type { Workout } from "@/lib/types";
+import type { Day } from "@/lib/blocks/types";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/loading-spinner";
+import {
+  getDayTitle,
+  getDayEffortLevel,
+  effortToColor,
+  effortToZoneLabel,
+  formatBlock,
+  isRestDay,
+} from "@/lib/workout-display";
+import {
+  calculateDayTotalMiles,
+  calculateDayTotal,
+} from "@/lib/blocks/calculations";
+import { AskCoachButton } from "@/components/AskCoachButton";
 
 interface WorkoutCardProps {
-  todaysWorkout: Workout | null;
+  todaysDay: Day | null;
   isWorkoutDone: boolean;
   isFirebaseReady: boolean;
   onWorkoutComplete: (rating: number, notes?: string) => Promise<void>;
@@ -24,7 +36,7 @@ interface WorkoutCardProps {
 }
 
 export function WorkoutCard({
-  todaysWorkout,
+  todaysDay,
   isWorkoutDone,
   isFirebaseReady,
   onWorkoutComplete,
@@ -39,9 +51,8 @@ export function WorkoutCard({
       const height = contentRef.current.scrollHeight;
       setContentHeight(height);
     }
-  }, [todaysWorkout, isWorkoutDone]);
+  }, [todaysDay, isWorkoutDone]);
 
-  // Show skeleton when loading
   if (isLoading) {
     return (
       <div className="mx-4 md:mr-0 rounded-2xl border border-neutral-200 bg-white shadow-sm">
@@ -59,13 +70,44 @@ export function WorkoutCard({
     );
   }
 
-  if (!todaysWorkout) {
-    // Rest Day Design
+  if (!todaysDay) {
     return null;
   }
 
-  const metrics = extractWorkoutMetrics(todaysWorkout);
-  const zoneColor = getZoneColor(todaysWorkout.zone);
+  if (isRestDay(todaysDay)) {
+    return (
+      <div className="mx-4 md:mr-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <div className="px-6 pt-6">
+          <div className="flex items-center gap-3">
+            <Calendar className="h-4 w-4 text-neutral-600" />
+            <p className="text-sm font-medium text-neutral-600">
+              Today
+            </p>
+          </div>
+        </div>
+        <div className="p-6 pt-3">
+          <h2 className="font-serif text-3xl font-light tracking-tight text-neutral-900">
+            Rest Day
+          </h2>
+          <p className="mt-2 text-sm text-neutral-500">
+            Recovery is part of the plan. Take it easy today.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const title = getDayTitle(todaysDay);
+  const effortLevel = getDayEffortLevel(todaysDay);
+  const zoneColor = effortToColor(effortLevel);
+  const zoneText = effortToZoneLabel(effortLevel);
+  const totalMiles = calculateDayTotalMiles(todaysDay);
+  const totalMinutes = calculateDayTotal(todaysDay);
+
+  // Get all non-rest blocks for detail display
+  const allBlocks = todaysDay.workouts.flatMap((w) =>
+    w.blocks.filter((b) => b.type !== "rest")
+  );
 
   return (
     <div className="mx-4 md:mr-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
@@ -84,7 +126,7 @@ export function WorkoutCard({
       <div className="border-b border-neutral-100 p-6 py-4 pt-3">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-serif text-3xl font-light tracking-tight text-neutral-900">
-            {todaysWorkout.type}
+            {title}
           </h2>
           {isWorkoutDone && (
             <div className="flex items-center gap-2 rounded-full bg-green-500 px-4 py-2 text-xs font-medium uppercase tracking-wider text-white">
@@ -95,53 +137,38 @@ export function WorkoutCard({
         </div>
 
         {/* Zone Badge */}
-        {todaysWorkout.zone && (
-          <div className="mb-2 flex items-center gap-3">
-            <div
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: zoneColor }}
-            ></div>
-            <span className="text-sm font-medium uppercase tracking-wider text-neutral-900">
-              {getZoneText(todaysWorkout.zone)}
-            </span>
-          </div>
-        )}
+        <div className="mb-2 flex items-center gap-3">
+          <div
+            className="h-3 w-3 rounded-full"
+            style={{ backgroundColor: zoneColor }}
+          ></div>
+          <span className="text-sm font-medium uppercase tracking-wider text-neutral-900">
+            {zoneText}
+          </span>
+        </div>
       </div>
 
       {/* Key Metrics */}
-      {(metrics.distance || metrics.vertical) && (
-        <div className="border-b border-neutral-100 bg-neutral-50 px-6 py-6">
-          <div
-            className={cn(
-              "grid gap-8",
-              metrics.distance && metrics.vertical
-                ? "grid-cols-2"
-                : "grid-cols-1"
-            )}
-          >
-            {metrics.distance && (
-              <div className="text-center">
-                <div className="font-mono text-4xl font-bold tracking-tight text-neutral-900">
-                  {metrics.distance}
-                </div>
-                <div className="mt-1 text-xs font-medium uppercase tracking-wider text-neutral-500">
-                  MILES
-                </div>
-              </div>
-            )}
-            {metrics.vertical && (
-              <div className="text-center">
-                <div className="font-mono text-4xl font-bold tracking-tight text-neutral-900">
-                  {metrics.vertical.replace(/,/g, "")}
-                </div>
-                <div className="mt-1 text-xs font-medium uppercase tracking-wider text-neutral-500">
-                  FEET
-                </div>
-              </div>
-            )}
+      <div className="border-b border-neutral-100 bg-neutral-50 px-6 py-6">
+        <div className="grid grid-cols-2 gap-8">
+          <div className="text-center">
+            <div className="font-mono text-4xl font-bold tracking-tight text-neutral-900">
+              {totalMiles.toFixed(1)}
+            </div>
+            <div className="mt-1 text-xs font-medium uppercase tracking-wider text-neutral-500">
+              MILES
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="font-mono text-4xl font-bold tracking-tight text-neutral-900">
+              {Math.round(totalMinutes)}
+            </div>
+            <div className="mt-1 text-xs font-medium uppercase tracking-wider text-neutral-500">
+              MINUTES
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Conditionally render details section */}
       <motion.div
@@ -157,24 +184,18 @@ export function WorkoutCard({
         className="overflow-hidden"
       >
         <div ref={contentRef}>
-          {/* Workout Description */}
-          {todaysWorkout.description && (
+          {/* Block Details */}
+          {allBlocks.length > 0 && (
             <div className="px-6 py-6">
-              <p className="leading-relaxed text-neutral-800">
-                {todaysWorkout.description}
-              </p>
-            </div>
-          )}
-
-          {/* Detailed Instructions */}
-          {todaysWorkout.details && todaysWorkout.details.length > 0 && (
-            <div className="px-6 pb-6">
               <div className="space-y-4">
-                {todaysWorkout.details.map((detail: string, index: number) => (
+                {allBlocks.map((block, index) => (
                   <div key={index} className="flex items-start gap-4">
-                    <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-neutral-900"></div>
+                    <div
+                      className="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                      style={{ backgroundColor: effortToColor(block.effortLevel) }}
+                    ></div>
                     <p className="text-sm leading-relaxed text-neutral-700">
-                      {detail}
+                      {formatBlock(block)}
                     </p>
                   </div>
                 ))}
@@ -182,31 +203,53 @@ export function WorkoutCard({
             </div>
           )}
 
-          {/* Coach Notes */}
-          {todaysWorkout.notes && (
+          {/* Block notes */}
+          {allBlocks.some((b) => b.notes) && (
             <div className="px-6 pb-6">
               <div className="rounded-xl bg-neutral-900 p-5 text-white">
                 <div className="flex items-start gap-3">
                   <MessageCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                   <div>
                     <p className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-300">
-                      Coach Notes
+                      Notes
                     </p>
-                    <p className="text-sm leading-relaxed">
-                      {todaysWorkout.notes}
-                    </p>
+                    {allBlocks
+                      .filter((b) => b.notes)
+                      .map((b, i) => (
+                        <p key={i} className="text-sm leading-relaxed">
+                          {b.notes}
+                        </p>
+                      ))}
                   </div>
                 </div>
               </div>
             </div>
           )}
 
+          {/* Ask Coach */}
+          <div className="px-6 pb-4">
+            <AskCoachButton
+              context={{
+                page: "home",
+                trigger: "workout",
+                workout: {
+                  title,
+                  miles: totalMiles,
+                  minutes: Math.round(totalMinutes),
+                  effortLevel: zoneText,
+                  blocks: allBlocks.map((b) => formatBlock(b)),
+                  isCompleted: isWorkoutDone,
+                },
+              }}
+            />
+          </div>
+
           {/* Action Button - Only show when workout not done */}
           {!isWorkoutDone && (
             <div className="px-6 pb-6">
               <WorkoutCompletionModal
                 onSubmit={onWorkoutComplete}
-                workoutType={todaysWorkout.type}
+                workoutType={title}
                 trigger={
                   <Button
                     className=" w-full rounded-xl border-0 bg-neutral-900 py-4 text-sm font-medium uppercase tracking-wider text-white transition-all duration-200 hover:bg-neutral-800"

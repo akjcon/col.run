@@ -8,8 +8,10 @@
 export type {
   Block,
   BlockType,
+  BlockUnit,
   Day,
   EffortLevel,
+  RepeatStructure,
   TrainingPlan,
   Week,
   Workout,
@@ -21,6 +23,9 @@ export {
   HARD_BLOCK_TYPES,
   EASY_BLOCK_TYPES,
   HARD_EFFORT_LEVELS,
+  DISTANCE_BASED_BLOCKS,
+  TIME_BASED_BLOCKS,
+  getDefaultUnit,
 } from "./types";
 
 // Validation
@@ -34,6 +39,9 @@ export {
 
 // Calculations
 export {
+  // Conversions
+  blockValueToMinutes,
+  blockValueToMiles,
   // Classification
   isRestBlock,
   isHardBlock,
@@ -41,10 +49,12 @@ export {
   // Workout
   getWorkoutBlocks,
   calculateWorkoutTotal,
+  calculateWorkoutTotalMiles,
   calculateWorkoutEffort,
   // Day
   getDayBlocks,
   calculateDayTotal,
+  calculateDayTotalMiles,
   calculateDayEffort,
   isRestDay,
   isHardDay,
@@ -52,6 +62,7 @@ export {
   // Week
   getWeekBlocks,
   calculateWeekTotal,
+  calculateWeekTotalMiles,
   calculateWeekEffort,
   countWeekBlocksByType,
   countRestDays,

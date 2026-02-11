@@ -5,4 +5,3 @@ export * from "./baseApi";
 export * from "./userApi";
 export * from "./trainingApi";
 export * from "./chatApi";
-export * from "./workoutApi";

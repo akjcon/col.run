@@ -6,19 +6,27 @@ import {
   where,
   orderBy,
   getDocs,
+  getDoc,
+  setDoc,
   limit,
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { TrainingBackground, TrainingPlan, Workout } from "@/lib/types";
+import {
+  TrainingBackground,
+  TrainingPlan,
+  WorkoutLog,
+  AthleteSnapshot,
+} from "@/lib/types";
+import type { Day } from "@/lib/blocks/types";
 import {
   baseApi,
   sanitizeForFirestore,
   normalizeTimestamps,
   handleFirestoreError,
 } from "./baseApi";
-import { getWeeksWithDates, getTomorrowsWorkout } from "@/lib/workout-utils";
+import { getWeeksWithDates, getTomorrowsDay } from "@/lib/workout-utils";
 
 export const trainingApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -185,9 +193,9 @@ export const trainingApi = baseApi.injectEndpoints({
       ],
     }),
 
-    // Get tomorrow's workout
+    // Get tomorrow's day (V2: returns Day instead of V1 Workout)
     getTomorrowsWorkout: builder.query<
-      { workout: Workout | null; plan: TrainingPlan | null },
+      { day: Day | null; plan: TrainingPlan | null },
       string
     >({
       queryFn: async (userId) => {
@@ -197,13 +205,13 @@ export const trainingApi = baseApi.injectEndpoints({
           const snapshot = await getDocs(q);
 
           if (snapshot.empty) {
-            return { data: { workout: null, plan: null } };
+            return { data: { day: null, plan: null } };
           }
 
-          const doc = snapshot.docs[0];
+          const planDoc = snapshot.docs[0];
           const plan = normalizeTimestamps({
-            id: doc.id,
-            ...doc.data(),
+            id: planDoc.id,
+            ...planDoc.data(),
           }) as TrainingPlan;
 
           const weeksWithDates = getWeeksWithDates(
@@ -212,9 +220,9 @@ export const trainingApi = baseApi.injectEndpoints({
             plan.weeks
           );
 
-          const tomorrowsWorkout = getTomorrowsWorkout(weeksWithDates);
+          const tomorrowsDay = getTomorrowsDay(weeksWithDates);
 
-          return { data: { workout: tomorrowsWorkout || null, plan } };
+          return { data: { day: tomorrowsDay || null, plan } };
         } catch (error) {
           return {
             error: handleFirestoreError(error, "get tomorrow's workout"),
@@ -222,6 +230,152 @@ export const trainingApi = baseApi.injectEndpoints({
         }
       },
       providesTags: ["TrainingPlan"],
+    }),
+
+    // Get athlete snapshot
+    getAthleteSnapshot: builder.query<AthleteSnapshot | null, string>({
+      queryFn: async (userId) => {
+        try {
+          const snapshotRef = doc(
+            db,
+            "users",
+            userId,
+            "athleteSnapshot",
+            "current"
+          );
+          const snap = await getDoc(snapshotRef);
+
+          if (!snap.exists()) {
+            return { data: null };
+          }
+
+          return {
+            data: normalizeTimestamps(snap.data()) as AthleteSnapshot,
+          };
+        } catch (error) {
+          const errorCode = (error as { code?: string })?.code;
+          if (errorCode === "permission-denied") {
+            return { data: null };
+          }
+          return {
+            error: handleFirestoreError(error, "get athlete snapshot"),
+          };
+        }
+      },
+      providesTags: ["AthleteSnapshot"],
+    }),
+
+    // Save workout log (uses doc ID for dedup)
+    saveWorkoutLog: builder.mutation<
+      string,
+      { userId: string; log: Omit<WorkoutLog, "id"> & { id?: string } }
+    >({
+      queryFn: async ({ userId, log }) => {
+        try {
+          const logId =
+            log.id || `${log.date}-${log.dayOfWeek}`;
+          const logRef = doc(
+            db,
+            "users",
+            userId,
+            "workoutLogs",
+            logId
+          );
+          const sanitizedLog = sanitizeForFirestore({
+            ...log,
+            id: logId,
+          });
+          await setDoc(logRef, sanitizedLog);
+          return { data: logId };
+        } catch (error) {
+          return {
+            error: handleFirestoreError(error, "save workout log"),
+          };
+        }
+      },
+      invalidatesTags: (result, error, { userId }) => [
+        { type: "User", id: userId },
+        "WorkoutLog",
+      ],
+    }),
+
+    // Get workout logs for a user (optionally filtered by week)
+    getWorkoutLogs: builder.query<
+      WorkoutLog[],
+      { userId: string; weekNumber?: number }
+    >({
+      queryFn: async ({ userId, weekNumber }) => {
+        try {
+          const logsRef = collection(
+            db,
+            "users",
+            userId,
+            "workoutLogs"
+          );
+
+          const q = weekNumber
+            ? query(
+                logsRef,
+                where("weekNumber", "==", weekNumber),
+                orderBy("completedAt", "desc")
+              )
+            : query(logsRef, orderBy("completedAt", "desc"));
+
+          const querySnapshot = await getDocs(q);
+
+          const logs = querySnapshot.docs.map((logDoc) => {
+            const data = logDoc.data();
+            return normalizeTimestamps({
+              id: logDoc.id,
+              ...data,
+            } as unknown as WorkoutLog) as WorkoutLog;
+          });
+
+          return { data: logs };
+        } catch (error) {
+          const errorCode = (error as { code?: string })?.code;
+          if (errorCode === "permission-denied") {
+            return { data: [] };
+          }
+          return {
+            error: handleFirestoreError(error, "get workout logs"),
+          };
+        }
+      },
+      providesTags: ["WorkoutLog"],
+    }),
+
+    // Check if a workout is logged for a given date
+    isWorkoutLogged: builder.query<
+      boolean,
+      { userId: string; date: number; dayOfWeek: string }
+    >({
+      queryFn: async ({ userId, date, dayOfWeek }) => {
+        try {
+          const logId = `${date}-${dayOfWeek}`;
+          const logRef = doc(
+            db,
+            "users",
+            userId,
+            "workoutLogs",
+            logId
+          );
+          const logSnap = await getDoc(logRef);
+          return { data: logSnap.exists() };
+        } catch (error) {
+          const errorCode = (error as { code?: string })?.code;
+          if (errorCode === "permission-denied") {
+            return { data: false };
+          }
+          return {
+            error: handleFirestoreError(error, "check workout log"),
+          };
+        }
+      },
+      providesTags: (result, error, { userId, date }) => [
+        "WorkoutLog",
+        { type: "WorkoutLog", id: `${userId}-${date}` },
+      ],
     }),
   }),
 });
@@ -233,4 +387,8 @@ export const {
   useGetActiveTrainingPlanQuery,
   useUpdateTrainingPlanMutation,
   useGetTomorrowsWorkoutQuery,
+  useGetAthleteSnapshotQuery,
+  useSaveWorkoutLogMutation,
+  useGetWorkoutLogsQuery,
+  useIsWorkoutLoggedQuery,
 } = trainingApi;
