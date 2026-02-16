@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import { useUser as useClerkUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/user-context-rtk";
+import { toast } from "sonner";
 import {
   useSaveTrainingBackgroundMutation,
   useUpdateUserProfileMutation,
@@ -43,6 +44,8 @@ interface FitnessData {
   experience?: "beginner" | "intermediate" | "advanced";
   weeklyMileage?: number;
   longestRun?: number;
+  thresholdPaceMinutes?: number;
+  thresholdPaceSeconds?: number;
   stravaConnected?: boolean;
   stravaSynced?: boolean;
 }
@@ -475,6 +478,7 @@ function FitnessStep({
     } catch (err) {
       console.error("Strava connect error:", err);
       setStravaError("Failed to connect to Strava. Please try again.");
+      toast.error("Failed to connect to Strava. Please try again.");
       setConnectingStrava(false);
     }
   };
@@ -687,6 +691,61 @@ function FitnessStep({
                     />
                   </div>
                 </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-[13px] text-neutral-500">
+                    Threshold pace (optional)
+                  </Label>
+                  <p className="text-[12px] text-neutral-400 leading-snug">
+                    Pace you could uncomfortably hold for about an hour
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <Input
+                        id="threshold-minutes"
+                        type="number"
+                        min={4}
+                        max={20}
+                        value={data.thresholdPaceMinutes ?? ""}
+                        onChange={(e) =>
+                          onChange({
+                            ...data,
+                            thresholdPaceMinutes: e.target.value
+                              ? parseInt(e.target.value)
+                              : undefined,
+                          })
+                        }
+                        placeholder="min"
+                        className="h-10 pr-10"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-neutral-400">
+                        min
+                      </span>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="threshold-seconds"
+                        type="number"
+                        min={0}
+                        max={59}
+                        value={data.thresholdPaceSeconds ?? ""}
+                        onChange={(e) =>
+                          onChange({
+                            ...data,
+                            thresholdPaceSeconds: e.target.value
+                              ? Math.min(59, parseInt(e.target.value))
+                              : undefined,
+                          })
+                        }
+                        placeholder="sec"
+                        className="h-10 pr-10"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-neutral-400">
+                        sec
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
@@ -787,10 +846,17 @@ export default function OnboardingPage() {
         throw new Error("User not authenticated");
       }
 
+      const thresholdPace =
+        fitnessData.thresholdPaceMinutes != null
+          ? fitnessData.thresholdPaceMinutes +
+            (fitnessData.thresholdPaceSeconds ?? 0) / 60
+          : undefined;
+
       const trainingBackground = {
         experience: fitnessData.experience || "intermediate",
         weeklyMileage: fitnessData.weeklyMileage || 0,
         longestRun: fitnessData.longestRun || 0,
+        ...(thresholdPace != null && { thresholdPace }),
         goals:
           goalData.type === "race"
             ? {
@@ -835,7 +901,9 @@ export default function OnboardingPage() {
       router.push("/home");
     } catch (err) {
       console.error("Error completing onboarding:", err);
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

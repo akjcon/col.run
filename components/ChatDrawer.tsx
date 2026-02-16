@@ -4,9 +4,12 @@ import { Drawer } from "vaul";
 import { Send, X } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { useChatContext, type ChatMessage } from "@/lib/chat-context";
+import { useChatContext, type ChatMessage, type PlanModificationData, type PaceZoneUpdateData } from "@/lib/chat-context";
 import { useUser } from "@/lib/user-context-rtk";
+import { toast } from "sonner";
 import type { ChatContext } from "@/lib/types";
+import { PlanChangeCard } from "./PlanChangeCard";
+import { PaceZoneUpdateCard } from "./PaceZoneUpdateCard";
 
 // ---------------------------------------------------------------------------
 // Suggested prompts by trigger
@@ -52,8 +55,8 @@ function getSuggestedPrompts(ctx: ChatContext | null) {
           prompt: "Am I on track with my training plan?",
         },
         {
-          label: "Adjust Volume",
-          prompt: "Should I adjust my weekly mileage?",
+          label: "Reduce Volume",
+          prompt: "Can you reduce my volume for the next two weeks?",
         },
         {
           label: "Phase Goals",
@@ -67,8 +70,8 @@ function getSuggestedPrompts(ctx: ChatContext | null) {
           prompt: "What should I focus on for today's workout?",
         },
         {
-          label: "Pace Adjustment",
-          prompt: "How should I adjust my pace if I'm feeling tired?",
+          label: "Adjust Plan",
+          prompt: "I need to adjust my training plan",
         },
         {
           label: "Recovery",
@@ -76,6 +79,218 @@ function getSuggestedPrompts(ctx: ChatContext | null) {
         },
       ];
   }
+}
+
+// ---------------------------------------------------------------------------
+// Lightweight markdown renderer for chat messages
+// Handles: **bold**, *italic*, `code`, bullet lists, numbered lists
+// ---------------------------------------------------------------------------
+
+type Block =
+  | { type: "heading"; level: number; text: string }
+  | { type: "bullet"; items: string[] }
+  | { type: "numbered"; items: string[] }
+  | { type: "paragraph"; text: string };
+
+function parseBlocks(content: string): Block[] {
+  const lines = content.split("\n");
+  const blocks: Block[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Skip empty lines
+    if (!line.trim()) {
+      i++;
+      continue;
+    }
+
+    // Heading
+    const headingMatch = line.match(/^(#{1,3})\s+(.+)/);
+    if (headingMatch) {
+      blocks.push({
+        type: "heading",
+        level: headingMatch[1].length,
+        text: headingMatch[2],
+      });
+      i++;
+      continue;
+    }
+
+    // Bullet list — collect consecutive bullet lines
+    if (/^\s*[-•]\s/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\s*[-•]\s/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*[-•]\s+/, ""));
+        i++;
+      }
+      blocks.push({ type: "bullet", items });
+      continue;
+    }
+
+    // Numbered list — collect consecutive numbered lines
+    if (/^\s*\d+[.)]\s/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\s*\d+[.)]\s/.test(lines[i])) {
+        items.push(lines[i].replace(/^\s*\d+[.)]\s+/, ""));
+        i++;
+      }
+      blocks.push({ type: "numbered", items });
+      continue;
+    }
+
+    // Paragraph — collect consecutive plain text lines
+    const paraLines: string[] = [];
+    while (
+      i < lines.length &&
+      lines[i].trim() &&
+      !/^#{1,3}\s/.test(lines[i]) &&
+      !/^\s*[-•]\s/.test(lines[i]) &&
+      !/^\s*\d+[.)]\s/.test(lines[i])
+    ) {
+      paraLines.push(lines[i]);
+      i++;
+    }
+    if (paraLines.length > 0) {
+      blocks.push({ type: "paragraph", text: paraLines.join("\n") });
+    }
+  }
+
+  return blocks;
+}
+
+function ChatMarkdown({ content }: { content: string }) {
+  const blocks = parseBlocks(content);
+
+  return (
+    <div className="space-y-2 text-sm leading-relaxed">
+      {blocks.map((block, i) => {
+        switch (block.type) {
+          case "heading": {
+            const Tag = `h${block.level + 1}` as "h2" | "h3" | "h4";
+            const styles = {
+              h2: "text-base font-semibold text-neutral-900 mt-1",
+              h3: "text-sm font-semibold text-neutral-900 mt-1",
+              h4: "text-sm font-medium text-neutral-800",
+            };
+            return (
+              <Tag key={i} className={styles[Tag]}>
+                <InlineMarkdown text={block.text} />
+              </Tag>
+            );
+          }
+          case "bullet":
+            return (
+              <ul key={i} className="list-disc space-y-0.5 pl-4">
+                {block.items.map((item, j) => (
+                  <li key={j}>
+                    <InlineMarkdown text={item} />
+                  </li>
+                ))}
+              </ul>
+            );
+          case "numbered":
+            return (
+              <ol key={i} className="list-decimal space-y-0.5 pl-4">
+                {block.items.map((item, j) => (
+                  <li key={j}>
+                    <InlineMarkdown text={item} />
+                  </li>
+                ))}
+              </ol>
+            );
+          case "paragraph":
+            return (
+              <p key={i} className="whitespace-pre-wrap">
+                <InlineMarkdown text={block.text} />
+              </p>
+            );
+        }
+      })}
+    </div>
+  );
+}
+
+/** Renders inline markdown: **bold**, *italic*, `code` */
+function InlineMarkdown({ text }: { text: string }) {
+  // Split text into segments: bold, italic, code, and plain text
+  const parts: { type: "text" | "bold" | "italic" | "code"; value: string }[] =
+    [];
+  let remaining = text;
+
+  while (remaining.length > 0) {
+    // Find the earliest match
+    const patterns: {
+      type: "bold" | "italic" | "code";
+      regex: RegExp;
+    }[] = [
+      { type: "code", regex: /`([^`]+)`/ },
+      { type: "bold", regex: /\*\*([^*]+)\*\*/ },
+      { type: "italic", regex: /\*([^*]+)\*/ },
+    ];
+
+    let earliest: {
+      type: "bold" | "italic" | "code";
+      index: number;
+      match: RegExpMatchArray;
+    } | null = null;
+
+    for (const p of patterns) {
+      const m = remaining.match(p.regex);
+      if (m && m.index !== undefined) {
+        if (!earliest || m.index < earliest.index) {
+          earliest = { type: p.type, index: m.index, match: m };
+        }
+      }
+    }
+
+    if (!earliest) {
+      parts.push({ type: "text", value: remaining });
+      break;
+    }
+
+    // Text before the match
+    if (earliest.index > 0) {
+      parts.push({
+        type: "text",
+        value: remaining.slice(0, earliest.index),
+      });
+    }
+
+    parts.push({ type: earliest.type, value: earliest.match[1] });
+    remaining = remaining.slice(
+      earliest.index + earliest.match[0].length
+    );
+  }
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        switch (part.type) {
+          case "bold":
+            return (
+              <strong key={i} className="font-semibold">
+                {part.value}
+              </strong>
+            );
+          case "italic":
+            return <em key={i}>{part.value}</em>;
+          case "code":
+            return (
+              <code
+                key={i}
+                className="rounded bg-neutral-200/60 px-1 py-0.5 text-[13px]"
+              >
+                {part.value}
+              </code>
+            );
+          default:
+            return <span key={i}>{part.value}</span>;
+        }
+      })}
+    </>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -100,6 +315,47 @@ function ChatUI() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const updateModificationStatus = useCallback(
+    (msgId: string, status: PlanModificationData["status"], evaluation?: PlanModificationData["evaluation"], error?: string) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === msgId && m.planModification
+            ? {
+                ...m,
+                planModification: {
+                  ...m.planModification,
+                  status,
+                  ...(evaluation ? { evaluation } : {}),
+                  ...(error ? { error } : {}),
+                },
+              }
+            : m
+        )
+      );
+    },
+    [setMessages]
+  );
+
+  const updatePaceZoneStatus = useCallback(
+    (msgId: string, status: PaceZoneUpdateData["status"], error?: string) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === msgId && m.paceZoneUpdate
+            ? {
+                ...m,
+                paceZoneUpdate: {
+                  ...m.paceZoneUpdate,
+                  status,
+                  ...(error ? { error } : {}),
+                },
+              }
+            : m
+        )
+      );
+    },
+    [setMessages]
+  );
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -136,24 +392,78 @@ function ChatUI() {
           }),
         });
 
-        if (!response.ok) throw new Error("Chat request failed");
+        if (!response.ok) {
+          let errorMessage = "Chat request failed";
+          try {
+            const errData = await response.json();
+            errorMessage = errData.error || errorMessage;
+          } catch { /* use default */ }
+          throw new Error(errorMessage);
+        }
 
         const reader = response.body!.getReader();
         const decoder = new TextDecoder();
+        let buffer = "";
+        let planMod: PlanModificationData | null = null;
+        let paceZoneMod: PaceZoneUpdateData | null = null;
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          const chunk = decoder.decode(value);
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // Process complete lines
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const event = JSON.parse(line);
+
+              if (event.type === "text") {
+                setMessages((prev) => {
+                  const last = prev[prev.length - 1];
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...last, content: last.content + event.data },
+                  ];
+                });
+              } else if (event.type === "plan_modification") {
+                planMod = { ...event.data, status: "proposed" as const };
+              } else if (event.type === "pace_zone_update") {
+                paceZoneMod = { ...event.data, status: "proposed" as const };
+              } else if (event.type === "error") {
+                throw new Error(event.data?.message || "Something went wrong");
+              }
+            } catch {
+              console.warn("Failed to parse NDJSON line:", line);
+            }
+          }
+        }
+
+        // After stream ends, attach tool results if present
+        if (planMod || paceZoneMod) {
           setMessages((prev) => {
             const last = prev[prev.length - 1];
+            const content =
+              last.content || (planMod ? "Here are my proposed changes to your plan:" : "Here's my proposed pace zone update:");
             return [
               ...prev.slice(0, -1),
-              { ...last, content: last.content + chunk },
+              {
+                ...last,
+                content,
+                ...(planMod ? { planModification: planMod } : {}),
+                ...(paceZoneMod ? { paceZoneUpdate: paceZoneMod } : {}),
+              },
             ];
           });
         }
-      } catch {
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Something went wrong";
+        toast.error(errorMessage);
         setMessages((prev) => {
           const last = prev[prev.length - 1];
           return [
@@ -209,15 +519,37 @@ function ChatUI() {
               )}
             >
               {message.content ? (
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                  {message.content}
-                </p>
+                message.role === "assistant" ? (
+                  <ChatMarkdown content={message.content} />
+                ) : (
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                    {message.content}
+                  </p>
+                )
               ) : (
                 <div className="flex items-center gap-1 py-1">
                   <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:0ms]" />
                   <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:150ms]" />
                   <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:300ms]" />
                 </div>
+              )}
+              {message.planModification && (
+                <PlanChangeCard
+                  modification={message.planModification}
+                  messageId={message.id}
+                  onStatusChange={(status, evaluation, error) =>
+                    updateModificationStatus(message.id, status, evaluation, error)
+                  }
+                />
+              )}
+              {message.paceZoneUpdate && (
+                <PaceZoneUpdateCard
+                  data={message.paceZoneUpdate}
+                  messageId={message.id}
+                  onStatusChange={(status, error) =>
+                    updatePaceZoneStatus(message.id, status, error)
+                  }
+                />
               )}
             </div>
           </div>
