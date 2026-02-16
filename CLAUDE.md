@@ -4,6 +4,11 @@
 
 **col.run** is a personalized training platform for runners, particularly trail and ultra runners. It generates AI-powered training plans based on "Training for the Uphill Athlete" methodology and provides ongoing coaching support.
 
+## Important Notes
+
+- **No existing users**: This project has no production users yet. Don't worry about backwards compatibility, data migrations, or deprecation paths — just make the change directly.
+- **Commit early and often**: Push frequently with descriptive commit messages. Don't batch large changes into a single commit — break work into logical, incremental commits.
+
 ## Tech Stack
 
 - **Framework**: Next.js 15 with App Router
