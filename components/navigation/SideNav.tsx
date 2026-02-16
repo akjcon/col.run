@@ -10,11 +10,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle } from "lucide-react";
 import { useChatContext } from "@/lib/chat-context";
 import { Tooltip } from "./Tooltip";
+import { cn } from "@/lib/utils";
 
 export function SideNav() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const { toggleChat } = useChatContext();
+  const { toggleChat, isOpen: isChatOpen } = useChatContext();
 
   // Load expanded state from localStorage on mount
   useEffect(() => {
@@ -84,10 +85,20 @@ export function SideNav() {
         >
           <button
             onClick={toggleChat}
-            className="group relative flex w-full items-center rounded-lg py-2 transition-all ease-out hover:bg-neutral-50 active:scale-[0.985] h-10"
+            className={cn(
+              "group relative flex w-full items-center rounded-lg py-2 transition-all ease-out active:scale-[0.985] h-10",
+              isChatOpen
+                ? "bg-neutral-100"
+                : "hover:bg-neutral-50"
+            )}
           >
             <div className="flex w-10 shrink-0 items-center justify-center">
-              <MessageCircle className="h-4 w-4 shrink-0 text-neutral-600 transition group-hover:text-neutral-900" />
+              <MessageCircle className={cn(
+                "h-4 w-4 shrink-0 transition",
+                isChatOpen
+                  ? "text-neutral-900"
+                  : "text-neutral-600 group-hover:text-neutral-900"
+              )} />
             </div>
             <div className="flex-1 overflow-hidden">
               <AnimatePresence>
