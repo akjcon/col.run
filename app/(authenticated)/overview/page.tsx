@@ -9,6 +9,7 @@ import { PhaseTimeline } from "@/components/overview/PhaseTimeline";
 import { WeeklyVolumeChart } from "@/components/overview/WeeklyVolumeChart";
 import { PlanStats } from "@/components/overview/PlanStats";
 import { AthleteProfile } from "@/components/overview/AthleteProfile";
+import { PaceZonesCard } from "@/components/overview/PaceZonesCard";
 import { useGetAthleteSnapshotQuery } from "@/lib/store/api";
 
 export default function Overview() {
@@ -72,6 +73,13 @@ export default function Overview() {
             />
           </div>
         )}
+
+        {/* Pace Zones */}
+        <div className="mb-8">
+          <PaceZonesCard
+            thresholdPace={snapshot?.thresholdPace ?? snapshot?.estimatedThresholdPace}
+          />
+        </div>
 
         {/* Training Plan Section */}
         <div className="space-y-4">

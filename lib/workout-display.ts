@@ -6,6 +6,7 @@
  */
 
 import type { Block, Day, EffortLevel, Workout } from "@/lib/blocks/types";
+import { calculatePaceZones, formatPaceRange } from "@/lib/pace-zones";
 import {
   calculateWorkoutTotalMiles,
   calculateWorkoutTotal,
@@ -70,6 +71,25 @@ export function formatBlock(block: Block): string {
     return `${block.value} miles at ${effortLabel}`;
   }
   return `${block.value}min at ${effortLabel}`;
+}
+
+/**
+ * Format a block with its pace range appended (when threshold pace is available).
+ */
+export function formatBlockWithPace(block: Block, thresholdPace?: number): string {
+  const base = formatBlock(block);
+  if (!thresholdPace || isRestBlock(block)) return base;
+  const zones = calculatePaceZones(thresholdPace);
+  const range = zones[block.effortLevel];
+  return `${base} (${formatPaceRange(range)})`;
+}
+
+/**
+ * Get the pace range string for a given effort level.
+ */
+export function effortToPaceRange(effort: EffortLevel, thresholdPace: number): string {
+  const zones = calculatePaceZones(thresholdPace);
+  return formatPaceRange(zones[effort]);
 }
 
 // =============================================================================
