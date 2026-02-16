@@ -9,11 +9,37 @@ import {
   type SetStateAction,
 } from "react";
 import type { ChatContext } from "@/lib/types";
+import type { Week, Day } from "@/lib/blocks/types";
+
+export interface PlanModificationData {
+  reasoning: string;
+  changes: Array<{
+    type: "replace_week" | "replace_day";
+    weekNumber: number;
+    dayOfWeek?: string;
+    week?: Week;
+    day?: Day;
+    summary: string;
+  }>;
+  status: "proposed" | "applying" | "applied" | "error";
+  evaluation?: { structural: number; safety: number; methodology: number; overall: number };
+  error?: string;
+}
+
+export interface PaceZoneUpdateData {
+  reasoning: string;
+  newThresholdPace: number;
+  currentThresholdPace?: number;
+  status: "proposed" | "applying" | "applied" | "error";
+  error?: string;
+}
 
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  planModification?: PlanModificationData;
+  paceZoneUpdate?: PaceZoneUpdateData;
 }
 
 function getWelcomeMessage(ctx: ChatContext | null): string {
