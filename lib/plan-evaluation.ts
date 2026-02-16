@@ -206,11 +206,35 @@ function isRestBlock(block: Block): boolean {
 
 /**
  * Convert a block's value to minutes (for volume comparison)
+ * Accounts for unit conversion and repeat multiplier for intervals.
  */
 function blockToMinutes(block: Block, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
   if (block.type === "rest") return 0;
-  if (block.unit === "minutes") return block.value;
-  return block.value * paceMinPerMile; // miles → minutes
+
+  let minutes: number;
+  if (block.unit === "minutes") {
+    minutes = block.value;
+  } else if (block.unit === "seconds") {
+    minutes = block.value / 60;
+  } else {
+    // miles → minutes
+    minutes = block.value * paceMinPerMile;
+  }
+
+  // Account for interval repeats
+  if (block.repeat?.times && block.repeat.times > 1) {
+    let restMinutes = 0;
+    if (block.repeat.restBetween) {
+      const rb = block.repeat.restBetween;
+      if (rb.unit === "seconds") restMinutes = rb.value / 60;
+      else if (rb.unit === "minutes") restMinutes = rb.value;
+      else restMinutes = rb.value * paceMinPerMile;
+    }
+    // Total = (work + rest) * reps - rest (no rest after last rep)
+    minutes = minutes * block.repeat.times + restMinutes * (block.repeat.times - 1);
+  }
+
+  return minutes;
 }
 
 /**
@@ -218,8 +242,30 @@ function blockToMinutes(block: Block, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE
  */
 function blockToMiles(block: Block, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
   if (block.type === "rest") return 0;
-  if (block.unit === "miles") return block.value;
-  return block.value / paceMinPerMile; // minutes → miles
+
+  let miles: number;
+  if (block.unit === "miles") {
+    miles = block.value;
+  } else if (block.unit === "seconds") {
+    miles = (block.value / 60) / paceMinPerMile;
+  } else {
+    // minutes → miles
+    miles = block.value / paceMinPerMile;
+  }
+
+  // Account for interval repeats
+  if (block.repeat?.times && block.repeat.times > 1) {
+    let restMiles = 0;
+    if (block.repeat.restBetween) {
+      const rb = block.repeat.restBetween;
+      if (rb.unit === "miles") restMiles = rb.value;
+      else if (rb.unit === "seconds") restMiles = (rb.value / 60) / paceMinPerMile;
+      else restMiles = rb.value / paceMinPerMile;
+    }
+    miles = miles * block.repeat.times + restMiles * (block.repeat.times - 1);
+  }
+
+  return miles;
 }
 
 /**
@@ -516,6 +562,10 @@ export function checkSafetyRules(plan: TrainingPlan): SafetyResult {
   const EARLY_WEEK_THRESHOLD = 3;
   const EARLY_WEEK_MAX_INCREASE = 0.25;
 
+  // Minimum volume threshold: percentage-based checks are unreliable below this
+  // (e.g., 20min → 70min is +250% but trivially safe for any runner)
+  const MIN_VOLUME_FOR_PERCENTAGE_CHECK = 120; // ~2 hours/week
+
   // Helper to check if a week is recovery/taper
   const isRecoveryWeek = (week: Week) =>
     week.phase.toLowerCase().includes("recovery") ||
@@ -537,19 +587,30 @@ export function checkSafetyRules(plan: TrainingPlan): SafetyResult {
 
     // Compare to last non-recovery week (not just the previous week)
     if (lastNonRecoveryMinutes > 0 && currMinutes > lastNonRecoveryMinutes) {
-      const increase = (currMinutes - lastNonRecoveryMinutes) / lastNonRecoveryMinutes;
-      // Allow larger increases in early weeks
-      const effectiveMaxIncrease =
-        currWeek.weekNumber <= EARLY_WEEK_THRESHOLD ? EARLY_WEEK_MAX_INCREASE : MAX_VOLUME_INCREASE;
+      // Skip percentage-based checks when both weeks are below the minimum volume threshold.
+      // At very low volumes (e.g., 20min → 70min), large percentage increases are normal
+      // and safe — the absolute volume is too low to cause injury.
+      const bothBelowThreshold =
+        lastNonRecoveryMinutes < MIN_VOLUME_FOR_PERCENTAGE_CHECK &&
+        currMinutes < MIN_VOLUME_FOR_PERCENTAGE_CHECK;
 
-      if (increase > effectiveMaxIncrease) {
-        violations.push({
-          rule: "VOLUME_PROGRESSION_LIMIT",
-          severity: increase > 0.25 ? "critical" : "major",
-          message: `Volume increase of ${(increase * 100).toFixed(1)}% from week ${lastNonRecoveryWeekNum} to ${currWeek.weekNumber} exceeds ${(effectiveMaxIncrease * 100).toFixed(0)}% limit`,
-          weekNumber: currWeek.weekNumber,
-          details: `${Math.round(lastNonRecoveryMinutes)} min → ${Math.round(currMinutes)} min`,
-        });
+      if (!bothBelowThreshold) {
+        const increase = (currMinutes - lastNonRecoveryMinutes) / lastNonRecoveryMinutes;
+        // Allow larger increases in early weeks or when transitioning from low volume
+        const effectiveMaxIncrease =
+          currWeek.weekNumber <= EARLY_WEEK_THRESHOLD || lastNonRecoveryMinutes < MIN_VOLUME_FOR_PERCENTAGE_CHECK
+            ? EARLY_WEEK_MAX_INCREASE
+            : MAX_VOLUME_INCREASE;
+
+        if (increase > effectiveMaxIncrease) {
+          violations.push({
+            rule: "VOLUME_PROGRESSION_LIMIT",
+            severity: increase > 0.25 ? "critical" : "major",
+            message: `Volume increase of ${(increase * 100).toFixed(1)}% from week ${lastNonRecoveryWeekNum} to ${currWeek.weekNumber} exceeds ${(effectiveMaxIncrease * 100).toFixed(0)}% limit`,
+            weekNumber: currWeek.weekNumber,
+            details: `${Math.round(lastNonRecoveryMinutes)} min → ${Math.round(currMinutes)} min`,
+          });
+        }
       }
     }
 
