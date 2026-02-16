@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type Dispatch,
   type SetStateAction,
 } from "react";
@@ -91,6 +92,13 @@ const ChatCtx = createContext<ChatContextValue>({
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [context, setContext] = useState<ChatContext | null>(null);
+
+  // Open chat by default on desktop
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      setIsOpen(true);
+    }
+  }, []);
   const [messages, setMessages] = useState<ChatMessage[]>([defaultWelcome]);
   const [isStreaming, setIsStreaming] = useState(false);
 

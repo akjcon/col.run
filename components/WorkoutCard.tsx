@@ -58,7 +58,7 @@ export function WorkoutCard({
 
   if (isLoading) {
     return (
-      <div className="mx-4 md:mr-0 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div className="mx-4 md:mx-0 rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <div className="p-6">
           <Skeleton className="h-4 w-24 mb-2" />
           <Skeleton className="h-8 w-48 mb-4" />
@@ -79,7 +79,7 @@ export function WorkoutCard({
 
   if (isRestDay(todaysDay)) {
     return (
-      <div className="mx-4 md:mr-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div className="mx-4 md:mx-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
         <div className="px-6 pt-6">
           <div className="flex items-center gap-3">
             <Calendar className="h-4 w-4 text-neutral-600" />
@@ -113,7 +113,7 @@ export function WorkoutCard({
   );
 
   return (
-    <div className="mx-4 md:mr-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+    <div className="mx-4 md:mx-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
       <div className="px-6 pt-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

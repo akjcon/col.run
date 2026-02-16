@@ -130,13 +130,13 @@ export default function HomePage() {
           </div>
 
           {/* Tomorrow's Workout */}
-          <div className="mx-4">
+          <div>
             <TomorrowWorkoutCard thresholdPace={thresholdPace} />
           </div>
         </div>
 
         {/* Progress Overview */}
-        <div className="mt-4 mx-2">
+        <div className="mt-4">
           <ProgressOverview
             currentWeek={currentWeek}
             totalWeeks={totalWeeks}

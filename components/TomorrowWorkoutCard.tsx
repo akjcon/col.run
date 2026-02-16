@@ -25,7 +25,7 @@ export function TomorrowWorkoutCard({ thresholdPace }: { thresholdPace?: number 
 
   if (isLoading) {
     return (
-      <div className="ml-4 mr-0 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
+      <div className="mx-4 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
         <div className="p-4">
           <div className="flex flex-col items-start justify-between gap-2">
             <Skeleton className="h-4 w-1/3 mb-1" />
@@ -50,7 +50,7 @@ export function TomorrowWorkoutCard({ thresholdPace }: { thresholdPace?: number 
 
   if (isRestDay(tomorrowsDay)) {
     return (
-      <div className="ml-4 mr-0 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
+      <div className="mx-4 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
         <div className="p-4">
           <div className="mb-3 flex items-center gap-2">
             <Calendar className="h-3.5 w-3.5 text-neutral-500" />
@@ -80,7 +80,7 @@ export function TomorrowWorkoutCard({ thresholdPace }: { thresholdPace?: number 
     : "";
 
   return (
-    <div className="ml-4 mr-0 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
+    <div className="mx-4 pt-2 overflow-hidden rounded-b-xl ring-1 ring-neutral-200 border border-t-0 -translate-y-1 border-white bg-stone-50 shadow-sm z-10">
       <div className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
