@@ -62,6 +62,10 @@ export async function buildAthleteSnapshot(
     snapshot.marathonPR = bg.marathonPR;
     snapshot.injuries = bg.injuries;
 
+    if (bg.thresholdPace) {
+      snapshot.thresholdPace = bg.thresholdPace;
+    }
+
     if (bg.goals) {
       snapshot.raceDistance = bg.goals.raceDistance;
       snapshot.raceDate = bg.goals.raceDate;
@@ -77,6 +81,11 @@ export async function buildAthleteSnapshot(
     snapshot.tsb = fitness.tsb;
     snapshot.currentWeeklyMileage = fitness.weeklyMileage;
     snapshot.estimatedThresholdPace = fitness.estimatedThresholdPace;
+
+    // Resolve threshold pace: manual entry > Strava estimate
+    if (!snapshot.thresholdPace && fitness.estimatedThresholdPace) {
+      snapshot.thresholdPace = fitness.estimatedThresholdPace;
+    }
   }
 
   // Merge ExperienceProfile (Strava lifetime)

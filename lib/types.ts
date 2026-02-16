@@ -23,6 +23,7 @@ export interface TrainingBackground {
   };
   background?: string;
   specialNotes?: string;
+  thresholdPace?: number; // min/mi, manually entered
   fitnessSource?: "strava" | "manual";
   stravaConnected?: boolean;
 }
@@ -127,6 +128,7 @@ export interface AthleteSnapshot {
   tsb?: number;
   currentWeeklyMileage?: number;
   estimatedThresholdPace?: number;
+  thresholdPace?: number; // resolved: manual entry > Strava estimate
 
   // From ExperienceProfile (Strava, lifetime)
   lifetimeMiles?: number;
