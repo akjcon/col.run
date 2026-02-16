@@ -7,6 +7,7 @@ import {
   getDayEffortLevel,
   effortToColor,
   effortToZoneLabel,
+  effortToPaceRange,
   isRestDay,
   getWorkoutSummary,
 } from "@/lib/workout-display";
@@ -16,7 +17,7 @@ import {
 } from "@/lib/blocks/calculations";
 import { AskCoachButton } from "@/components/AskCoachButton";
 
-export function TomorrowWorkoutCard() {
+export function TomorrowWorkoutCard({ thresholdPace }: { thresholdPace?: number }) {
   const { userId } = useUser();
   const { data, isLoading, error } = useGetTomorrowsWorkoutQuery(userId || "", {
     skip: !userId,
@@ -103,6 +104,11 @@ export function TomorrowWorkoutCard() {
               <span className="text-xs font-medium uppercase tracking-wider text-neutral-700">
                 {zoneText}
               </span>
+              {thresholdPace && (
+                <span className="text-xs font-normal normal-case tracking-normal text-neutral-500">
+                  {effortToPaceRange(effortLevel, thresholdPace)}
+                </span>
+              )}
             </div>
 
             {/* Key Metrics - Compact */}

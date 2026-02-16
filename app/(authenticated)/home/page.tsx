@@ -8,6 +8,7 @@ import { ProgressOverview } from "@/components/ProgressOverview";
 import {
   useSaveWorkoutLogMutation,
   useIsWorkoutLoggedQuery,
+  useGetAthleteSnapshotQuery,
 } from "@/lib/store/api";
 import { useState, useEffect } from "react";
 import { useClerkFirebase } from "@/lib/clerk-firebase";
@@ -28,6 +29,10 @@ export default function HomePage() {
 
   // RTK Query hooks
   const [saveWorkoutLog] = useSaveWorkoutLogMutation();
+  const { data: snapshot } = useGetAthleteSnapshotQuery(clerkUserId || "", {
+    skip: !clerkUserId || !isFirebaseReady,
+  });
+  const thresholdPace = snapshot?.thresholdPace ?? snapshot?.estimatedThresholdPace;
 
   // Get active plan directly
   const activePlan = userData?.activePlan;
@@ -120,12 +125,13 @@ export default function HomePage() {
               isFirebaseReady={isFirebaseReady}
               onWorkoutComplete={handleWorkoutCompletion}
               isLoading={isLoadingWorkoutCard}
+              thresholdPace={thresholdPace}
             />
           </div>
 
           {/* Tomorrow's Workout */}
           <div className="mx-4">
-            <TomorrowWorkoutCard />
+            <TomorrowWorkoutCard thresholdPace={thresholdPace} />
           </div>
         </div>
 

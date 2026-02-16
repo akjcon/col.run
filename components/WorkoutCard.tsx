@@ -1,7 +1,6 @@
 import {
   Calendar,
   CheckCircle2,
-  MessageCircle,
   ArrowRight,
   ChevronDown,
   ChevronUp,
@@ -18,7 +17,9 @@ import {
   getDayEffortLevel,
   effortToColor,
   effortToZoneLabel,
+  effortToPaceRange,
   formatBlock,
+  formatBlockWithPace,
   isRestDay,
 } from "@/lib/workout-display";
 import {
@@ -33,6 +34,7 @@ interface WorkoutCardProps {
   isFirebaseReady: boolean;
   onWorkoutComplete: (rating: number, notes?: string) => Promise<void>;
   isLoading?: boolean;
+  thresholdPace?: number;
 }
 
 export function WorkoutCard({
@@ -41,6 +43,7 @@ export function WorkoutCard({
   isFirebaseReady,
   onWorkoutComplete,
   isLoading = false,
+  thresholdPace,
 }: WorkoutCardProps) {
   const [showDetails, setShowDetails] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -119,6 +122,22 @@ export function WorkoutCard({
               Today&apos;s Workout
             </p>
           </div>
+          {!isWorkoutDone && (
+            <AskCoachButton
+              context={{
+                page: "home",
+                trigger: "workout",
+                workout: {
+                  title,
+                  miles: totalMiles,
+                  minutes: Math.round(totalMinutes),
+                  effortLevel: zoneText,
+                  blocks: allBlocks.map((b) => formatBlock(b)),
+                  isCompleted: isWorkoutDone,
+                },
+              }}
+            />
+          )}
         </div>
       </div>
 
@@ -145,6 +164,11 @@ export function WorkoutCard({
           <span className="text-sm font-medium uppercase tracking-wider text-neutral-900">
             {zoneText}
           </span>
+          {thresholdPace && (
+            <span className="text-xs font-normal normal-case tracking-normal text-neutral-500">
+              {effortToPaceRange(effortLevel, thresholdPace)}
+            </span>
+          )}
         </div>
       </div>
 
@@ -195,7 +219,7 @@ export function WorkoutCard({
                       style={{ backgroundColor: effortToColor(block.effortLevel) }}
                     ></div>
                     <p className="text-sm leading-relaxed text-neutral-700">
-                      {formatBlock(block)}
+                      {formatBlockWithPace(block, thresholdPace)}
                     </p>
                   </div>
                 ))}
@@ -205,44 +229,15 @@ export function WorkoutCard({
 
           {/* Block notes */}
           {allBlocks.some((b) => b.notes) && (
-            <div className="px-6 pb-6">
-              <div className="rounded-xl bg-neutral-900 p-5 text-white">
-                <div className="flex items-start gap-3">
-                  <MessageCircle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                  <div>
-                    <p className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-300">
-                      Notes
-                    </p>
-                    {allBlocks
-                      .filter((b) => b.notes)
-                      .map((b, i) => (
-                        <p key={i} className="text-sm leading-relaxed">
-                          {b.notes}
-                        </p>
-                      ))}
-                  </div>
-                </div>
-              </div>
+            <div className="px-6 pb-4">
+              <p className="text-sm leading-relaxed text-neutral-400">
+                {allBlocks
+                  .filter((b) => b.notes)
+                  .map((b) => b.notes)
+                  .join(" ")}
+              </p>
             </div>
           )}
-
-          {/* Ask Coach */}
-          <div className="px-6 pb-4">
-            <AskCoachButton
-              context={{
-                page: "home",
-                trigger: "workout",
-                workout: {
-                  title,
-                  miles: totalMiles,
-                  minutes: Math.round(totalMinutes),
-                  effortLevel: zoneText,
-                  blocks: allBlocks.map((b) => formatBlock(b)),
-                  isCompleted: isWorkoutDone,
-                },
-              }}
-            />
-          </div>
 
           {/* Action Button - Only show when workout not done */}
           {!isWorkoutDone && (
