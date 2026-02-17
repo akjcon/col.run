@@ -21,14 +21,9 @@ function formatDuration(minutes: number): string {
 function getWorkoutTypeIcon(day: Day) {
   const blocks = getDayBlocks(day).filter((b) => !isRestBlock(b));
   if (blocks.length === 0) return null;
-
-  const hasLongRun = blocks.some((b) => b.type === "longRun");
-  const hasIntervals = blocks.some((b) => b.type === "intervals");
-  const hasTempo = blocks.some((b) => b.type === "tempo");
-
-  if (hasLongRun) return Mountain;
-  if (hasIntervals) return Zap;
-  if (hasTempo) return Timer;
+  if (blocks.some((b) => b.type === "longRun")) return Mountain;
+  if (blocks.some((b) => b.type === "intervals")) return Zap;
+  if (blocks.some((b) => b.type === "tempo")) return Timer;
   return null;
 }
 
@@ -39,6 +34,7 @@ interface DayCellProps {
   isCompleted: boolean;
 }
 
+/** Desktop-only grid cell (hidden on mobile — see MobileWeekAccordion). */
 export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
   const rest = isRestDay(day);
   const miles = calculateDayTotalMiles(day);
@@ -48,14 +44,13 @@ export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
   const color = effortToColor(effortLevel);
   const Icon = rest ? null : getWorkoutTypeIcon(day);
 
-  // Format date if available
   const dateNum = day.date
     ? new Date(day.date).getDate()
     : undefined;
 
   return (
     <div
-      className={`relative min-h-[2.75rem] rounded-md border p-1 text-left transition-colors md:min-h-[5rem] md:p-2 ${
+      className={`relative min-h-[5rem] rounded-md border p-2 text-left transition-colors ${
         isToday
           ? "ring-2 ring-neutral-900 border-transparent"
           : rest
@@ -75,7 +70,7 @@ export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
       {dateNum !== undefined && (
         <div className="flex items-center gap-0.5">
           <p
-            className={`text-[10px] tabular-nums md:text-xs ${
+            className={`text-xs tabular-nums ${
               isToday ? "font-bold text-neutral-900" : "text-neutral-400"
             }`}
           >
@@ -87,9 +82,9 @@ export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
         </div>
       )}
 
-      {/* Title — desktop only (mobile relies on color strip + miles) */}
+      {/* Title with micro-icon */}
       <p
-        className={`mt-0.5 line-clamp-1 hidden text-xs leading-tight md:block ${
+        className={`mt-0.5 line-clamp-1 text-xs leading-tight ${
           rest ? "text-neutral-400" : "font-medium text-neutral-800"
         }`}
       >
@@ -99,13 +94,11 @@ export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
         {rest ? "Rest" : title}
       </p>
 
-      {/* Miles + Duration (desktop only) */}
+      {/* Miles + Duration */}
       {!rest && miles > 0 && (
-        <p className="mt-0.5 text-[9px] tabular-nums text-neutral-400 md:text-[10px]">
+        <p className="mt-0.5 text-[10px] tabular-nums text-neutral-400">
           {Math.round(miles * 10) / 10}mi
-          {minutes > 0 && (
-            <span className="hidden md:inline"> · {formatDuration(minutes)}</span>
-          )}
+          {minutes > 0 && ` · ${formatDuration(minutes)}`}
         </p>
       )}
     </div>

@@ -16,7 +16,7 @@ export function WeekRow({ week, isCurrentWeek, todayDate, completedDates }: Week
 
   return (
     <div
-      className={`grid grid-cols-[2rem_repeat(7,1fr)] gap-0.5 rounded-lg py-0.5 md:grid-cols-[3rem_repeat(7,1fr)] md:gap-1.5 md:px-1 md:py-1 ${
+      className={`grid grid-cols-[3rem_repeat(7,1fr)] gap-1.5 rounded-lg px-1 py-1 ${
         isCurrentWeek ? "bg-neutral-50" : ""
       }`}
     >
