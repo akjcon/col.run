@@ -57,7 +57,7 @@ export function CalendarGrid({
     <div className="space-y-2">
       {/* Sticky day-of-week header */}
       <div className="sticky top-0 z-10 bg-white pb-2 pt-1">
-        <div className="grid grid-cols-[2.5rem_repeat(7,1fr)] gap-1 px-1 md:grid-cols-[3rem_repeat(7,1fr)] md:gap-1.5">
+        <div className="grid grid-cols-[2rem_repeat(7,1fr)] gap-0.5 md:grid-cols-[3rem_repeat(7,1fr)] md:gap-1.5 md:px-1">
           <div /> {/* Empty cell for week number column */}
           {DAY_HEADERS_FULL.map((day, i) => (
             <div key={day + i} className="text-center">

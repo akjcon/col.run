@@ -55,7 +55,7 @@ export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
 
   return (
     <div
-      className={`relative min-h-[4rem] rounded-md border p-1.5 text-left transition-colors md:min-h-[5rem] md:p-2 ${
+      className={`relative min-h-[2.75rem] rounded-md border p-1 text-left transition-colors md:min-h-[5rem] md:p-2 ${
         isToday
           ? "ring-2 ring-neutral-900 border-transparent"
           : rest
@@ -87,19 +87,19 @@ export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
         </div>
       )}
 
-      {/* Title with micro-icon */}
+      {/* Title — desktop only (mobile relies on color strip + miles) */}
       <p
-        className={`mt-0.5 line-clamp-1 text-[10px] leading-tight md:text-xs ${
+        className={`mt-0.5 line-clamp-1 hidden text-xs leading-tight md:block ${
           rest ? "text-neutral-400" : "font-medium text-neutral-800"
         }`}
       >
         {Icon && (
-          <Icon className="mr-0.5 hidden md:inline-block h-3 w-3" />
+          <Icon className="mr-0.5 inline-block h-3 w-3" />
         )}
         {rest ? "Rest" : title}
       </p>
 
-      {/* Miles (mobile) + Duration (desktop only) */}
+      {/* Miles + Duration (desktop only) */}
       {!rest && miles > 0 && (
         <p className="mt-0.5 text-[9px] tabular-nums text-neutral-400 md:text-[10px]">
           {Math.round(miles * 10) / 10}mi
