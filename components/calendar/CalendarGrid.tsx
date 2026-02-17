@@ -68,7 +68,7 @@ export function CalendarGrid({
   return (
     <>
       {/* ── Mobile: Accordion ──────────────────────────────────────── */}
-      <div className="space-y-2 md:hidden">
+      <div className="space-y-2 px-1 md:hidden">
         {phaseGroups.map((group, groupIdx) => (
           <div key={groupIdx}>
             {group.phase && (
