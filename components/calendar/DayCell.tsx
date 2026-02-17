@@ -1,24 +1,52 @@
 "use client";
 
 import type { Day } from "@/lib/blocks/types";
-import { calculateDayTotalMiles, isRestDay } from "@/lib/blocks/calculations";
+import { calculateDayTotalMiles, calculateDayTotal, isRestDay, getDayBlocks, isRestBlock } from "@/lib/blocks/calculations";
 import {
   getDayTitle,
   getDayEffortLevel,
   effortToColor,
 } from "@/lib/workout-display";
+import { Mountain, Zap, Timer, Check } from "lucide-react";
+
+function formatDuration(minutes: number): string {
+  if (minutes <= 0) return "";
+  const rounded = Math.round(minutes);
+  if (rounded < 60) return `~${rounded}m`;
+  const h = Math.floor(rounded / 60);
+  const m = rounded % 60;
+  return m > 0 ? `~${h}h${m}m` : `~${h}h`;
+}
+
+function getWorkoutTypeIcon(day: Day) {
+  const blocks = getDayBlocks(day).filter((b) => !isRestBlock(b));
+  if (blocks.length === 0) return null;
+
+  const hasLongRun = blocks.some((b) => b.type === "longRun");
+  const hasIntervals = blocks.some((b) => b.type === "intervals");
+  const hasTempo = blocks.some((b) => b.type === "tempo");
+
+  if (hasLongRun) return Mountain;
+  if (hasIntervals) return Zap;
+  if (hasTempo) return Timer;
+  return null;
+}
 
 interface DayCellProps {
   day: Day;
   isToday: boolean;
+  isPast: boolean;
+  isCompleted: boolean;
 }
 
-export function DayCell({ day, isToday }: DayCellProps) {
+export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
   const rest = isRestDay(day);
   const miles = calculateDayTotalMiles(day);
+  const minutes = calculateDayTotal(day);
   const title = getDayTitle(day);
   const effortLevel = getDayEffortLevel(day);
   const color = effortToColor(effortLevel);
+  const Icon = rest ? null : getWorkoutTypeIcon(day);
 
   // Format date if available
   const dateNum = day.date
@@ -33,7 +61,7 @@ export function DayCell({ day, isToday }: DayCellProps) {
           : rest
             ? "border-neutral-100 bg-neutral-50"
             : "border-neutral-200 bg-white"
-      }`}
+      } ${isPast && !isToday ? "opacity-50" : ""}`}
     >
       {/* Effort color strip */}
       {!rest && (
@@ -43,30 +71,38 @@ export function DayCell({ day, isToday }: DayCellProps) {
         />
       )}
 
-      {/* Date number */}
+      {/* Date number + completion check */}
       {dateNum !== undefined && (
-        <p
-          className={`text-[10px] tabular-nums md:text-xs ${
-            isToday ? "font-bold text-neutral-900" : "text-neutral-400"
-          }`}
-        >
-          {dateNum}
-        </p>
+        <div className="flex items-center gap-0.5">
+          <p
+            className={`text-[10px] tabular-nums md:text-xs ${
+              isToday ? "font-bold text-neutral-900" : "text-neutral-400"
+            }`}
+          >
+            {dateNum}
+          </p>
+          {isCompleted && (
+            <Check className="h-2.5 w-2.5 text-green-500" />
+          )}
+        </div>
       )}
 
-      {/* Title */}
+      {/* Title with micro-icon */}
       <p
         className={`mt-0.5 line-clamp-1 text-[10px] leading-tight md:text-xs ${
           rest ? "text-neutral-400" : "font-medium text-neutral-800"
         }`}
       >
+        {Icon && (
+          <Icon className="mr-0.5 inline-block h-2.5 w-2.5 md:h-3 md:w-3" />
+        )}
         {rest ? "Rest" : title}
       </p>
 
-      {/* Miles */}
+      {/* Miles + Duration */}
       {!rest && miles > 0 && (
         <p className="mt-0.5 text-[9px] tabular-nums text-neutral-400 md:text-[10px]">
-          {Math.round(miles * 10) / 10} mi
+          {Math.round(miles * 10) / 10}mi{minutes > 0 ? ` · ${formatDuration(minutes)}` : ""}
         </p>
       )}
     </div>

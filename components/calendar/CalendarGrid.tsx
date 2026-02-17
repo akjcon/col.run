@@ -9,6 +9,7 @@ interface CalendarGridProps {
   weeks: Week[];
   phases: PhaseTarget[];
   currentWeek: number;
+  completedDates?: Set<number>;
 }
 
 const DAY_HEADERS_FULL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -18,6 +19,7 @@ export function CalendarGrid({
   weeks,
   phases,
   currentWeek,
+  completedDates,
 }: CalendarGridProps) {
   const currentWeekRef = useRef<HTMLDivElement>(null);
 
@@ -98,6 +100,7 @@ export function CalendarGrid({
                   week={week}
                   isCurrentWeek={isCurrent}
                   todayDate={todayDate}
+                  completedDates={completedDates}
                 />
               </div>
             );

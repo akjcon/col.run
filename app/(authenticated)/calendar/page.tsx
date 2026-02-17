@@ -1,13 +1,36 @@
 "use client";
 
+import { useMemo } from "react";
 import { useUser } from "@/lib/user-context-rtk";
 import { calculateCurrentWeek } from "@/lib/plan-utils";
 import { getWeeksWithDates } from "@/lib/workout-utils";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
+import { useGetWorkoutLogsQuery } from "@/lib/store/api/trainingApi";
 
 export default function CalendarPage() {
-  const { userData, isLoading } = useUser();
+  const { userData, isLoading, userId } = useUser();
+
+  const { data: workoutLogs } = useGetWorkoutLogsQuery(
+    { userId: userId || "" },
+    { skip: !userId }
+  );
+
+  const completedDates = useMemo(() => {
+    if (!workoutLogs) return undefined;
+    const set = new Set<number>();
+    for (const log of workoutLogs) {
+      // Normalize to midnight
+      const d = new Date(log.date);
+      const midnight = new Date(
+        d.getFullYear(),
+        d.getMonth(),
+        d.getDate()
+      ).getTime();
+      set.add(midnight);
+    }
+    return set;
+  }, [workoutLogs]);
 
   if (isLoading) {
     return (
@@ -58,6 +81,7 @@ export default function CalendarPage() {
           weeks={weeksWithDates}
           phases={activePlan.phases || []}
           currentWeek={currentWeek}
+          completedDates={completedDates}
         />
       </div>
     </div>

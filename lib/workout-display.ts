@@ -31,11 +31,11 @@ export function effortToZoneLabel(effort: EffortLevel): string {
 
 export function effortToColor(effort: EffortLevel): string {
   switch (effort) {
-    case "z1": return "#A3A3A3"; // neutral-400
-    case "z2": return "#737373"; // neutral-500
-    case "z3": return "#525252"; // neutral-600
-    case "z4": return "#404040"; // neutral-700
-    case "z5": return "#171717"; // neutral-900
+    case "z1": return "#93C5FD"; // soft blue
+    case "z2": return "#86EFAC"; // soft green
+    case "z3": return "#E98A15"; // brand orange
+    case "z4": return "#F87171"; // red
+    case "z5": return "#171717"; // near-black
   }
 }
 
