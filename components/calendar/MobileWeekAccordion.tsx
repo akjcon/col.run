@@ -147,15 +147,21 @@ export function MobileWeekAccordion({
   const [expanded, setExpanded] = useState(isCurrentWeek);
   const weekMiles = calculateWeekTotalMiles(week);
 
+  // A week is past if its last day is before today
+  const lastDay = week.days[week.days.length - 1];
+  const isPastWeek = lastDay?.date
+    ? getDayMidnight(lastDay.date) < todayDate
+    : false;
+
   return (
-    <div>
+    <div className={isPastWeek && !isCurrentWeek ? "opacity-50" : ""}>
       {/* Collapsed header — always visible */}
       <button
         onClick={() => setExpanded((v) => !v)}
-        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
+        className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
           isCurrentWeek
-            ? "bg-neutral-100"
-            : "bg-neutral-50 hover:bg-neutral-100"
+            ? "border-neutral-200 bg-neutral-100"
+            : "border-neutral-100 bg-neutral-50 hover:bg-neutral-100"
         }`}
       >
         {/* Week number */}
