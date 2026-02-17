@@ -28,24 +28,68 @@ const DEFAULT_PACE_MIN_PER_MILE = 10;
 
 /**
  * Convert a block's value to minutes (for volume calculations)
- * If already in minutes, returns as-is. If in miles, converts using pace.
+ * Handles minutes, miles (via pace), seconds, and repeat multipliers.
  */
 export function blockValueToMinutes(block: Block, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
   if (block.type === "rest") return 0;
-  if (block.unit === "minutes") return block.value;
-  // miles -> minutes
-  return block.value * paceMinPerMile;
+
+  let mins: number;
+  if (block.unit === "minutes") {
+    mins = block.value;
+  } else if (block.unit === "seconds") {
+    mins = block.value / 60;
+  } else {
+    // miles -> minutes
+    mins = block.value * paceMinPerMile;
+  }
+
+  // Account for repeats (e.g. 6x20sec = 6 * value, plus rest between)
+  if (block.repeat) {
+    let total = mins * block.repeat.times;
+    if (block.repeat.restBetween) {
+      const rb = block.repeat.restBetween;
+      const restMins = rb.unit === "seconds" ? rb.value / 60
+        : rb.unit === "miles" ? rb.value * paceMinPerMile
+        : rb.value;
+      total += restMins * (block.repeat.times - 1);
+    }
+    return total;
+  }
+
+  return mins;
 }
 
 /**
  * Convert a block's value to miles (for distance calculations)
- * If already in miles, returns as-is. If in minutes, converts using pace.
+ * Handles miles, minutes (via pace), seconds, and repeat multipliers.
  */
 export function blockValueToMiles(block: Block, paceMinPerMile = DEFAULT_PACE_MIN_PER_MILE): number {
   if (block.type === "rest") return 0;
-  if (block.unit === "miles") return block.value;
-  // minutes -> miles
-  return block.value / paceMinPerMile;
+
+  let mi: number;
+  if (block.unit === "miles") {
+    mi = block.value;
+  } else if (block.unit === "seconds") {
+    mi = (block.value / 60) / paceMinPerMile;
+  } else {
+    // minutes -> miles
+    mi = block.value / paceMinPerMile;
+  }
+
+  // Account for repeats
+  if (block.repeat) {
+    let total = mi * block.repeat.times;
+    if (block.repeat.restBetween) {
+      const rb = block.repeat.restBetween;
+      const restMi = rb.unit === "miles" ? rb.value
+        : rb.unit === "seconds" ? (rb.value / 60) / paceMinPerMile
+        : rb.value / paceMinPerMile;
+      total += restMi * (block.repeat.times - 1);
+    }
+    return total;
+  }
+
+  return mi;
 }
 
 // =============================================================================

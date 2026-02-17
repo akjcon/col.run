@@ -94,15 +94,18 @@ export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
         }`}
       >
         {Icon && (
-          <Icon className="mr-0.5 inline-block h-2.5 w-2.5 md:h-3 md:w-3" />
+          <Icon className="mr-0.5 hidden md:inline-block h-3 w-3" />
         )}
         {rest ? "Rest" : title}
       </p>
 
-      {/* Miles + Duration */}
+      {/* Miles (mobile) + Duration (desktop only) */}
       {!rest && miles > 0 && (
         <p className="mt-0.5 text-[9px] tabular-nums text-neutral-400 md:text-[10px]">
-          {Math.round(miles * 10) / 10}mi{minutes > 0 ? ` · ${formatDuration(minutes)}` : ""}
+          {Math.round(miles * 10) / 10}mi
+          {minutes > 0 && (
+            <span className="hidden md:inline"> · {formatDuration(minutes)}</span>
+          )}
         </p>
       )}
     </div>
