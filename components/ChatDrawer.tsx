@@ -308,6 +308,7 @@ function ChatUI() {
   const { userId } = useUser();
 
   const [input, setInput] = useState("");
+  const [hoveredPrompt, setHoveredPrompt] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -565,6 +566,8 @@ function ChatUI() {
               <button
                 key={sp.label}
                 onClick={() => handlePromptClick(sp.prompt)}
+                onMouseEnter={() => setHoveredPrompt(sp.prompt)}
+                onMouseLeave={() => setHoveredPrompt("")}
                 className="flex-shrink-0 whitespace-nowrap rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100"
               >
                 {sp.label}
@@ -582,7 +585,7 @@ function ChatUI() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about your training..."
+            placeholder={hoveredPrompt || "Ask about your training..."}
             className="w-full resize-none rounded-lg border border-neutral-200 p-3 pr-12 text-sm focus:border-neutral-300 focus:outline-none focus:ring-0"
             disabled={isStreaming}
             rows={2}
