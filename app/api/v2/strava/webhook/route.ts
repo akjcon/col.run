@@ -39,11 +39,17 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * POST — Activity events from Strava
+ * POST — Activity and athlete events from Strava
  */
 export async function POST(req: NextRequest) {
   try {
     const event = await req.json();
+
+    // Handle athlete deauthorization
+    if (event.object_type === "athlete" && event.aspect_type === "update"
+        && event.updates?.authorized === "false") {
+      return handleDeauthorization(event.owner_id);
+    }
 
     // Only handle activity create/update events
     if (event.object_type !== "activity") {
@@ -184,4 +190,69 @@ export async function POST(req: NextRequest) {
     // Always return 200 to Strava to prevent retries
     return NextResponse.json({ ok: true });
   }
+}
+
+/**
+ * Handle Strava deauthorization — user revoked access from Strava's side.
+ * Cleans up stored tokens, activities, and athlete index.
+ */
+async function handleDeauthorization(ownerId: number) {
+  console.log(`Strava webhook: deauthorization for athlete ${ownerId}`);
+
+  try {
+    const db = getAdminDb();
+
+    // Look up userId from stravaAthletes index
+    const athleteDoc = await db
+      .collection("stravaAthletes")
+      .doc(String(ownerId))
+      .get();
+
+    if (!athleteDoc.exists) {
+      console.warn(`No user found for deauthorized Strava athlete ${ownerId}`);
+      return NextResponse.json({ ok: true });
+    }
+
+    const userId: string = athleteDoc.data()!.userId;
+
+    // Delete Strava integration tokens
+    await db
+      .collection("users")
+      .doc(userId)
+      .collection("integrations")
+      .doc("strava")
+      .delete();
+
+    // Delete synced activities
+    const activitiesSnap = await db
+      .collection("users")
+      .doc(userId)
+      .collection("activities")
+      .limit(500)
+      .get();
+
+    if (!activitiesSnap.empty) {
+      const batch = db.batch();
+      activitiesSnap.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+    }
+
+    // Delete fitness profile and experience derived from Strava
+    const fitnessRef = db.collection("users").doc(userId).collection("fitness");
+    const fitnessDocs = await fitnessRef.listDocuments();
+    if (fitnessDocs.length > 0) {
+      const batch = db.batch();
+      fitnessDocs.forEach((doc) => batch.delete(doc));
+      await batch.commit();
+    }
+
+    // Delete stravaAthletes index entry
+    await db.collection("stravaAthletes").doc(String(ownerId)).delete();
+
+    console.log(`Strava deauthorization complete for user ${userId} (athlete ${ownerId})`);
+  } catch (error) {
+    console.error("Strava deauthorization error:", error);
+  }
+
+  return NextResponse.json({ ok: true });
 }

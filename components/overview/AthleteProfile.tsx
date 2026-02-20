@@ -93,9 +93,15 @@ export function AthleteProfile({
       {/* Strava fitness metrics */}
       {snapshot?.ctl != null && (
         <div className="mt-4 border-t border-brand/10 pt-4">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500">
-            Training Load (Strava)
-          </p>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
+              Training Load
+            </p>
+            <a href="https://www.strava.com" target="_blank" rel="noopener noreferrer">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/powered-by-strava.svg" alt="Powered by Strava" className="h-5" />
+            </a>
+          </div>
           <div className="grid grid-cols-3 gap-4">
             {(() => {
               const fitness = getFitnessLabel(snapshot.ctl!);
