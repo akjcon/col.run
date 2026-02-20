@@ -3,7 +3,9 @@
 import { UserButton, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { Settings } from "lucide-react";
 import { textVariants } from "./constants";
+import { SettingsPopover } from "./SettingsPopover";
 
 /**
  * User profile component for the sidebar
@@ -43,6 +45,23 @@ export function UserProfile({ isExpanded }: { isExpanded: boolean }) {
             <p className="text-xs text-neutral-500 truncate">
               {user.emailAddresses[0]?.emailAddress}
             </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            variants={textVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+          >
+            <SettingsPopover side="top" align="end">
+              <button className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600">
+                <Settings className="h-4 w-4" />
+              </button>
+            </SettingsPopover>
           </motion.div>
         )}
       </AnimatePresence>
