@@ -143,8 +143,11 @@ export async function GET(request: Request) {
         await batch.commit();
 
         // Store fitness profile
+        const cleanProfile = Object.fromEntries(
+          Object.entries(result.fitnessProfile).filter(([, v]) => v !== undefined)
+        );
         await db.collection("users").doc(userId).collection("fitness").doc("profile").set({
-          ...result.fitnessProfile,
+          ...cleanProfile,
           updatedAt: FieldValue.serverTimestamp(),
         });
 
