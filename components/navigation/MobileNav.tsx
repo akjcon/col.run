@@ -8,7 +8,6 @@ import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
 import Image from "next/image";
 import { navigationItems } from "./constants";
 import { useChatContext } from "@/lib/chat-context";
-import { SettingsPopover } from "./SettingsPopover";
 
 export function MobileNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -163,11 +162,13 @@ export function MobileNav() {
                   {user?.emailAddresses[0]?.emailAddress}
                 </p>
               </div>
-              <SettingsPopover side="top" align="end">
-                <button className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600">
-                  <Settings className="h-4 w-4" />
-                </button>
-              </SettingsPopover>
+              <Link
+                href="/settings"
+                onClick={closeMobileMenu}
+                className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+              >
+                <Settings className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         )}
