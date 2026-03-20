@@ -177,6 +177,8 @@ export interface PlanGenerationOutput {
     phases: PhaseTarget[];
     startDate?: number;
     generatedAt: number;
+    raceDate?: number;
+    raceName?: string;
   };
   traces: AgentTrace[];
   evaluation?: {
@@ -185,4 +187,78 @@ export interface PlanGenerationOutput {
     methodology: number;
     overall: number;
   };
+  review?: {
+    issues: ReviewIssue[];
+    overallAssessment: string;
+    confidenceScore: number;
+    fixesApplied: number;
+    fixesSkipped: number;
+  };
+}
+
+// =============================================================================
+// Reviewer Types
+// =============================================================================
+
+export interface ReviewerInput {
+  weeks: Week[];
+  phases: PhaseTarget[];
+  athlete: AthleteProfile;
+  goal: RaceGoal;
+  weeklyTargets: WeeklyTarget[];
+}
+
+export type FixType =
+  | "adjust_week_volume"
+  | "swap_days"
+  | "remove_hard_workout"
+  | "reduce_block_value"
+  | "change_effort_level";
+
+export type SuggestedFix =
+  | {
+      type: "adjust_week_volume";
+      weekNumber: number;
+      targetMiles: number;
+    }
+  | {
+      type: "swap_days";
+      weekNumber: number;
+      day1: string;
+      day2: string;
+    }
+  | {
+      type: "remove_hard_workout";
+      weekNumber: number;
+      dayOfWeek: string;
+    }
+  | {
+      type: "reduce_block_value";
+      weekNumber: number;
+      dayOfWeek: string;
+      blockIndex: number;
+      newValue: number;
+    }
+  | {
+      type: "change_effort_level";
+      weekNumber: number;
+      dayOfWeek: string;
+      blockIndex: number;
+      newEffortLevel: "z1" | "z2" | "z3" | "z4" | "z5";
+    };
+
+export interface ReviewIssue {
+  issueId: string;
+  checklistItemId: string;
+  severity: "critical" | "major" | "minor";
+  weekNumbers: number[];
+  description: string;
+  suggestedFix: SuggestedFix | null;
+}
+
+export interface ReviewerOutput {
+  issues: ReviewIssue[];
+  overallAssessment: string;
+  confidenceScore: number;
+  passesReview: boolean;
 }

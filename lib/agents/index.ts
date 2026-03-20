@@ -21,6 +21,11 @@ export type {
   WeekGeneratorOutput,
   PlanGenerationInput,
   PlanGenerationOutput,
+  ReviewerInput,
+  ReviewerOutput,
+  ReviewIssue,
+  SuggestedFix,
+  FixType,
 } from "./types";
 
 // Base Agent
@@ -35,6 +40,13 @@ export {
   setUseCondensedMethodology,
 } from "./orchestrator";
 export { WeekGeneratorAgent } from "./week-generator";
+export { ReviewerAgent } from "./reviewer";
+
+// Review
+export { REVIEW_CHECKLIST } from "./review-checklist";
+export type { ChecklistItem, ChecklistCategory, ChecklistSeverity } from "./review-checklist";
+export { applyFixes } from "./plan-fixer";
+export type { FixResult, FixApplicationResult } from "./plan-fixer";
 
 // Pipeline
 export { PlanGenerationPipeline, generatePlan } from "./pipeline";
