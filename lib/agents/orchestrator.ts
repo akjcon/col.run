@@ -114,10 +114,17 @@ ${this.bookContent}
 VOLUME PROGRESSION RULES:
 - Start from athlete's current fitness (use feasibility targets if provided)
 - Never increase volume more than 10% week-over-week
-- Recovery week every 3-4 weeks (25-30% volume reduction)
-- RECOVERY WEEK MINIMUM: Recovery weeks should be 60-75% of the previous build week's volume. Never drop a recovery week below 50% of the athlete's current weekly mileage. A recovery week is still a training week — it should feel like a lighter version of normal training, not a week off.
 - Taper: 2-3 weeks before race, 70-80% then 40-50% of peak
 - Taper replaces recovery - no separate recovery week needed during taper
+
+RECOVERY WEEKS — THIS IS NON-NEGOTIABLE:
+You MUST schedule a recovery week every 3rd or 4th week. No exceptions. The pattern is:
+  Build, Build, Build, Recovery, Build, Build, Build, Recovery, ...
+A recovery week has 60-75% of the previous build week's volume. Never below 50% of current weekly mileage. Label recovery weeks with phase name "Recovery" so they are clearly identifiable.
+If the plan is 12 weeks: recovery at weeks 4, 8 (then taper covers weeks 10-12).
+If the plan is 16 weeks: recovery at weeks 4, 8, 12 (then taper covers weeks 14-16).
+If the plan is 18 weeks: recovery at weeks 4, 8, 12 (then taper covers weeks 16-18).
+Count your weeks and place recovery weeks BEFORE writing the weekly targets.
 
 BACK-TO-BACK WEEKENDS (for ultras):
 Replace a single very long run with TWO SHORTER runs on consecutive days.
