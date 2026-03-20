@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import { useClerkFirebase } from "@/lib/clerk-firebase";
 import { calculateCurrentWeek } from "@/lib/plan-utils";
 import { getTodaysDay, getWeeksWithDates } from "@/lib/workout-utils";
+import { getNowMs } from "@/lib/time";
 import { getDayTitle } from "@/lib/workout-display";
 import {
   calculateWeekTotalMiles,
@@ -87,7 +88,7 @@ export default function HomePage() {
           plannedMiles: calculateDayTotalMiles(todaysDay),
           plannedMinutes: calculateDayTotal(todaysDay),
           source: "manual",
-          completedAt: Date.now(),
+          completedAt: getNowMs(),
           feelingRating: rating,
           feelingNotes: notes,
         },
@@ -149,7 +150,7 @@ export default function HomePage() {
                   )
                 : undefined
             }
-            raceDate={userData?.trainingBackground?.goals.raceDate}
+            raceDate={activePlan?.raceDate}
             raceDistance={userData?.trainingBackground?.goals.raceDistance}
             isLoading={isLoading}
           />

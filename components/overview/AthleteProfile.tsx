@@ -57,6 +57,18 @@ function getFormLabel(tsb: number): { text: string; color: string } {
   return { text: "Detraining risk", color: "#E98A15" };
 }
 
+const DISTANCE_LABELS: Record<string, string> = {
+  "5k": "5K",
+  "10k": "10K",
+  half: "Half Marathon",
+  marathon: "Marathon",
+  "50k": "50K Ultra",
+  "50mi": "50 Mile Ultra",
+  "100k": "100K Ultra",
+  "100mi": "100 Mile Ultra",
+  general: "General Fitness",
+};
+
 export function AthleteProfile({
   trainingBackground,
   snapshot,
@@ -64,7 +76,6 @@ export function AthleteProfile({
   totalPlanMiles,
 }: AthleteProfileProps) {
   const experience = trainingBackground.experience;
-  const weeklyMileage = snapshot?.currentWeeklyMileage ?? trainingBackground.weeklyMileage;
   const longestRun = trainingBackground.longestRun;
   const marathonPR = trainingBackground.marathonPR;
   const goals = trainingBackground.goals;
@@ -80,28 +91,28 @@ export function AthleteProfile({
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         <Stat
           label="Experience"
           value={experience.charAt(0).toUpperCase() + experience.slice(1)}
         />
-        <Stat label="Weekly Mileage" value={`${weeklyMileage} mi`} />
+        <Stat label="Baseline" value={`${trainingBackground.weeklyMileage} mi/wk`} />
         <Stat label="Longest Run" value={`${longestRun} mi`} />
+        {currentWeekMiles !== null && (
+          <Stat label="This Week (Planned)" value={`${currentWeekMiles} mi`} />
+        )}
+        {totalPlanMiles !== undefined && (
+          <Stat label="Total Plan" value={`${Math.round(totalPlanMiles)} mi`} />
+        )}
         {marathonPR && <Stat label="Marathon PR" value={marathonPR} />}
       </div>
 
       {/* Strava fitness metrics */}
       {snapshot?.ctl != null && (
         <div className="mt-4 border-t border-brand/10 pt-4">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
-              Training Load
-            </p>
-            <a href="https://www.strava.com" target="_blank" rel="noopener noreferrer">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/powered-by-strava.svg" alt="Powered by Strava" className="h-5" />
-            </a>
-          </div>
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500">
+            Training Load
+          </p>
           <div className="grid grid-cols-3 gap-4">
             {(() => {
               const fitness = getFitnessLabel(snapshot.ctl!);
@@ -134,19 +145,6 @@ export function AthleteProfile({
         </div>
       )}
 
-      {/* This week vs baseline */}
-      {currentWeekMiles !== null && (
-        <div className="mt-4 border-t border-brand/10 pt-4">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            <Stat label="This Week" value={`${currentWeekMiles} mi`} />
-            <Stat label="Baseline" value={`${trainingBackground.weeklyMileage} mi/wk`} />
-            {totalPlanMiles !== undefined && (
-              <Stat label="Total Plan" value={`${Math.round(totalPlanMiles)} mi`} />
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Goal */}
       {goals && (
         <div className="mt-4 border-t border-brand/10 pt-4">
@@ -154,7 +152,7 @@ export function AthleteProfile({
             Goal
           </p>
           <p className="text-sm font-medium text-neutral-900">
-            {goals.raceDistance}
+            {DISTANCE_LABELS[goals.raceDistance] || goals.raceDistance}
             {goals.targetTime && (
               <span className="ml-2 text-neutral-500">
                 Target: {goals.targetTime}

@@ -133,10 +133,16 @@ export const RACE_REQUIREMENTS: Record<string, RaceRequirements> = {
  * Get race requirements for a given race type
  */
 export function getRaceRequirements(raceType: string): RaceRequirements | undefined {
-  const normalized = raceType.toLowerCase().replace(/\s+/g, "").replace("marathon", "");
+  const lower = raceType.toLowerCase().replace(/\s+/g, "");
 
-  // Direct match
-  if (RACE_REQUIREMENTS[normalized]) {
+  // Direct match first (before any stripping)
+  if (RACE_REQUIREMENTS[lower]) {
+    return RACE_REQUIREMENTS[lower];
+  }
+
+  // Strip "marathon" for cases like "halfmarathon" → "half"
+  const normalized = lower.replace("marathon", "");
+  if (normalized && RACE_REQUIREMENTS[normalized]) {
     return RACE_REQUIREMENTS[normalized];
   }
 

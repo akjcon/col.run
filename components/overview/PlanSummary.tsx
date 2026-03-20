@@ -18,7 +18,7 @@ export function PlanSummary({
   currentPhase,
 }: PlanSummaryProps) {
   const raceDistance = trainingBackground?.goals.raceDistance || "Training Plan";
-  const raceDate = trainingBackground?.goals.raceDate;
+  const raceDate = plan.raceDate;
   const countdown = formatRaceCountdown(raceDate);
   const progressPercent = Math.round((currentWeek / plan.totalWeeks) * 100);
 

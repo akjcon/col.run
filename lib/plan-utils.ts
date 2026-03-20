@@ -1,11 +1,13 @@
 // Utility functions for training plan calculations
 
+import { getNow } from "@/lib/time";
+
 export function calculatePlanLength(raceDate?: number): number {
   if (!raceDate) {
     return 12;
   }
 
-  const today = new Date();
+  const today = getNow();
   const race = new Date(raceDate);
   const timeDiff = race.getTime() - today.getTime();
   const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
@@ -16,10 +18,10 @@ export function calculatePlanLength(raceDate?: number): number {
 
 export function formatRaceCountdown(raceDate?: number): string {
   if (!raceDate) {
-    return "No race date set";
+    return "Someday soon";
   }
 
-  const today = new Date();
+  const today = getNow();
   const race = new Date(raceDate);
   const timeDiff = race.getTime() - today.getTime();
   const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
@@ -42,7 +44,7 @@ export function calculateCurrentWeek(
   startDate: number,
   totalWeeks: number
 ): number {
-  const today = new Date();
+  const today = getNow();
   const start = new Date(startDate);
 
   const startDayOfWeek = start.getDay();
