@@ -7,7 +7,7 @@ import {
   getDayEffortLevel,
   effortToColor,
 } from "@/lib/workout-display";
-import { Mountain, Zap, Timer, Check } from "lucide-react";
+import { Mountain, Zap, Timer, Check, Flag } from "lucide-react";
 
 function formatDuration(minutes: number): string {
   if (minutes <= 0) return "";
@@ -32,10 +32,11 @@ interface DayCellProps {
   isToday: boolean;
   isPast: boolean;
   isCompleted: boolean;
+  isRaceDay?: boolean;
 }
 
 /** Desktop-only grid cell (hidden on mobile — see MobileWeekAccordion). */
-export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
+export function DayCell({ day, isToday, isPast, isCompleted, isRaceDay }: DayCellProps) {
   const rest = isRestDay(day);
   const miles = calculateDayTotalMiles(day);
   const minutes = calculateDayTotal(day);
@@ -47,6 +48,31 @@ export function DayCell({ day, isToday, isPast, isCompleted }: DayCellProps) {
   const dateNum = day.date
     ? new Date(day.date).getDate()
     : undefined;
+
+  // Race day gets a completely special treatment
+  if (isRaceDay) {
+    return (
+      <div className="relative min-h-[5rem] rounded-md border-2 border-[#E98A15] bg-gradient-to-br from-orange-50 to-amber-50 p-2 text-left">
+        {/* Race flag accent */}
+        <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-md bg-[#E98A15]" />
+
+        {dateNum !== undefined && (
+          <p className="text-xs tabular-nums font-bold text-[#E98A15]">
+            {dateNum}
+          </p>
+        )}
+
+        <div className="mt-1 flex items-center gap-1">
+          <Flag className="h-3.5 w-3.5 text-[#E98A15]" />
+          <p className="text-xs font-bold text-neutral-900">Race Day</p>
+        </div>
+
+        <p className="mt-0.5 text-[10px] font-medium text-[#E98A15]">
+          Go time.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div

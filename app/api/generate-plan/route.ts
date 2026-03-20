@@ -99,9 +99,11 @@ export async function POST(req: NextRequest) {
     const pipeline = new PlanGenerationPipeline();
     const result = await pipeline.generate(input);
 
-    // Set userId and startDate
+    // Set userId, startDate, and raceDate
     result.plan.userId = userId;
     result.plan.startDate = Date.now();
+    if (goal.raceDate) result.plan.raceDate = goal.raceDate;
+    if (goal.raceName) result.plan.raceName = goal.raceName;
 
     // Save to Firestore via admin SDK
     const planRef = db.collection("users").doc(userId).collection("trainingPlans");
@@ -124,10 +126,31 @@ export async function POST(req: NextRequest) {
     await batch.commit();
     console.log("V2 training plan saved with ID:", newPlanRef.id);
 
+    // Save pipeline log (traces, evaluation, review) as a separate document
+    // so we can inspect what happened during generation
+    try {
+      await db
+        .collection("users")
+        .doc(userId)
+        .collection("pipelineLogs")
+        .doc(newPlanRef.id)
+        .set({
+          planId: newPlanRef.id,
+          createdAt: Date.now(),
+          traces: result.traces,
+          evaluation: result.evaluation ?? null,
+          review: result.review ?? null,
+        });
+    } catch (logErr) {
+      // Non-fatal — don't fail plan generation if logging fails
+      console.warn("Failed to save pipeline log:", logErr);
+    }
+
     return NextResponse.json({
       success: true,
       planId: newPlanRef.id,
       evaluation: result.evaluation,
+      review: result.review ?? null,
     });
   } catch (error) {
     console.error("Error generating V2 training plan:", error);

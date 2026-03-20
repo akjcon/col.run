@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { Week, Day } from "@/lib/blocks/types";
 import {
-  calculateWeekTotalMiles,
   calculateDayTotalMiles,
   calculateDayTotal,
   isRestDay,
@@ -16,7 +15,7 @@ import {
   getDayEffortLevel,
   effortToColor,
 } from "@/lib/workout-display";
-import { Mountain, Zap, Timer, Check, ChevronDown } from "lucide-react";
+import { Mountain, Zap, Timer, Check, ChevronDown, Flag } from "lucide-react";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -57,6 +56,7 @@ function MobileDayRow({
   isToday,
   isPast,
   isCompleted,
+  isRaceDay,
   reducedMotion,
 }: {
   day: Day;
@@ -64,6 +64,7 @@ function MobileDayRow({
   isToday: boolean;
   isPast: boolean;
   isCompleted: boolean;
+  isRaceDay: boolean;
   reducedMotion: boolean;
 }) {
   const rest = isRestDay(day);
@@ -75,6 +76,43 @@ function MobileDayRow({
   const Icon = rest ? null : getWorkoutTypeIcon(day);
 
   const dateNum = day.date ? new Date(day.date).getDate() : undefined;
+
+  // Race day special rendering
+  if (isRaceDay) {
+    const raceDayContent = (
+      <div className="relative flex items-center gap-3 rounded-lg border-2 border-[#E98A15] bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-3">
+        <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-lg bg-[#E98A15]" />
+
+        <div className="w-10 shrink-0 text-center">
+          <p className="text-[10px] uppercase tracking-wide font-bold text-[#E98A15]">
+            {DAY_LABELS[index]}
+          </p>
+          <p className="text-sm tabular-nums font-bold text-[#E98A15]">
+            {dateNum}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 flex-1">
+          <Flag className="h-4 w-4 text-[#E98A15]" />
+          <div>
+            <p className="text-sm font-bold text-neutral-900">Race Day</p>
+            <p className="text-xs font-medium text-[#E98A15]">Go time.</p>
+          </div>
+        </div>
+      </div>
+    );
+
+    if (reducedMotion) return raceDayContent;
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: EASE_OUT_QUART }}
+      >
+        {raceDayContent}
+      </motion.div>
+    );
+  }
 
   const content = (
     <div
@@ -159,6 +197,7 @@ interface MobileWeekAccordionProps {
   todayDate: number;
   completedDates?: Set<number>;
   phaseName?: string;
+  raceDateMidnight?: number;
 }
 
 export function MobileWeekAccordion({
@@ -166,10 +205,18 @@ export function MobileWeekAccordion({
   isCurrentWeek,
   todayDate,
   completedDates,
+  raceDateMidnight,
 }: MobileWeekAccordionProps) {
   const [expanded, setExpanded] = useState(isCurrentWeek);
   const shouldReduceMotion = useReducedMotion();
-  const weekMiles = calculateWeekTotalMiles(week);
+
+  // Exclude race day from week mileage total
+  const weekMiles = week.days.reduce((sum, day) => {
+    if (raceDateMidnight !== undefined && day.date !== undefined) {
+      if (getDayMidnight(day.date) === raceDateMidnight) return sum;
+    }
+    return sum + calculateDayTotalMiles(day);
+  }, 0);
 
   // A week is past if its last day is before today
   const lastDay = week.days[week.days.length - 1];
@@ -182,6 +229,7 @@ export function MobileWeekAccordion({
     const isToday = dayMidnight === todayDate;
     const isPast = dayMidnight !== null && dayMidnight < todayDate;
     const isCompleted = dayMidnight !== null && !!completedDates?.has(dayMidnight);
+    const isRaceDay = raceDateMidnight !== undefined && dayMidnight === raceDateMidnight;
 
     return (
       <MobileDayRow
@@ -191,6 +239,7 @@ export function MobileWeekAccordion({
         isToday={isToday}
         isPast={isPast}
         isCompleted={isCompleted}
+        isRaceDay={isRaceDay}
         reducedMotion={!!shouldReduceMotion}
       />
     );

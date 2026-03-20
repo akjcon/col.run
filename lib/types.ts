@@ -41,7 +41,10 @@ export interface TrainingPlan {
   phases: PhaseTarget[];
   startDate: number; // epoch timestamp
   generatedAt: number; // epoch timestamp
+  raceDate?: number; // epoch timestamp — the target race day
+  raceName?: string; // e.g. "Western States 100"
   isActive?: boolean;
+  previousPlanId?: string; // set when impersonating a review plan
 }
 
 export interface ChatMessage {
@@ -93,7 +96,7 @@ export interface WorkoutLog {
 // Chat context — passed from UI to ChatDrawer + API
 export interface ChatContext {
   page: "home" | "overview" | "calendar";
-  trigger: "sidebar" | "workout" | "tomorrow" | "progress" | "phase";
+  trigger: "sidebar" | "workout" | "tomorrow" | "progress" | "phase" | "pace-zones";
   workout?: {
     title: string;
     miles?: number;

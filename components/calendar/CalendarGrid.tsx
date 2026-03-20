@@ -11,6 +11,7 @@ interface CalendarGridProps {
   phases: PhaseTarget[];
   currentWeek: number;
   completedDates?: Set<number>;
+  raceDate?: number;
 }
 
 const DAY_HEADERS_FULL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -20,6 +21,7 @@ export function CalendarGrid({
   phases,
   currentWeek,
   completedDates,
+  raceDate,
 }: CalendarGridProps) {
   const currentWeekRef = useRef<HTMLDivElement>(null);
   const mobileCurrentWeekRef = useRef<HTMLDivElement>(null);
@@ -29,6 +31,13 @@ export function CalendarGrid({
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   }, []);
+
+  // Race date as epoch midnight
+  const raceDateMidnight = useMemo(() => {
+    if (!raceDate) return undefined;
+    const d = new Date(raceDate);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  }, [raceDate]);
 
   // Scroll current week into view on mount
   useEffect(() => {
@@ -96,6 +105,7 @@ export function CalendarGrid({
                     todayDate={todayDate}
                     completedDates={completedDates}
                     phaseName={weekPhaseMap.get(week.weekNumber)}
+                    raceDateMidnight={raceDateMidnight}
                   />
                 </div>
               );
@@ -147,6 +157,7 @@ export function CalendarGrid({
                     isCurrentWeek={isCurrent}
                     todayDate={todayDate}
                     completedDates={completedDates}
+                    raceDateMidnight={raceDateMidnight}
                   />
                 </div>
               );

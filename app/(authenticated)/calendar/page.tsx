@@ -82,6 +82,7 @@ export default function CalendarPage() {
           phases={activePlan.phases || []}
           currentWeek={currentWeek}
           completedDates={completedDates}
+          raceDate={activePlan.raceDate}
         />
       </div>
     </div>
