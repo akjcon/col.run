@@ -98,8 +98,11 @@ export function effortToPaceRange(effort: EffortLevel, thresholdPace: number): s
 
 /**
  * Derive a human-readable title from the primary block type.
+ * Uses the AI-generated title if available, otherwise falls back to block-derived title.
  */
 export function getWorkoutTitle(workout: Workout): string {
+  if (workout.title) return workout.title;
+
   const blocks = workout.blocks.filter((b) => !isRestBlock(b));
   if (blocks.length === 0) return "Rest Day";
 

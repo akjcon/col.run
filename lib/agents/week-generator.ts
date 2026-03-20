@@ -57,6 +57,11 @@ export class WeekGeneratorAgent extends BaseAgent<WeekGeneratorInput, WeekGenera
 
 Your role is TACTICAL EXECUTION. You will generate the specific workout blocks for each day of the week.
 
+WORKOUT TITLE:
+Each workout MUST have a "title" field — a short, descriptive name for the workout.
+Good titles: "Easy Run", "Hill Sprints", "Tempo Run", "Long Run", "Recovery Run", "Rest Day", "Fartlek", "Track Intervals", "Progression Run"
+The title should describe what the workout IS, not just its block type. If it's hill sprints, call it "Hill Sprints", not "Intervals".
+
 BLOCK STRUCTURE:
 Each workout is composed of blocks. A block has:
 - type: One of [${blockTypesStr}]
@@ -100,7 +105,7 @@ CORE TRAINING PRINCIPLES:
 - Long runs build aerobic endurance - keep mostly z2
 - Recovery runs are very easy (z1)
 - Hill workouts build strength for mountain races
-- Back-to-back weekends: split long run across Sat+Sun, neither day extreme
+- Back-to-back weekends: split total long run volume across Sat+Sun using a 60/40 to 70/30 ratio (first day longer, second day shorter). Neither day should exceed a normal long run distance.
 
 OUTPUT FORMAT:
 Return a JSON object with this structure:
@@ -113,6 +118,7 @@ Return a JSON object with this structure:
         "dayOfWeek": "Monday",
         "workouts": [
           {
+            "title": "Rest Day",
             "blocks": [
               { "type": "rest", "value": 0, "unit": "minutes", "effortLevel": "z1" }
             ]
@@ -123,6 +129,7 @@ Return a JSON object with this structure:
         "dayOfWeek": "Tuesday",
         "workouts": [
           {
+            "title": "Easy Run",
             "blocks": [
               { "type": "easy", "value": 5, "unit": "miles", "effortLevel": "z2" }
             ]
@@ -133,6 +140,7 @@ Return a JSON object with this structure:
         "dayOfWeek": "Wednesday",
         "workouts": [
           {
+            "title": "Hill Sprints",
             "blocks": [
               { "type": "warmUp", "value": 10, "unit": "minutes", "effortLevel": "z1" },
               { "type": "intervals", "value": 30, "unit": "seconds", "effortLevel": "z5", "notes": "hill sprints", "repeat": { "times": 8, "restBetween": { "value": 90, "unit": "seconds", "effortLevel": "z1" } } },
@@ -145,6 +153,7 @@ Return a JSON object with this structure:
         "dayOfWeek": "Thursday",
         "workouts": [
           {
+            "title": "Tempo Intervals",
             "blocks": [
               { "type": "warmUp", "value": 10, "unit": "minutes", "effortLevel": "z1" },
               { "type": "tempo", "value": 5, "unit": "minutes", "effortLevel": "z3", "repeat": { "times": 4, "restBetween": { "value": 2, "unit": "minutes", "effortLevel": "z1" } } },
@@ -157,6 +166,7 @@ Return a JSON object with this structure:
         "dayOfWeek": "Saturday",
         "workouts": [
           {
+            "title": "Long Run",
             "blocks": [
               { "type": "longRun", "value": 12, "unit": "miles", "effortLevel": "z2", "notes": "on hilly terrain if possible" }
             ]

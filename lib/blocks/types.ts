@@ -68,6 +68,7 @@ export function getDefaultUnit(type: BlockType): BlockUnit {
 }
 
 export interface Workout {
+  title?: string; // AI-generated title, e.g. "Hill Sprints", "Tempo Run", "Recovery Run"
   blocks: Block[];
 }
 

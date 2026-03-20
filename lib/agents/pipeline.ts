@@ -10,6 +10,8 @@ import type { Week } from "@/lib/blocks";
 import { evaluatePlan } from "@/lib/plan-evaluation";
 import { OrchestratorAgent } from "./orchestrator";
 import { WeekGeneratorAgent } from "./week-generator";
+import { ReviewerAgent } from "./reviewer";
+import { applyFixes } from "./plan-fixer";
 import { getFeedbackContextForPrompt } from "@/lib/feedback/aggregator";
 import type {
   PlanGenerationInput,
@@ -33,6 +35,8 @@ export interface PipelineConfig {
   retryFailedWeeks?: boolean;
   /** Maximum retries per week */
   maxRetries?: number;
+  /** Skip the LLM review step */
+  skipReview?: boolean;
 }
 
 const DEFAULT_CONFIG: Required<PipelineConfig> = {
@@ -40,6 +44,7 @@ const DEFAULT_CONFIG: Required<PipelineConfig> = {
   maxConcurrent: 4,
   retryFailedWeeks: true,
   maxRetries: 2,
+  skipReview: false,
 };
 
 // =============================================================================
@@ -50,11 +55,13 @@ export class PlanGenerationPipeline {
   private config: Required<PipelineConfig>;
   private orchestrator: OrchestratorAgent;
   private weekGenerator: WeekGeneratorAgent;
+  private reviewer: ReviewerAgent;
 
   constructor(config?: PipelineConfig) {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.orchestrator = new OrchestratorAgent();
     this.weekGenerator = new WeekGeneratorAgent();
+    this.reviewer = new ReviewerAgent();
   }
 
   /**
@@ -106,7 +113,7 @@ export class PlanGenerationPipeline {
 
     // Step 2: Generate each week
     console.log(`[Pipeline] Generating ${planWeeks} weeks...`);
-    const weeks: Week[] = [];
+    let weeks: Week[] = [];
 
     if (this.config.parallelWeeks) {
       // Parallel generation (faster but uses more concurrent API calls)
@@ -118,9 +125,32 @@ export class PlanGenerationPipeline {
         }
       }
     } else {
+      // Determine race day of week for final week instructions
+      const raceDayOfWeek = input.goal.raceDate
+        ? new Date(input.goal.raceDate).toLocaleDateString("en-US", { weekday: "long" })
+        : null;
+
       // Sequential generation (slower but safer, provides previous week context)
       for (let weekNum = 1; weekNum <= planWeeks; weekNum++) {
         const previousWeek = weeks.length > 0 ? weeks[weeks.length - 1] : undefined;
+
+        // Inject race week instructions for the final week
+        if (weekNum === planWeeks && raceDayOfWeek) {
+          const target = planStructure.weeklyTargets[weekNum - 1];
+          if (target) {
+            target.instructions = `RACE WEEK — the race is on ${raceDayOfWeek}.
+This is the final week before the race. The ONLY goal is to arrive at ${raceDayOfWeek} fresh and ready.
+- ${raceDayOfWeek} is RACE DAY — schedule it as a rest day (the race itself is not part of the training plan)
+- The day before the race: a short 1-2 mile shakeout jog at z1 with 4-6 strides (10-15 sec pickups) to stay sharp. This is optional for low-volume athletes (<20mi/week) — use rest instead.
+- 2-3 days before race day should be complete rest
+- Earlier in the week: at most 1-2 very short, easy shakeout runs (2-3 miles max, z1-z2)
+- NO tempo, NO intervals, NO long runs, NO hard efforts of any kind
+- Total volume for the week should be minimal (20-30% of peak week at most)`;
+            target.keyWorkoutType = null;
+            target.notes = "Race week";
+          }
+        }
+
         const result = await this.generateWeekWithRetry(
           weekNum,
           planStructure,
@@ -147,7 +177,60 @@ export class PlanGenerationPipeline {
       }
     }
 
-    // Step 3: Assemble the plan
+    // Step 3: Review the plan
+    let reviewData: PlanGenerationOutput["review"] | undefined;
+
+    if (!this.config.skipReview) {
+      console.log(`[Pipeline] Running plan review...`);
+      const reviewResult = await this.reviewer.execute({
+        weeks,
+        phases: planStructure.phases,
+        athlete: input.athlete,
+        goal: input.goal,
+        weeklyTargets: planStructure.weeklyTargets,
+      });
+
+      traces.push(reviewResult.trace);
+
+      if (reviewResult.success && reviewResult.data) {
+        const review = reviewResult.data;
+        console.log(
+          `[Pipeline] Review complete. ${review.issues.length} issues found. Confidence: ${review.confidenceScore}. Passes: ${review.passesReview}`
+        );
+
+        // Apply fixes for issues that have suggested fixes
+        const fixableIssues = review.issues.filter((i) => i.suggestedFix !== null);
+        let fixesApplied = 0;
+        let fixesSkipped = 0;
+
+        if (fixableIssues.length > 0) {
+          console.log(`[Pipeline] Applying ${fixableIssues.length} fixes...`);
+          const fixResult = applyFixes(weeks, fixableIssues);
+          weeks = fixResult.updatedWeeks;
+          fixesApplied = fixResult.applied.length;
+          fixesSkipped = fixResult.skipped.length;
+
+          for (const applied of fixResult.applied) {
+            console.log(`[Pipeline]   ✓ ${applied.description}`);
+          }
+          for (const skipped of fixResult.skipped) {
+            console.warn(`[Pipeline]   ✗ ${skipped.description}`);
+          }
+        }
+
+        reviewData = {
+          issues: review.issues,
+          overallAssessment: review.overallAssessment,
+          confidenceScore: review.confidenceScore,
+          fixesApplied,
+          fixesSkipped,
+        };
+      } else {
+        console.warn(`[Pipeline] Review failed: ${reviewResult.error}. Proceeding without review.`);
+      }
+    }
+
+    // Step 4: Assemble the plan
     const plan = {
       id: `plan-${Date.now()}`,
       userId: "to-be-set",
@@ -157,7 +240,7 @@ export class PlanGenerationPipeline {
       generatedAt: Date.now(),
     };
 
-    // Step 4: Evaluate the plan
+    // Step 5: Evaluate the plan
     console.log(`[Pipeline] Evaluating plan quality...`);
     const evaluation = evaluatePlan({
       id: plan.id,
@@ -178,6 +261,7 @@ export class PlanGenerationPipeline {
         methodology: evaluation.methodology.score,
         overall: evaluation.overall,
       },
+      review: reviewData,
     };
   }
 

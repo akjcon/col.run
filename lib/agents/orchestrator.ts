@@ -115,13 +115,18 @@ VOLUME PROGRESSION RULES:
 - Start from athlete's current fitness (use feasibility targets if provided)
 - Never increase volume more than 10% week-over-week
 - Recovery week every 3-4 weeks (25-30% volume reduction)
+- RECOVERY WEEK MINIMUM: Recovery weeks should be 60-75% of the previous build week's volume. Never drop a recovery week below 50% of the athlete's current weekly mileage. A recovery week is still a training week — it should feel like a lighter version of normal training, not a week off.
 - Taper: 2-3 weeks before race, 70-80% then 40-50% of peak
 - Taper replaces recovery - no separate recovery week needed during taper
 
 BACK-TO-BACK WEEKENDS (for ultras):
-Replace a single very long run with TWO SHORTER runs.
+Replace a single very long run with TWO SHORTER runs on consecutive days.
+Split the total long run volume across Saturday and Sunday using a 60/40 to 70/30 ratio (first day longer).
+WRONG: 20mi Saturday + 8mi Sunday (too lopsided — 71/29 split)
 WRONG: 25mi Saturday + 11mi Sunday (Saturday is still massive)
-CORRECT: 16mi Saturday + 12mi Sunday = 28mi total (neither day extreme)
+CORRECT: 16mi Saturday + 12mi Sunday = 28mi total (57/43 split — neither day extreme)
+CORRECT: 18mi Saturday + 10mi Sunday = 28mi total (64/36 split — first day longer but manageable)
+Rule: The longer day should be 60-70% of the total, the shorter day 30-40%. Neither day should exceed what a normal long run would be for that training week.
 
 TAPER GUIDELINES:
 - No long runs during taper (max 60-70% of normal long run)
@@ -278,10 +283,24 @@ Return ONLY the JSON object, no additional text.`;
   }
 
   protected validateOutput(output: OrchestratorOutput): { valid: boolean; error?: string } {
-    // Check phases are sequential and don't overlap
+    // Fix and validate phase sequencing
+    // LLMs often produce phases with boundary issues. Auto-correct common problems:
+    // 1. Off-by-one overlap (Base: 1-6, Build: 6-12 → fix Build to start at 7)
+    // 2. Gaps (Base: 1-5, Build: 7-12 → extend Base to end at 6)
     for (let i = 1; i < output.phases.length; i++) {
-      if (output.phases[i].startWeek <= output.phases[i - 1].endWeek) {
-        return { valid: false, error: "Phases overlap or are not sequential" };
+      const prev = output.phases[i - 1];
+      const curr = output.phases[i];
+
+      if (curr.startWeek === prev.endWeek) {
+        // Off-by-one overlap: bump startWeek
+        curr.startWeek = prev.endWeek + 1;
+      } else if (curr.startWeek > prev.endWeek + 1) {
+        // Gap between phases: extend previous phase to close the gap
+        prev.endWeek = curr.startWeek - 1;
+      }
+
+      if (curr.startWeek <= prev.endWeek) {
+        return { valid: false, error: `Phases overlap: ${prev.name} ends at week ${prev.endWeek}, ${curr.name} starts at week ${curr.startWeek}` };
       }
     }
 
