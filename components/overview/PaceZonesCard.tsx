@@ -16,6 +16,7 @@ import { effortToColor, effortToZoneLabel } from "@/lib/workout-display";
 import type { EffortLevel } from "@/lib/blocks/types";
 import { useClerkFirebase } from "@/lib/clerk-firebase";
 import { useSaveTrainingBackgroundMutation, useGetLatestTrainingBackgroundQuery } from "@/lib/store/api";
+import { AskCoachButton } from "@/components/AskCoachButton";
 
 const ZONE_ORDER: EffortLevel[] = ["z1", "z2", "z3", "z4", "z5"];
 
@@ -104,9 +105,12 @@ export function PaceZonesCard({ thresholdPace }: PaceZonesCardProps) {
 
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-5">
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-neutral-900">
-        Pace Zones
-      </h3>
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-900">
+          Pace Zones
+        </h3>
+        <AskCoachButton context={{ page: "overview", trigger: "pace-zones" }} />
+      </div>
 
       <div className="space-y-3">
         {ZONE_ORDER.map((zone) => (

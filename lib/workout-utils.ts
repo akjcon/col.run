@@ -5,6 +5,7 @@
  */
 
 import type { Week, Day } from "@/lib/blocks/types";
+import { getNow } from "@/lib/time";
 
 const DAY_MAP: Record<string, number> = {
   Monday: 0,
@@ -57,7 +58,7 @@ export function getWeeksWithDates(
  * Find the Day matching today's date from weeks with dates assigned.
  */
 export function getTodaysDay(weeksWithDates: Week[]): Day | undefined {
-  const today = new Date();
+  const today = getNow();
   const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
   for (const week of weeksWithDates) {
@@ -77,7 +78,7 @@ export function getTodaysDay(weeksWithDates: Week[]): Day | undefined {
  * Find the Day matching tomorrow's date from weeks with dates assigned.
  */
 export function getTomorrowsDay(weeksWithDates: Week[]): Day | undefined {
-  const today = new Date();
+  const today = getNow();
   const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
 
   for (const week of weeksWithDates) {

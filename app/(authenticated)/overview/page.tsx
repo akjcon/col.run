@@ -77,7 +77,7 @@ export default function Overview() {
         {/* Pace Zones */}
         <div className="mb-8">
           <PaceZonesCard
-            thresholdPace={snapshot?.thresholdPace ?? snapshot?.estimatedThresholdPace}
+            thresholdPace={snapshot?.thresholdPace ?? snapshot?.estimatedThresholdPace ?? userData?.trainingBackground?.thresholdPace}
           />
         </div>
 

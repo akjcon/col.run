@@ -49,11 +49,13 @@ function getWelcomeMessage(ctx: ChatContext | null): string {
   }
   switch (ctx.trigger) {
     case "workout":
-      return `I can see you're looking at today's ${ctx.workout?.title || "workout"}${ctx.workout?.miles ? ` (${ctx.workout.miles} mi)` : ""}. How can I help?`;
+      return `I can see you're looking at today's ${ctx.workout?.title || "workout"}${ctx.workout?.miles ? ` (${Math.round(ctx.workout.miles * 10) / 10} mi)` : ""}. How can I help?`;
     case "tomorrow":
       return `Let's get you ready for tomorrow's ${ctx.workout?.title || "workout"}. What do you need?`;
     case "progress":
       return `You're on week ${ctx.progress?.currentWeek || "?"} of ${ctx.progress?.totalWeeks || "?"}${ctx.progress?.phaseName ? ` — ${ctx.progress.phaseName}` : ""}. What would you like to know?`;
+    case "pace-zones":
+      return "Questions about your pace zones? I can explain how they work, help you dial them in, or update your threshold pace.";
     default:
       return "Hey! I'm your training coach. Ask me anything about your plan, workouts, or running in general.";
   }

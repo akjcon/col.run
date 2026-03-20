@@ -2,7 +2,6 @@ import {
   doc,
   getDoc,
   setDoc,
-  updateDoc,
   serverTimestamp,
   collection,
   query,
@@ -156,7 +155,7 @@ export const userApi = baseApi.injectEndpoints({
             lastActiveAt: serverTimestamp(),
           });
 
-          await updateDoc(userRef, sanitizedUpdates);
+          await setDoc(userRef, sanitizedUpdates, { merge: true });
           return { data: undefined };
         } catch (error) {
           return { error: handleFirestoreError(error, "update user profile") };

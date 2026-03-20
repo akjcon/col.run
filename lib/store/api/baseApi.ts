@@ -95,18 +95,15 @@ export const baseApi = createApi({
 });
 
 // Helper to handle Firestore errors consistently
-export function handleFirestoreError(error: unknown, operation: string): never {
+// Returns a serializable error string for RTK Query's queryFn pattern
+export function handleFirestoreError(error: unknown, operation: string): string {
   console.error(`Firestore ${operation} error:`, error);
 
   if (error instanceof Error) {
-    throw new FirestoreError(
-      `Failed to ${operation}: ${error.message}`,
-      "FIRESTORE_OPERATION_FAILED",
-      error
-    );
+    return `Failed to ${operation}: ${error.message}`;
   }
 
-  throw new FirestoreError(`Failed to ${operation}`, "UNKNOWN_ERROR", error);
+  return `Failed to ${operation}`;
 }
 
 // Real-time subscription manager
