@@ -1,19 +1,22 @@
 "use client";
 
 import { ChevronDown, ChevronUp } from "lucide-react";
-import type { Week } from "@/lib/blocks";
+import type { Week, EffortLevel } from "@/lib/blocks";
+import { blockValueToMinutes } from "@/lib/blocks/calculations";
 
 interface WeekSummaryCardProps {
   week: Week;
   peakMiles: number;
   isExpanded: boolean;
   onToggle: () => void;
+  isRaceWeek?: boolean;
 }
 
-// Helper to calculate week miles
-function calculateWeekMiles(week: Week): number {
+// Helper to calculate week miles (excludes last day if race week)
+function calculateWeekMiles(week: Week, isRaceWeek?: boolean): number {
   let total = 0;
-  for (const day of week.days) {
+  const days = isRaceWeek ? week.days.slice(0, -1) : week.days;
+  for (const day of days) {
     for (const workout of day.workouts) {
       for (const block of workout.blocks) {
         if (block.type === "rest") continue;
@@ -46,6 +49,42 @@ function getLongRunMiles(week: Week): number | null {
   return null;
 }
 
+// Calculate minutes per zone for the week
+const ZONE_COLORS: Record<EffortLevel, string> = {
+  z1: "#93C5FD", // soft blue
+  z2: "#86EFAC", // soft green
+  z3: "#E98A15", // brand orange
+  z4: "#F87171", // red
+  z5: "#171717", // near-black
+};
+
+const ZONE_LABELS: Record<EffortLevel, string> = {
+  z1: "Z1",
+  z2: "Z2",
+  z3: "Z3",
+  z4: "Z4",
+  z5: "Z5",
+};
+
+function getZoneDistribution(week: Week, isRaceWeek?: boolean): { zone: EffortLevel; minutes: number }[] {
+  const zones: Record<EffortLevel, number> = { z1: 0, z2: 0, z3: 0, z4: 0, z5: 0 };
+  const days = isRaceWeek ? week.days.slice(0, -1) : week.days;
+
+  for (const day of days) {
+    for (const workout of day.workouts) {
+      for (const block of workout.blocks) {
+        if (block.type === "rest") continue;
+        const mins = blockValueToMinutes(block);
+        zones[block.effortLevel] += mins;
+      }
+    }
+  }
+
+  return (["z1", "z2", "z3", "z4", "z5"] as EffortLevel[])
+    .map((zone) => ({ zone, minutes: Math.round(zones[zone]) }))
+    .filter((z) => z.minutes > 0);
+}
+
 // Get key workout type for the week
 function getKeyWorkout(week: Week): string | null {
   const workoutTypes = new Set<string>();
@@ -61,11 +100,13 @@ function getKeyWorkout(week: Week): string | null {
   return Array.from(workoutTypes).join(", ");
 }
 
-export function WeekSummaryCard({ week, peakMiles, isExpanded, onToggle }: WeekSummaryCardProps) {
-  const weekMiles = calculateWeekMiles(week);
+export function WeekSummaryCard({ week, peakMiles, isExpanded, onToggle, isRaceWeek }: WeekSummaryCardProps) {
+  const weekMiles = calculateWeekMiles(week, isRaceWeek);
   const longRunMiles = getLongRunMiles(week);
   const keyWorkout = getKeyWorkout(week);
   const volumePercent = peakMiles > 0 ? Math.round((weekMiles / peakMiles) * 100) : 0;
+  const zoneDistribution = getZoneDistribution(week, isRaceWeek);
+  const totalZoneMinutes = zoneDistribution.reduce((sum, z) => sum + z.minutes, 0);
 
   // Phase color based on name
   const getPhaseColor = (phase: string) => {
@@ -138,6 +179,40 @@ export function WeekSummaryCard({ week, peakMiles, isExpanded, onToggle }: WeekS
             <span className="text-xs px-2 py-1 bg-neutral-100 rounded text-neutral-600">
               {keyWorkout}
             </span>
+          </div>
+        )}
+
+        {/* Zone distribution */}
+        {totalZoneMinutes > 0 && (
+          <div className="mb-3">
+            <p className="text-xs font-medium uppercase tracking-wider text-neutral-500 mb-1.5">
+              Zones
+            </p>
+            {/* Stacked bar */}
+            <div className="flex h-2.5 rounded-full overflow-hidden mb-1.5">
+              {zoneDistribution.map((z) => (
+                <div
+                  key={z.zone}
+                  className="h-full first:rounded-l-full last:rounded-r-full"
+                  style={{
+                    width: `${(z.minutes / totalZoneMinutes) * 100}%`,
+                    backgroundColor: ZONE_COLORS[z.zone],
+                  }}
+                />
+              ))}
+            </div>
+            {/* Labels */}
+            <div className="flex gap-2 flex-wrap">
+              {zoneDistribution.map((z) => (
+                <span key={z.zone} className="text-[10px] tabular-nums text-neutral-500">
+                  <span
+                    className="inline-block w-1.5 h-1.5 rounded-full mr-0.5 align-middle"
+                    style={{ backgroundColor: ZONE_COLORS[z.zone] }}
+                  />
+                  {ZONE_LABELS[z.zone]} {z.minutes}m
+                </span>
+              ))}
+            </div>
           </div>
         )}
 

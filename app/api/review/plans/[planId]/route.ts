@@ -5,6 +5,8 @@ import { initializeFirebaseAdmin } from "@/lib/firebase-admin";
 // Initialize Firebase Admin
 initializeFirebaseAdmin();
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ planId: string }> }

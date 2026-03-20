@@ -5,6 +5,8 @@ import { initializeFirebaseAdmin } from "@/lib/firebase-admin";
 // Initialize Firebase Admin
 initializeFirebaseAdmin();
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const db = getFirestore();
@@ -25,7 +27,8 @@ export async function GET() {
           overall: data.evaluation?.overall || 0,
         },
         createdAt: data.createdAt,
-        generationTimeMs: data.generationTimeMs,
+        generationTimeMs: data.generationTimeMs || 0,
+        status: data.status || "complete",
       };
     });
 

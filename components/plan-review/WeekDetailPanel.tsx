@@ -142,12 +142,19 @@ function DayCard({ day }: { day: Day }) {
 
 export function WeekDetailPanel({ week }: WeekDetailPanelProps) {
   return (
-    <div className="border border-neutral-200 rounded-xl bg-white p-4 mt-2">
+    <div className="border border-neutral-200 rounded-xl bg-white p-3 sm:p-4 mt-2">
       <h3 className="text-sm font-semibold text-neutral-700 mb-3">
         Week {week.weekNumber} - Day by Day
       </h3>
 
-      <div className="overflow-x-auto">
+      {/* Stacked on mobile, grid on desktop */}
+      <div className="flex flex-col gap-2 sm:hidden">
+        {week.days.map((day, idx) => (
+          <DayCard key={idx} day={day} />
+        ))}
+      </div>
+
+      <div className="hidden sm:block overflow-x-auto">
         <div className="grid grid-cols-7 gap-3" style={{ minWidth: "750px" }}>
           {week.days.map((day, idx) => (
             <DayCard key={idx} day={day} />
