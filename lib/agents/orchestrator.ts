@@ -118,13 +118,20 @@ VOLUME PROGRESSION RULES:
 - Taper replaces recovery - no separate recovery week needed during taper
 
 RECOVERY WEEKS — THIS IS NON-NEGOTIABLE:
-You MUST schedule a recovery week every 3rd or 4th week. No exceptions. The pattern is:
-  Build, Build, Build, Recovery, Build, Build, Build, Recovery, ...
-A recovery week has 60-75% of the previous build week's volume. Never below 50% of current weekly mileage. Label recovery weeks with phase name "Recovery" so they are clearly identifiable.
-If the plan is 12 weeks: recovery at weeks 4, 8 (then taper covers weeks 10-12).
-If the plan is 16 weeks: recovery at weeks 4, 8, 12 (then taper covers weeks 14-16).
-If the plan is 18 weeks: recovery at weeks 4, 8, 12 (then taper covers weeks 16-18).
-Count your weeks and place recovery weeks BEFORE writing the weekly targets.
+You MUST schedule a recovery week every 3rd or 4th week. No exceptions.
+A recovery week has 60-75% of the previous build week's volume. Never below 50% of current weekly mileage.
+
+CRITICAL: Each phase in the "phases" array must be SEQUENTIAL and NON-OVERLAPPING.
+Recovery weeks are their OWN phase. You must SPLIT training phases around recovery weeks.
+
+Example for an 18-week plan — the phases array should look like:
+  Base (1-3), Recovery (4-4), Base (5-7), Recovery (8-8), Build (9-11), Recovery (12-12), Peak (13-15), Taper (16-18)
+NOT: Base (1-8), Recovery (4-4) ← WRONG, this overlaps!
+
+Example for a 12-week plan:
+  Base (1-3), Recovery (4-4), Build (5-7), Recovery (8-8), Peak (9-10), Taper (11-12)
+
+Count your weeks and lay out the phases BEFORE writing weekly targets.
 
 BACK-TO-BACK WEEKENDS (for ultras):
 Replace a single very long run with TWO SHORTER runs on consecutive days.
