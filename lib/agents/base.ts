@@ -101,14 +101,16 @@ export abstract class BaseAgent<TInput, TOutput> {
       const systemPrompt = this.buildSystemPrompt(input);
       const userMessage = this.buildUserMessage(input);
 
-      // Call LLM
-      const response = await this.client.messages.create({
+      // Call LLM with streaming to avoid timeout on long Opus responses
+      const stream = this.client.messages.stream({
         model: this.config.model,
         max_tokens: this.config.maxTokens,
         temperature: this.config.temperature,
         system: systemPrompt,
         messages: [{ role: "user", content: userMessage }],
       });
+
+      const response = await stream.finalMessage();
 
       // Extract response text
       const responseText = response.content[0]?.type === "text"

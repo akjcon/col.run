@@ -1,9 +1,7 @@
 /**
  * Agent Framework
  *
- * Two-tier architecture for training plan generation:
- * - Orchestrator: Strategic planning with full book context
- * - WeekGenerator: Tactical execution for each week
+ * Single-shot Opus plan generation with LLM review.
  */
 
 // Types
@@ -13,12 +11,8 @@ export type {
   AthleteProfile,
   RaceGoal,
   PlanConstraints,
-  OrchestratorInput,
-  OrchestratorOutput,
   PhaseTarget,
   WeeklyTarget,
-  WeekGeneratorInput,
-  WeekGeneratorOutput,
   PlanGenerationInput,
   PlanGenerationOutput,
   ReviewerInput,
@@ -32,17 +26,14 @@ export type {
 export { BaseAgent, extractJSON } from "./base";
 export type { AgentConfig } from "./base";
 
-// Agents
-export {
-  OrchestratorAgent,
-  setBookContentForTesting,
-  clearBookContentCache,
-  setUseCondensedMethodology,
-} from "./orchestrator";
-export { WeekGeneratorAgent } from "./week-generator";
+// Plan Generator (single-shot Opus)
+export { PlanGeneratorAgent } from "./plan-generator";
+export type { PlanGeneratorInput, PlanGeneratorOutput } from "./plan-generator";
+
+// Reviewer
 export { ReviewerAgent } from "./reviewer";
 
-// Review
+// Review checklist
 export { REVIEW_CHECKLIST } from "./review-checklist";
 export type { ChecklistItem, ChecklistCategory, ChecklistSeverity } from "./review-checklist";
 export { applyFixes } from "./plan-fixer";

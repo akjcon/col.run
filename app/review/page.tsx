@@ -32,6 +32,7 @@ interface PlanSummary {
   createdAt: number;
   generationTimeMs: number;
   status?: "generating" | "complete" | "error";
+  reviewed?: boolean;
 }
 
 const RACE_OPTIONS = ["5k", "10k", "half", "marathon", "50k", "50mi", "100k", "100mi"];
@@ -509,6 +510,15 @@ export default function ReviewListPage() {
                       >
                         {plan.evaluation.overall}%
                       </span>
+                      {plan.reviewed ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 shrink-0">
+                          Reviewed
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-500 shrink-0">
+                          Unreviewed
+                        </span>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-neutral-500">

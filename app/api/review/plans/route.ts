@@ -17,6 +17,15 @@ export async function GET() {
       .limit(20)
       .get();
 
+    // Fetch all feedback in one query to avoid N+1
+    const feedbackSnapshot = await db
+      .collection("planFeedback")
+      .select("planId")
+      .get();
+    const reviewedPlanIds = new Set(
+      feedbackSnapshot.docs.map((doc) => doc.data().planId)
+    );
+
     const plans = snapshot.docs.map((doc) => {
       const data = doc.data();
       return {
@@ -29,6 +38,7 @@ export async function GET() {
         createdAt: data.createdAt,
         generationTimeMs: data.generationTimeMs || 0,
         status: data.status || "complete",
+        reviewed: reviewedPlanIds.has(doc.id),
       };
     });
 

@@ -7,13 +7,13 @@ import type { Week } from "@/lib/blocks";
 // Mock Setup
 // =============================================================================
 
-const mockCreate = vi.fn();
+const mockStream = vi.fn();
 
 vi.mock("@anthropic-ai/sdk", () => {
   return {
     default: class MockAnthropic {
       messages = {
-        create: mockCreate,
+        stream: mockStream,
       };
     },
   };
@@ -109,15 +109,15 @@ describe("WeekGeneratorAgent", () => {
 
   beforeEach(() => {
     agent = new WeekGeneratorAgent();
-    mockCreate.mockReset();
+    mockStream.mockReset();
   });
 
   describe("input validation", () => {
     it("accepts valid input", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validWeekOutput) }],
         usage: { input_tokens: 500, output_tokens: 300 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
       expect(result.success).toBe(true);
@@ -150,10 +150,10 @@ describe("WeekGeneratorAgent", () => {
 
   describe("output parsing", () => {
     it("parses valid week output", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validWeekOutput) }],
         usage: { input_tokens: 500, output_tokens: 300 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
 
@@ -174,10 +174,10 @@ describe("WeekGeneratorAgent", () => {
         },
       };
 
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(partialWeek) }],
         usage: { input_tokens: 500, output_tokens: 300 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
 
@@ -205,10 +205,10 @@ describe("WeekGeneratorAgent", () => {
         },
       };
 
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(unorderedWeek) }],
         usage: { input_tokens: 500, output_tokens: 300 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
 
@@ -235,10 +235,10 @@ describe("WeekGeneratorAgent", () => {
         },
       };
 
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(invalidWeek) }],
         usage: { input_tokens: 500, output_tokens: 300 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
 
@@ -264,10 +264,10 @@ describe("WeekGeneratorAgent", () => {
         },
       };
 
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(invalidWeek) }],
         usage: { input_tokens: 500, output_tokens: 300 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
 
@@ -283,10 +283,10 @@ describe("WeekGeneratorAgent", () => {
 
   describe("context handling", () => {
     it("includes previous week in prompt when provided", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validWeekOutput) }],
         usage: { input_tokens: 500, output_tokens: 300 },
-      });
+      }) });
 
       const inputWithPreviousWeek = {
         ...validInput,
@@ -297,16 +297,16 @@ describe("WeekGeneratorAgent", () => {
       await agent.execute(inputWithPreviousWeek);
 
       // Check that the LLM was called with previous week context
-      expect(mockCreate).toHaveBeenCalledTimes(1);
-      const callArgs = mockCreate.mock.calls[0][0];
+      expect(mockStream).toHaveBeenCalledTimes(1);
+      const callArgs = mockStream.mock.calls[0][0];
       expect(callArgs.messages[0].content).toContain("PREVIOUS WEEK");
     });
 
     it("includes constraints in prompt when provided", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validWeekOutput) }],
         usage: { input_tokens: 500, output_tokens: 300 },
-      });
+      }) });
 
       const inputWithConstraints = {
         ...validInput,
@@ -318,7 +318,7 @@ describe("WeekGeneratorAgent", () => {
 
       await agent.execute(inputWithConstraints);
 
-      const callArgs = mockCreate.mock.calls[0][0];
+      const callArgs = mockStream.mock.calls[0][0];
       expect(callArgs.messages[0].content).toContain("Sunday");
       expect(callArgs.messages[0].content).toContain("Saturday");
     });
@@ -326,10 +326,10 @@ describe("WeekGeneratorAgent", () => {
 
   describe("block types", () => {
     it("generates rest day correctly", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validWeekOutput) }],
         usage: { input_tokens: 500, output_tokens: 300 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
 
@@ -339,10 +339,10 @@ describe("WeekGeneratorAgent", () => {
     });
 
     it("generates structured workout with warmup/cooldown", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validWeekOutput) }],
         usage: { input_tokens: 500, output_tokens: 300 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
 

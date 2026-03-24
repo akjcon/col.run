@@ -10,13 +10,13 @@ import type { OrchestratorInput, OrchestratorOutput } from "@/lib/agents/types";
 // Mock Setup
 // =============================================================================
 
-const mockCreate = vi.fn();
+const mockStream = vi.fn();
 
 vi.mock("@anthropic-ai/sdk", () => {
   return {
     default: class MockAnthropic {
       messages = {
-        create: mockCreate,
+        stream: mockStream,
       };
     },
   };
@@ -91,7 +91,7 @@ describe("OrchestratorAgent", () => {
 
   beforeEach(() => {
     agent = new OrchestratorAgent();
-    mockCreate.mockReset();
+    mockStream.mockReset();
     // Set mock book content for testing
     setBookContentForTesting("Mock book content for testing");
   });
@@ -102,10 +102,10 @@ describe("OrchestratorAgent", () => {
 
   describe("input validation", () => {
     it("accepts valid input", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validOrchestratorOutput) }],
         usage: { input_tokens: 1000, output_tokens: 500 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
       expect(result.success).toBe(true);
@@ -146,10 +146,10 @@ describe("OrchestratorAgent", () => {
 
   describe("output parsing", () => {
     it("parses valid orchestrator output", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validOrchestratorOutput) }],
         usage: { input_tokens: 1000, output_tokens: 500 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
 
@@ -161,10 +161,10 @@ describe("OrchestratorAgent", () => {
 
     it("rejects response missing phases", async () => {
       const badOutput = { ...validOrchestratorOutput, phases: undefined };
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(badOutput) }],
         usage: { input_tokens: 1000, output_tokens: 500 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
       expect(result.success).toBe(false);
@@ -173,10 +173,10 @@ describe("OrchestratorAgent", () => {
 
     it("rejects response missing weeklyTargets", async () => {
       const badOutput = { ...validOrchestratorOutput, weeklyTargets: undefined };
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(badOutput) }],
         usage: { input_tokens: 1000, output_tokens: 500 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
       expect(result.success).toBe(false);
@@ -193,10 +193,10 @@ describe("OrchestratorAgent", () => {
           { name: "Phase 2", startWeek: 4, endWeek: 8, focus: "Test", weeklyVolumeRange: [100, 200], keyWorkouts: [] },
         ],
       };
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(badOutput) }],
         usage: { input_tokens: 1000, output_tokens: 500 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
       expect(result.success).toBe(false);
@@ -219,10 +219,10 @@ describe("OrchestratorAgent", () => {
         ],
         phases: validOrchestratorOutput.phases,
       };
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(badOutput) }],
         usage: { input_tokens: 1000, output_tokens: 500 },
-      });
+      }) });
 
       // Now passes validation (with warnings) to allow full pipeline testing
       const result = await agent.execute(validInput);
@@ -231,10 +231,10 @@ describe("OrchestratorAgent", () => {
 
     it("allows volume decreases (recovery weeks)", async () => {
       // validOrchestratorOutput already has week 4 as recovery with volume decrease
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validOrchestratorOutput) }],
         usage: { input_tokens: 1000, output_tokens: 500 },
-      });
+      }) });
 
       const result = await agent.execute(validInput);
       expect(result.success).toBe(true);
@@ -243,10 +243,10 @@ describe("OrchestratorAgent", () => {
 
   describe("athlete experience levels", () => {
     it("handles beginner athlete", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validOrchestratorOutput) }],
         usage: { input_tokens: 1000, output_tokens: 500 },
-      });
+      }) });
 
       const beginnerInput = {
         ...validInput,
@@ -258,10 +258,10 @@ describe("OrchestratorAgent", () => {
     });
 
     it("handles advanced athlete", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: JSON.stringify(validOrchestratorOutput) }],
         usage: { input_tokens: 1000, output_tokens: 500 },
-      });
+      }) });
 
       const advancedInput = {
         ...validInput,

@@ -269,7 +269,7 @@ export async function POST(request: Request) {
       athleteProfile: JSON.parse(JSON.stringify(placeholderAthleteProfile)),
       raceGoal: {
         raceDistance: sample.goal.raceDistance,
-        elevation: sample.goal.elevation,
+        elevation: sample.goal.elevation || null,
         raceDate: sample.goal.raceDateEpoch || null,
         terrainType: sample.goal.terrainType || null,
       },

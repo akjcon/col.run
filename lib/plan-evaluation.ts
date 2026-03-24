@@ -153,15 +153,22 @@ const RACE_REQUIREMENTS_MAP: Record<string, SimpleRaceRequirements> = {
 };
 
 function getRaceRequirementsForEval(raceType: string): SimpleRaceRequirements | undefined {
-  const normalized = raceType.toLowerCase().replace(/\s+/g, "").replace("marathon", "");
+  const lower = raceType.toLowerCase().replace(/\s+/g, "");
 
-  if (RACE_REQUIREMENTS_MAP[normalized]) return RACE_REQUIREMENTS_MAP[normalized];
-  if (normalized.includes("50k")) return RACE_REQUIREMENTS_MAP["50k"];
-  if (normalized.includes("50mi")) return RACE_REQUIREMENTS_MAP["50mi"];
-  if (normalized.includes("100k")) return RACE_REQUIREMENTS_MAP["100k"];
-  if (normalized.includes("100mi")) return RACE_REQUIREMENTS_MAP["100mi"];
-  if (normalized.includes("half")) return RACE_REQUIREMENTS_MAP["half"];
-  if (normalized.includes("marathon") || normalized === "26.2") return RACE_REQUIREMENTS_MAP["marathon"];
+  // Direct match first
+  if (RACE_REQUIREMENTS_MAP[lower]) return RACE_REQUIREMENTS_MAP[lower];
+
+  // Strip "marathon" for "halfmarathon" → "half"
+  const stripped = lower.replace("marathon", "");
+  if (stripped && RACE_REQUIREMENTS_MAP[stripped]) return RACE_REQUIREMENTS_MAP[stripped];
+
+  // Fuzzy matches
+  if (lower.includes("50k")) return RACE_REQUIREMENTS_MAP["50k"];
+  if (lower.includes("50mi")) return RACE_REQUIREMENTS_MAP["50mi"];
+  if (lower.includes("100k")) return RACE_REQUIREMENTS_MAP["100k"];
+  if (lower.includes("100mi")) return RACE_REQUIREMENTS_MAP["100mi"];
+  if (lower.includes("half")) return RACE_REQUIREMENTS_MAP["half"];
+  if (lower.includes("marathon") || lower === "26.2" || lower === "full") return RACE_REQUIREMENTS_MAP["marathon"];
 
   return undefined;
 }
@@ -563,8 +570,9 @@ export function checkSafetyRules(plan: TrainingPlan): SafetyResult {
   const EARLY_WEEK_MAX_INCREASE = 0.25;
 
   // Minimum volume threshold: percentage-based checks are unreliable below this
-  // (e.g., 20min → 70min is +250% but trivially safe for any runner)
-  const MIN_VOLUME_FOR_PERCENTAGE_CHECK = 120; // ~2 hours/week
+  // At low volumes, large percentage increases represent small absolute changes
+  // that are safe (e.g., 120min → 160min is +33% but only 4 more miles)
+  const MIN_VOLUME_FOR_PERCENTAGE_CHECK = 200; // ~3.5 hours/week (~20mi)
 
   // Helper to check if a week is recovery/taper
   const isRecoveryWeek = (week: Week) =>
@@ -766,19 +774,20 @@ export function scoreMethodology(plan: TrainingPlan): MethodologyResult {
   const totalMinutes = easyMinutes + hardMinutes;
   const easyPercent = totalMinutes > 0 ? easyMinutes / totalMinutes : 0;
   const targetEasy = 0.8;
-  const deviation = Math.abs(easyPercent - targetEasy);
 
+  // Asymmetric scoring: too easy is much less concerning than too hard.
+  // The methodology explicitly says "most athletes train too hard too often."
   let polarizationScore: number;
-  if (deviation <= 0.05) {
-    polarizationScore = 100;
-  } else if (deviation <= 0.1) {
-    polarizationScore = 85;
-  } else if (deviation <= 0.15) {
-    polarizationScore = 70;
-  } else if (deviation <= 0.2) {
-    polarizationScore = 55;
+  if (easyPercent >= 0.75 && easyPercent <= 0.90) {
+    polarizationScore = 100; // 75-90% easy = perfect
+  } else if (easyPercent > 0.90) {
+    // Too easy — mild penalty (erring on easy side is fine, but 100% easy means no intensity at all)
+    const overEasy = easyPercent - 0.90;
+    polarizationScore = overEasy <= 0.05 ? 85 : overEasy <= 0.10 ? 70 : 50;
   } else {
-    polarizationScore = 40;
+    // Too hard — stronger penalty
+    const deviation = targetEasy - easyPercent;
+    polarizationScore = deviation <= 0.10 ? 80 : deviation <= 0.20 ? 55 : 40;
   }
 
   if (polarizationScore < 70) {

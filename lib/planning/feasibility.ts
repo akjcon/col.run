@@ -225,17 +225,18 @@ export function analyzeFeasibility(input: FeasibilityInput): FeasibilityResult {
     if (currentFitness.ctl < 30) {
       suggestedApproach =
         "EXPERIENCED ATHLETE REBUILD: You've done this distance before. " +
-        "Aggressive but safe ramp-up (can handle 15% weekly increases initially), " +
-        "quick transition to race-specific long runs. Your body remembers.";
+        "Start at current volume and build gradually (max 15% per week). " +
+        "Your body remembers — the progression will feel comfortable but must still be gradual.";
     } else {
       suggestedApproach =
         "RACE-SPECIFIC PEAK: You have the base and experience. " +
+        "Start at current volume and build gradually (max 15% per week). " +
         "Focus on race-specific preparation: long runs with vert, back-to-backs, nutrition practice.";
     }
   } else if (isExp) {
     suggestedApproach =
-      "EXPERIENCED BUILD: You know how to train. Faster ramp-up acceptable, " +
-      "but this distance is new territory - respect the long run progression.";
+      "EXPERIENCED BUILD: You know how to train but this distance is new territory. " +
+      "Build gradually (max 15% per week) and respect the long run progression.";
   } else if (currentMileage < startingMileageNeeded) {
     suggestedApproach =
       "BUILD-FIRST: Spend initial weeks building base volume before race-specific work.";
@@ -261,12 +262,11 @@ export function analyzeFeasibility(input: FeasibilityInput): FeasibilityResult {
   );
 
   // Calculate achievable peak given safe starting point
-  // With appropriate increase rate (10-15% depending on experience) and recovery weeks
+  // With 15% max weekly increase and recovery weeks every 4th week
   const achievablePeak = calculateAchievablePeak(
     safeStartingMileage,
     weeksUntilRace,
     targetPeakMileage,
-    experience
   );
 
   // Add warning if we can't reach ideal peak
@@ -390,53 +390,9 @@ function calculateSafeStartingMileage(
 ): number {
   const MINIMUM_FLOOR = 10; // miles - at least 2-3 easy runs
 
-  const isExperienced =
-    experience.experienceLevel === "advanced" ||
-    experience.experienceLevel === "elite";
-
-  // Key: Has this athlete done significant volume before?
-  const peakHistory = experience.peakWeeklyMileage || 0;
-  const hasVolumeHistory = peakHistory > currentMileage * 2 && peakHistory >= 30;
-
-  let safeStart: number;
-
-  if (isExperienced && hasVolumeHistory) {
-    // EXPERIENCED ATHLETE REBUILD PATH
-    // They've been here before. Body remembers. Can start much higher.
-    //
-    // Strategy: Blend history-based and current-based starting points
-    // Example: Peak 56mi, current 10mi
-    //   - History-based: 56 * 0.45 = 25mi
-    //   - Current-based: 10 * 2 = 20mi
-    //   - Average: 22-23mi (reasonable for experienced athlete)
-
-    const historyBasedStart = peakHistory * 0.45; // 45% of historical peak
-    const currentBasedStart = currentMileage * 2; // Double current (aggressive but safe for experienced)
-
-    // Take average of the two approaches
-    safeStart = Math.round((historyBasedStart + currentBasedStart) / 2);
-
-    // Apply caps: never more than 50% of peak or 3x current in week 1
-    const maxFromHistory = peakHistory * 0.5;
-    const maxFromCurrent = currentMileage * 3;
-    safeStart = Math.min(safeStart, maxFromHistory, maxFromCurrent);
-
-    // Ensure minimum floor
-    safeStart = Math.max(safeStart, MINIMUM_FLOOR);
-
-  } else if (isExperienced) {
-    // Experienced but no high volume history - moderate increase allowed
-    safeStart = Math.max(
-      MINIMUM_FLOOR,
-      Math.round(currentMileage * 1.25)
-    );
-  } else {
-    // Beginner/intermediate - conservative approach
-    safeStart = Math.max(
-      MINIMUM_FLOOR,
-      Math.round(currentMileage * 1.15)
-    );
-  }
+  // Always start at the athlete's current mileage.
+  // The plan generator handles the ramp — we don't want to tell it to jump.
+  const safeStart = Math.max(MINIMUM_FLOOR, Math.round(currentMileage));
 
   // Never exceed target peak
   return Math.min(safeStart, targetPeak);
@@ -456,20 +412,11 @@ function calculateAchievablePeak(
   startingMileage: number,
   weeksAvailable: number,
   idealPeak: number,
-  experience?: ExperienceProfile
 ): number {
   // Reserve 2 weeks for taper, 1 week for peak
   const buildWeeks = Math.max(weeksAvailable - 3, 1);
 
-  // Determine progression rate based on experience
-  const isExperienced =
-    experience?.experienceLevel === "advanced" ||
-    experience?.experienceLevel === "elite";
-  const hasVolumeHistory =
-    experience?.peakWeeklyMileage &&
-    experience.peakWeeklyMileage >= 30;
-
-  // Model the progression week by week
+  // Model the progression week by week at 15% max increase
   let currentVolume = startingMileage;
   let weeksSinceRecovery = 0;
 
@@ -479,27 +426,10 @@ function calculateAchievablePeak(
     // Every 4th week is recovery (no increase)
     if (weeksSinceRecovery >= 4) {
       weeksSinceRecovery = 0;
-      // Recovery week - volume stays the same (we're calculating potential peak)
       continue;
     }
 
-    // Determine weekly increase rate
-    // Experienced athletes can increase faster at lower volumes, then slow to standard rate
-    let increaseRate: number;
-    if (isExperienced && hasVolumeHistory) {
-      // Aggressive early (15%), then moderate (12%), then standard (10%) at higher volumes
-      if (currentVolume < 30) {
-        increaseRate = 1.15; // 15% increase when below 30mi/week
-      } else if (currentVolume < 40) {
-        increaseRate = 1.12; // 12% increase when below 40mi/week
-      } else {
-        increaseRate = 1.10; // Standard 10% at higher volumes
-      }
-    } else {
-      increaseRate = 1.10; // Standard 10% for everyone else
-    }
-
-    currentVolume = Math.round(currentVolume * increaseRate);
+    currentVolume = Math.round(currentVolume * 1.15);
 
     // Cap at ideal peak - no need to go higher
     if (currentVolume >= idealPeak) {

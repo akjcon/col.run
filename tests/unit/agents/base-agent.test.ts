@@ -57,13 +57,13 @@ class TestAgent extends BaseAgent<TestInput, TestOutput> {
 // Mock Anthropic Client
 // =============================================================================
 
-const mockCreate = vi.fn();
+const mockStream = vi.fn();
 
 vi.mock("@anthropic-ai/sdk", () => {
   return {
     default: class MockAnthropic {
       messages = {
-        create: mockCreate,
+        stream: mockStream,
       };
     },
   };
@@ -78,11 +78,11 @@ describe("BaseAgent", () => {
 
   beforeEach(() => {
     agent = new TestAgent();
-    mockCreate.mockReset();
-    mockCreate.mockResolvedValue({
+    mockStream.mockReset();
+    mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
       content: [{ type: "text", text: '{"result": "success"}' }],
       usage: { input_tokens: 100, output_tokens: 50 },
-    });
+    }) });
   });
 
   describe("execute", () => {
@@ -121,7 +121,7 @@ describe("BaseAgent", () => {
     });
 
     it("handles LLM errors gracefully", async () => {
-      mockCreate.mockRejectedValue(new Error("API Error"));
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockRejectedValue(new Error("API Error")) });
       const result = await agent.execute({ value: "test" });
 
       expect(result.success).toBe(false);
@@ -130,10 +130,10 @@ describe("BaseAgent", () => {
     });
 
     it("handles parse errors gracefully", async () => {
-      mockCreate.mockResolvedValue({
+      mockStream.mockReturnValue({ finalMessage: vi.fn().mockResolvedValue({
         content: [{ type: "text", text: "not valid json" }],
         usage: { input_tokens: 100, output_tokens: 50 },
-      });
+      }) });
 
       const result = await agent.execute({ value: "test" });
 
