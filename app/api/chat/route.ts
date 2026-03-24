@@ -34,8 +34,15 @@ interface ThresholdPaceToolInput {
   newThresholdPace: number;
 }
 
-function validateProposedChanges(input: ToolInput): ToolInput {
+interface ValidationResult {
+  reasoning: string;
+  changes: ProposedChange[];
+  validationErrors: string[];
+}
+
+function validateProposedChanges(input: ToolInput): ValidationResult {
   const validChanges: ProposedChange[] = [];
+  const validationErrors: string[] = [];
 
   for (const change of input.changes) {
     if (change.type === "replace_week" && change.week) {
@@ -43,19 +50,23 @@ function validateProposedChanges(input: ToolInput): ToolInput {
       if (result.valid) {
         validChanges.push(change);
       } else {
-        console.warn(`Invalid week change for week ${change.weekNumber}:`, result.errors);
+        const msg = `Week ${change.weekNumber}: ${result.errors.join(", ")}`;
+        console.warn(`Invalid week change:`, msg);
+        validationErrors.push(msg);
       }
     } else if (change.type === "replace_day" && change.day) {
       const result = validateDay(change.day);
       if (result.valid) {
         validChanges.push(change);
       } else {
-        console.warn(`Invalid day change for ${change.dayOfWeek} week ${change.weekNumber}:`, result.errors);
+        const msg = `${change.dayOfWeek} (Week ${change.weekNumber}): ${result.errors.join(", ")}`;
+        console.warn(`Invalid day change:`, msg);
+        validationErrors.push(msg);
       }
     }
   }
 
-  return { reasoning: input.reasoning, changes: validChanges };
+  return { reasoning: input.reasoning, changes: validChanges, validationErrors };
 }
 
 // Read user data using Admin SDK (server-side)
@@ -230,48 +241,68 @@ export async function POST(req: NextRequest) {
           // Wait for the full message to resolve (accumulates tool_use blocks)
           const finalMessage = await stream.finalMessage();
 
-          // Check for tool calls
-          const toolBlock = finalMessage.content.find(
+          // Process ALL tool_use blocks (not just the first)
+          const toolBlocks = finalMessage.content.filter(
             (b): b is Anthropic.Messages.ToolUseBlock =>
               b.type === "tool_use"
           );
 
-          if (toolBlock && toolBlock.name === "propose_plan_changes") {
-            const validated = validateProposedChanges(toolBlock.input as ToolInput);
-            if (validated.changes.length > 0) {
-              sendEvent({ type: "plan_modification", data: validated });
-            }
-          } else if (toolBlock && toolBlock.name === "update_threshold_pace") {
-            const input = toolBlock.input as ThresholdPaceToolInput;
-            // Validate threshold pace is in range
-            const pace = Math.max(4, Math.min(20, input.newThresholdPace));
-            // Read current threshold from snapshot
-            let currentThresholdPace: number | undefined;
-            try {
-              const adminDb = getAdminDb();
-              const snapshotDoc = await adminDb
-                .collection("users")
-                .doc(userId)
-                .collection("athleteSnapshot")
-                .doc("current")
-                .get();
-              if (snapshotDoc.exists) {
-                const snap = snapshotDoc.data()!;
-                currentThresholdPace = snap.thresholdPace ?? snap.estimatedThresholdPace;
+          for (const toolBlock of toolBlocks) {
+            if (toolBlock.name === "propose_plan_changes") {
+              const validated = validateProposedChanges(toolBlock.input as ToolInput);
+              if (validated.changes.length > 0) {
+                sendEvent({
+                  type: "plan_modification",
+                  data: {
+                    reasoning: validated.reasoning,
+                    changes: validated.changes,
+                    ...(validated.validationErrors.length > 0
+                      ? { validationWarnings: validated.validationErrors }
+                      : {}),
+                  },
+                });
+              } else if (validated.validationErrors.length > 0) {
+                // All changes failed validation — tell the user
+                sendEvent({
+                  type: "plan_modification_failed",
+                  data: {
+                    reasoning: validated.reasoning,
+                    errors: validated.validationErrors,
+                  },
+                });
               }
-            } catch {
-              // Continue without current pace
-            }
+            } else if (toolBlock.name === "update_threshold_pace") {
+              const input = toolBlock.input as ThresholdPaceToolInput;
+              // Validate threshold pace is in range
+              const pace = Math.max(4, Math.min(20, input.newThresholdPace));
+              // Read current threshold from snapshot
+              let currentThresholdPace: number | undefined;
+              try {
+                const adminDb = getAdminDb();
+                const snapshotDoc = await adminDb
+                  .collection("users")
+                  .doc(userId)
+                  .collection("athleteSnapshot")
+                  .doc("current")
+                  .get();
+                if (snapshotDoc.exists) {
+                  const snap = snapshotDoc.data()!;
+                  currentThresholdPace = snap.thresholdPace ?? snap.estimatedThresholdPace;
+                }
+              } catch {
+                // Continue without current pace
+              }
 
-            sendEvent({
-              type: "pace_zone_update",
-              data: {
-                reasoning: input.reasoning,
-                newThresholdPace: pace,
-                currentThresholdPace,
-                status: "proposed",
-              },
-            });
+              sendEvent({
+                type: "pace_zone_update",
+                data: {
+                  reasoning: input.reasoning,
+                  newThresholdPace: pace,
+                  currentThresholdPace,
+                  status: "proposed",
+                },
+              });
+            }
           }
 
           controller.close();
@@ -283,30 +314,32 @@ export async function POST(req: NextRequest) {
               content: lastMessage.content,
             });
 
-            if (toolBlock && toolBlock.name === "propose_plan_changes") {
-              const input = toolBlock.input as ToolInput;
-              const changeSummary = input.changes
-                .map(
-                  (c) =>
-                    `${c.type === "replace_week" ? `Week ${c.weekNumber}` : `${c.dayOfWeek} (Week ${c.weekNumber})`}: ${c.summary}`
-                )
-                .join("; ");
-              await saveMessageAdmin(userId, {
-                role: "assistant",
-                content: `${fullText}\n\n[Proposed changes: ${changeSummary}]`,
-              });
-            } else if (toolBlock && toolBlock.name === "update_threshold_pace") {
-              const input = toolBlock.input as ThresholdPaceToolInput;
-              await saveMessageAdmin(userId, {
-                role: "assistant",
-                content: `${fullText}\n\n[Proposed threshold pace update: ${input.newThresholdPace.toFixed(2)} min/mi]`,
-              });
-            } else {
-              await saveMessageAdmin(userId, {
-                role: "assistant",
-                content: fullText,
-              });
+            // Build tool call summaries for saved message
+            const toolSummaries: string[] = [];
+            for (const tb of toolBlocks) {
+              if (tb.name === "propose_plan_changes") {
+                const input = tb.input as ToolInput;
+                const changeSummary = input.changes
+                  .map(
+                    (c) =>
+                      `${c.type === "replace_week" ? `Week ${c.weekNumber}` : `${c.dayOfWeek} (Week ${c.weekNumber})`}: ${c.summary}`
+                  )
+                  .join("; ");
+                toolSummaries.push(`[Proposed changes: ${changeSummary}]`);
+              } else if (tb.name === "update_threshold_pace") {
+                const input = tb.input as ThresholdPaceToolInput;
+                toolSummaries.push(`[Proposed threshold pace update: ${input.newThresholdPace.toFixed(2)} min/mi]`);
+              }
             }
+
+            const savedContent = toolSummaries.length > 0
+              ? `${fullText}\n\n${toolSummaries.join("\n")}`
+              : fullText;
+
+            await saveMessageAdmin(userId, {
+              role: "assistant",
+              content: savedContent,
+            });
           } catch (saveError) {
             console.error("Failed to save chat messages:", saveError);
           }

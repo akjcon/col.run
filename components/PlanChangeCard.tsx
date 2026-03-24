@@ -239,6 +239,18 @@ export function PlanChangeCard({
         </div>
       )}
 
+      {/* Validation warnings (some changes dropped) */}
+      {modification.validationWarnings && modification.validationWarnings.length > 0 && (
+        <div className="border-t border-neutral-200 px-3 py-2">
+          <p className="text-[11px] font-medium text-amber-600">Some changes could not be applied:</p>
+          <ul className="mt-0.5 list-disc pl-3">
+            {modification.validationWarnings.map((w, i) => (
+              <li key={i} className="text-[10px] text-amber-600">{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Error message */}
       {modification.status === "error" && modification.error && (
         <div className="border-t border-neutral-200 px-3 py-2">

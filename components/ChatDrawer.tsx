@@ -387,7 +387,28 @@ function ChatUI() {
           body: JSON.stringify({
             messages: updatedMessages
               .filter((m) => m.id !== "welcome")
-              .map((m) => ({ role: m.role, content: m.content })),
+              .map((m) => {
+                // Enrich assistant messages with tool call context for follow-up edits
+                let content = m.content;
+                if (m.role === "assistant" && m.planModification) {
+                  const mod = m.planModification;
+                  const changeSummaries = mod.changes
+                    .map((c) =>
+                      c.type === "replace_week"
+                        ? `Week ${c.weekNumber} - ${c.summary}`
+                        : `${c.dayOfWeek} (Week ${c.weekNumber}) - ${c.summary}`
+                    )
+                    .join(", ");
+                  const statusLabel = mod.status === "applied" ? "APPLIED" : mod.status === "error" ? "REJECTED" : "PROPOSED";
+                  content += `\n\n[Proposed plan changes: ${changeSummaries}. Status: ${statusLabel}]`;
+                }
+                if (m.role === "assistant" && m.paceZoneUpdate) {
+                  const pz = m.paceZoneUpdate;
+                  const statusLabel = pz.status === "applied" ? "APPLIED" : pz.status === "error" ? "REJECTED" : "PROPOSED";
+                  content += `\n\n[Proposed pace update to ${pz.newThresholdPace.toFixed(2)} min/mi. Status: ${statusLabel}]`;
+                }
+                return { role: m.role, content };
+              }),
             userId,
             context,
           }),
@@ -433,6 +454,14 @@ function ChatUI() {
                 });
               } else if (event.type === "plan_modification") {
                 planMod = { ...event.data, status: "proposed" as const };
+              } else if (event.type === "plan_modification_failed") {
+                // All changes failed validation — show inline error
+                planMod = {
+                  reasoning: event.data.reasoning,
+                  changes: [],
+                  status: "error" as const,
+                  error: `Validation failed: ${(event.data.errors as string[]).join("; ")}`,
+                };
               } else if (event.type === "pace_zone_update") {
                 paceZoneMod = { ...event.data, status: "proposed" as const };
               } else if (event.type === "error") {

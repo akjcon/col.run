@@ -469,13 +469,10 @@ export function buildPlanContext(plan: TrainingPlan, currentWeek: number): strin
     );
   }
 
-  // Detailed day-by-day for modifiable window (current through current+3)
-  const modifiableStart = currentWeek;
-  const modifiableEnd = Math.min(currentWeek + 3, plan.totalWeeks);
-
-  lines.push(`\nDetailed View (Weeks ${modifiableStart}-${modifiableEnd} — modifiable):`);
+  // Detailed day-by-day for all future weeks (current through end of plan)
+  lines.push(`\nDetailed View (Weeks ${currentWeek}-${plan.totalWeeks} — modifiable):`);
   for (const week of plan.weeks) {
-    if (week.weekNumber < modifiableStart || week.weekNumber > modifiableEnd) continue;
+    if (week.weekNumber < currentWeek) continue;
     lines.push(`\n  Week ${week.weekNumber} — ${week.phase}:`);
     for (const day of week.days) {
       lines.push(`    ${day.dayOfWeek}: ${formatDaySummary(day)}`);
@@ -484,7 +481,7 @@ export function buildPlanContext(plan: TrainingPlan, currentWeek: number): strin
 
   lines.push(`\nPast weeks (before week ${currentWeek}) are READ-ONLY.`);
   lines.push(
-    `Modifiable range: week ${modifiableStart} through week ${modifiableEnd}.`
+    `All future weeks (${currentWeek} through ${plan.totalWeeks}) are modifiable.`
   );
 
   return lines.join("\n");
@@ -497,7 +494,7 @@ export function buildPlanContext(plan: TrainingPlan, currentWeek: number): strin
 const PLAN_MODIFICATION_RULES = `
 PLAN MODIFICATION RULES:
 When the athlete asks you to change their training plan, use the propose_plan_changes tool.
-- You can only modify weeks in the modifiable range shown above.
+- You can modify any week from the current week onward. Past weeks are read-only.
 - Preserve the phase structure and volume progression safety.
 - Maintain 80/20 easy/hard ratio, at least 1 rest day per week, no consecutive hard days.
 - Distance-based blocks (easy, longRun) use "miles" as unit; time-based blocks (warmUp, intervals, recovery, rest, coolDown, tempo) use "minutes".
@@ -563,7 +560,7 @@ export async function streamChatResponse(
 
   return anthropic.messages.stream({
     model: "claude-opus-4-6",
-    max_tokens: 1000,
+    max_tokens: 16000,
     temperature: 0.6,
     system: systemPrompt,
     tools,

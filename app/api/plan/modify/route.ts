@@ -3,6 +3,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { validateWeek, validateDay } from "@/lib/blocks/validation";
 import { evaluatePlan } from "@/lib/plan-evaluation";
 import { sanitizeForFirestore } from "@/lib/store/api/baseApi";
+import { calculateCurrentWeek } from "@/lib/plan-utils";
 import type { Week, Day } from "@/lib/blocks/types";
 
 export const maxDuration = 60;
@@ -62,6 +63,18 @@ export async function POST(req: NextRequest) {
     if (!planData.isActive) {
       return NextResponse.json(
         { error: "Plan is not active" },
+        { status: 400 }
+      );
+    }
+
+    // Enforce: no changes to past weeks
+    const currentWeek = calculateCurrentWeek(planData.startDate, planData.totalWeeks);
+    const pastChanges = changes.filter((c) => c.weekNumber < currentWeek);
+    if (pastChanges.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Cannot modify past weeks. Current week is ${currentWeek}. Rejected: ${pastChanges.map((c) => `week ${c.weekNumber}`).join(", ")}`,
+        },
         { status: 400 }
       );
     }
@@ -164,9 +177,34 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Write updated plan to Firestore
+    // Rebuild phases array from modified weeks
+    const rebuildPhases = () => {
+      const phases: { name: string; startWeek: number; endWeek: number }[] = [];
+      let currentPhase: string | null = null;
+      let phaseStart = 0;
+
+      for (const week of modifiedWeeks) {
+        if (week.phase !== currentPhase) {
+          if (currentPhase !== null) {
+            phases.push({ name: currentPhase, startWeek: phaseStart, endWeek: week.weekNumber - 1 });
+          }
+          currentPhase = week.phase;
+          phaseStart = week.weekNumber;
+        }
+      }
+      // Close final phase
+      if (currentPhase !== null) {
+        phases.push({ name: currentPhase, startWeek: phaseStart, endWeek: modifiedWeeks[modifiedWeeks.length - 1].weekNumber });
+      }
+      return phases;
+    };
+
+    const updatedPhases = rebuildPhases();
+
+    // Write updated plan to Firestore (weeks + phases)
     const sanitizedWeeks = sanitizeForFirestore(modifiedWeeks);
-    await planRef.update({ weeks: sanitizedWeeks });
+    const sanitizedPhases = sanitizeForFirestore(updatedPhases);
+    await planRef.update({ weeks: sanitizedWeeks, phases: sanitizedPhases });
 
     // Write audit log
     const auditRef = adminDb

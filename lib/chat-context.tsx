@@ -25,6 +25,7 @@ export interface PlanModificationData {
   status: "proposed" | "applying" | "applied" | "error";
   evaluation?: { structural: number; safety: number; methodology: number; overall: number };
   error?: string;
+  validationWarnings?: string[];
 }
 
 export interface PaceZoneUpdateData {
