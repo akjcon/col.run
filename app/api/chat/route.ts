@@ -2,11 +2,60 @@ import { NextRequest } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import {
   streamChatResponse,
+  buildChatConfig,
 } from "@/lib/llm-service";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { validateWeek, validateDay } from "@/lib/blocks/validation";
 import type { ChatContext, UserData, TrainingPlan, TrainingBackground } from "@/lib/types";
 import type { Week, Day } from "@/lib/blocks/types";
+
+// =============================================================================
+// Firestore Read Tool Executor
+// =============================================================================
+
+interface FirestoreReadInput {
+  path: string;
+  limit?: number;
+  orderBy?: string;
+  orderDirection?: "asc" | "desc";
+}
+
+async function executeFirestoreRead(
+  userId: string,
+  input: FirestoreReadInput
+): Promise<string> {
+  try {
+    const db = getAdminDb();
+    const userRef = db.collection("users").doc(userId);
+    const pathParts = input.path.split("/");
+
+    // Single document read (e.g. "athleteSnapshot/current", "fitness/profile")
+    if (pathParts.length === 2) {
+      const docSnap = await userRef
+        .collection(pathParts[0])
+        .doc(pathParts[1])
+        .get();
+      if (!docSnap.exists) return JSON.stringify({ exists: false });
+      return JSON.stringify(docSnap.data());
+    }
+
+    // Collection read (e.g. "workoutLogs", "activities")
+    const collectionName = pathParts[0];
+    let q: FirebaseFirestore.Query = userRef.collection(collectionName);
+
+    if (input.orderBy) {
+      q = q.orderBy(input.orderBy, input.orderDirection || "desc");
+    }
+
+    q = q.limit(input.limit || 10);
+
+    const snap = await q.get();
+    const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    return JSON.stringify(docs);
+  } catch (error) {
+    return JSON.stringify({ error: String(error) });
+  }
+}
 
 export const maxDuration = 60;
 
@@ -239,9 +288,77 @@ export async function POST(req: NextRequest) {
           });
 
           // Wait for the full message to resolve (accumulates tool_use blocks)
-          const finalMessage = await stream.finalMessage();
+          let finalMessage = await stream.finalMessage();
 
-          // Process ALL tool_use blocks (not just the first)
+          // Handle read_athlete_data tool calls (multi-turn loop)
+          // These need to return data to the LLM so it can continue generating
+          while (finalMessage.stop_reason === "tool_use") {
+            const readToolCalls = finalMessage.content.filter(
+              (b): b is Anthropic.Messages.ToolUseBlock =>
+                b.type === "tool_use" && b.name === "read_athlete_data"
+            );
+
+            // If no read_athlete_data calls, break to handle other tools below
+            if (readToolCalls.length === 0) break;
+
+            // Notify client that we're looking up data
+            sendEvent({ type: "status", data: "Looking up your data..." });
+
+            // Execute all read_athlete_data calls
+            const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
+            for (const call of readToolCalls) {
+              const result = await executeFirestoreRead(
+                userId,
+                call.input as FirestoreReadInput
+              );
+              toolResults.push({
+                type: "tool_result",
+                tool_use_id: call.id,
+                content: result,
+              });
+            }
+
+            // Also include tool results for any non-read tools (return empty to satisfy API)
+            const otherToolCalls = finalMessage.content.filter(
+              (b): b is Anthropic.Messages.ToolUseBlock =>
+                b.type === "tool_use" && b.name !== "read_athlete_data"
+            );
+            for (const call of otherToolCalls) {
+              toolResults.push({
+                type: "tool_result",
+                tool_use_id: call.id,
+                content: "Tool acknowledged — will be processed after response.",
+              });
+            }
+
+            // Continue the conversation with tool results
+            const anthropicClient = new Anthropic();
+            const chatConfig = await buildChatConfig(userData, context, activePlan);
+            const continuationStream = anthropicClient.messages.stream({
+              model: "claude-opus-4-6",
+              max_tokens: 16000,
+              temperature: 0.6,
+              system: chatConfig.systemPrompt,
+              tools: chatConfig.tools,
+              messages: [
+                ...messages.map((msg) => ({
+                  role: msg.role as "user" | "assistant",
+                  content: msg.content,
+                })),
+                { role: "assistant" as const, content: finalMessage.content },
+                { role: "user" as const, content: toolResults },
+              ],
+            });
+
+            continuationStream.on("text", (text) => {
+              fullText += text;
+              sendEvent({ type: "text", data: text });
+            });
+
+            finalMessage = await continuationStream.finalMessage();
+          }
+
+          // Process ALL remaining tool_use blocks (plan mods, threshold pace)
           const toolBlocks = finalMessage.content.filter(
             (b): b is Anthropic.Messages.ToolUseBlock =>
               b.type === "tool_use"

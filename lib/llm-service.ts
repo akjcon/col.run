@@ -525,15 +525,52 @@ When the athlete wants to update their threshold pace or says their pace zones a
 `;
 
 // =============================================================================
+// Firestore Read Tool — lets the LLM query the athlete's data on demand
+// =============================================================================
+
+export const FIRESTORE_READ_TOOL: Anthropic.Tool = {
+  name: "read_athlete_data",
+  description:
+    "Read data from the athlete's Firestore profile. Use this when you need information that wasn't provided in the system prompt — pace zones, fitness metrics, recent workout logs, Strava activities, etc. Available collections: 'athleteSnapshot/current' (fitness, threshold pace, CTL/ATL/TSB, experience), 'fitness/profile' (Strava fitness metrics), 'fitness/experience' (lifetime stats), 'workoutLogs' (completed workouts with adherence + coaching notes), 'activities' (raw Strava activities), 'backgrounds' (training background + goals), 'integrations/strava' (connection status only). You can read a single document or query a collection.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      path: {
+        type: "string",
+        description:
+          "Document or collection path relative to the user doc. Examples: 'athleteSnapshot/current', 'workoutLogs', 'fitness/profile', 'activities'",
+      },
+      limit: {
+        type: "number",
+        description: "Max documents to return when reading a collection. Default 10.",
+      },
+      orderBy: {
+        type: "string",
+        description: "Field to order by when reading a collection. E.g. 'completedAt', 'date'",
+      },
+      orderDirection: {
+        type: "string",
+        enum: ["asc", "desc"],
+        description: "Order direction. Default 'desc'.",
+      },
+    },
+    required: ["path"],
+  },
+};
+
+// =============================================================================
 // Streaming Chat Response — Opus 4.6 with tool support
 // =============================================================================
 
-export async function streamChatResponse(
-  messages: Array<{ role: "user" | "assistant"; content: string }>,
+/**
+ * Build the full chat config (system prompt + tools) so the chat route
+ * can reuse it for tool-use continuation turns.
+ */
+export async function buildChatConfig(
   userData: UserData,
   context?: ChatContext | null,
   activePlan?: TrainingPlan | null
-) {
+): Promise<{ systemPrompt: string; tools: Anthropic.Tool[] }> {
   const bookContent = await getBookContent();
   let systemPrompt = generateChatPrompt(userData);
 
@@ -541,22 +578,34 @@ export async function streamChatResponse(
     systemPrompt += buildContextPrompt(context);
   }
 
-  // Add plan context if available
   if (activePlan) {
     const currentWeek = calculateCurrentWeek(activePlan.startDate, activePlan.totalWeeks);
     systemPrompt += "\n\n" + buildPlanContext(activePlan, currentWeek);
     systemPrompt += PLAN_MODIFICATION_RULES;
   }
 
-  // Always include threshold pace rules (tool is always available)
   systemPrompt += THRESHOLD_PACE_RULES;
+
+  systemPrompt += `\nDATA ACCESS:
+You have a read_athlete_data tool to query the athlete's Firestore data on demand. Use it when you need info not already in this prompt — pace zones, recent workouts, fitness metrics, Strava activities, etc. Don't guess or say you don't have access; just look it up.`;
 
   systemPrompt += `\n\nBOOK REFERENCE:\n${bookContent}`;
 
-  const tools: Anthropic.Tool[] = [THRESHOLD_PACE_TOOL];
+  const tools: Anthropic.Tool[] = [THRESHOLD_PACE_TOOL, FIRESTORE_READ_TOOL];
   if (activePlan) {
     tools.push(PLAN_MODIFICATION_TOOL);
   }
+
+  return { systemPrompt, tools };
+}
+
+export async function streamChatResponse(
+  messages: Array<{ role: "user" | "assistant"; content: string }>,
+  userData: UserData,
+  context?: ChatContext | null,
+  activePlan?: TrainingPlan | null
+) {
+  const { systemPrompt, tools } = await buildChatConfig(userData, context, activePlan);
 
   return anthropic.messages.stream({
     model: "claude-opus-4-6",

@@ -447,9 +447,18 @@ function ChatUI() {
               if (event.type === "text") {
                 setMessages((prev) => {
                   const last = prev[prev.length - 1];
+                  // Clear status when real text arrives
                   return [
                     ...prev.slice(0, -1),
-                    { ...last, content: last.content + event.data },
+                    { ...last, content: last.content + event.data, status: undefined },
+                  ];
+                });
+              } else if (event.type === "status") {
+                setMessages((prev) => {
+                  const last = prev[prev.length - 1];
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...last, status: event.data as string },
                   ];
                 });
               } else if (event.type === "plan_modification") {
@@ -550,12 +559,25 @@ function ChatUI() {
             >
               {message.content ? (
                 message.role === "assistant" ? (
-                  <ChatMarkdown content={message.content} />
+                  <>
+                    <ChatMarkdown content={message.content} />
+                    {message.status && (
+                      <div className="mt-2 flex items-center gap-2 text-xs text-neutral-400">
+                        <div className="h-1 w-1 animate-pulse rounded-full bg-neutral-400" />
+                        {message.status}
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">
                     {message.content}
                   </p>
                 )
+              ) : message.status ? (
+                <div className="flex items-center gap-2 text-xs text-neutral-400">
+                  <div className="h-1 w-1 animate-pulse rounded-full bg-neutral-400" />
+                  {message.status}
+                </div>
               ) : (
                 <div className="flex items-center gap-1 py-1">
                   <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:0ms]" />

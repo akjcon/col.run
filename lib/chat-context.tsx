@@ -40,6 +40,7 @@ export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  status?: string;
   planModification?: PlanModificationData;
   paceZoneUpdate?: PaceZoneUpdateData;
 }
