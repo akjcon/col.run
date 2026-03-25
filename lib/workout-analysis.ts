@@ -73,15 +73,13 @@ export async function analyzeMatchedWorkout(
         snapshot.thresholdPace
           ? `Threshold pace: ${formatPace(snapshot.thresholdPace)}/mi`
           : null,
-        snapshot.ctl != null ? `CTL: ${snapshot.ctl}` : null,
-        snapshot.tsb != null ? `TSB: ${snapshot.tsb}` : null,
         snapshot.injuries ? `Injuries/notes: ${snapshot.injuries}` : null,
       ]
         .filter(Boolean)
         .join("\n")
     : "No athlete profile available.";
 
-  const prompt = `You are a running coach analyzing a completed workout. Compare the actual activity to the planned workout and provide feedback.
+  const prompt = `You are a running coach reviewing a completed workout. Compare the actual activity to the planned workout and return feedback.
 
 ## Planned Workout (Week ${week.weekNumber}, ${week.phase})
 - Blocks: ${blockDescriptions.join(" → ")}
@@ -103,7 +101,7 @@ ${athleteContext}
 Respond with valid JSON only, no markdown:
 {
   "adherence": "on_target" | "over" | "under",
-  "coachingNote": "1-3 sentences of coaching feedback"
+  "coachingNote": "1-2 sentences"
 }
 
 Rules for adherence:
@@ -111,11 +109,18 @@ Rules for adherence:
 - "over": ran significantly farther than planned (>15% over) OR ran at a much harder effort than prescribed (e.g., Zone 2 run done at Zone 4 HR)
 - "under": ran significantly less than planned (>15% under) OR effort was well below prescribed zones
 
-For the coaching note:
-- Be specific: reference actual numbers vs planned
-- Be encouraging but honest
-- If HR data is available and the prescribed zone was easy (Z1/Z2), flag if avg HR was too high
-- Keep it concise (1-3 sentences)`;
+Rules for coachingNote:
+- 1-2 sentences max
+- Speak like a coach who knows the athlete — warm, direct, a little tough love when needed, never hollow
+- Do NOT list numbers or stats. The athlete can see those. Speak to what it means, not what it was.
+- Do NOT use filler praise like "great job", "love the consistency", "awesome effort"
+- If something was off, name it plainly and end with a soft question or suggestion — not a directive
+- If it went well, say something specific about why it matters, not just that it was good
+
+Examples of the right tone:
+- "You got it done, but this one crept into harder territory than intended — HR was a bit elevated for an easy day. Want to dial in your paces?"
+- "That's exactly what an easy day should look like. Keep stacking these and you'll feel it in a few weeks."
+- "Good feel for effort today. Pace was a bit quick for this one, but if HR stayed controlled, don't stress it — just worth keeping in mind."`;
 
   try {
     const response = await anthropic.messages.create({
@@ -169,8 +174,6 @@ export async function analyzeUnplannedWorkout(
   const athleteContext = snapshot
     ? [
         `Experience: ${snapshot.experience}`,
-        snapshot.ctl != null ? `CTL: ${snapshot.ctl}` : null,
-        snapshot.tsb != null ? `TSB: ${snapshot.tsb}` : null,
       ]
         .filter(Boolean)
         .join("\n")

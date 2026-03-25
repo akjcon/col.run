@@ -39,7 +39,7 @@ export default function AuthenticatedLayout({
 
       {/* Mobile content */}
       <div className="md:hidden min-h-screen pt-14">
-        <main className="container mx-auto px-4 py-6">
+        <main className="container mx-auto px-4 pt-3 pb-6">
           {!isLoaded ? (
             <div className="flex items-center justify-center min-h-[50vh]">
               <LoadingSpinner variant="inline" />
