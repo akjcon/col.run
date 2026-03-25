@@ -119,14 +119,15 @@ For the coaching note:
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 4096,
       temperature: 0.5,
       messages: [{ role: "user", content: prompt }],
     });
 
-    const text =
+    const rawText =
       response.content[0].type === "text" ? response.content[0].text : "";
+    const text = rawText.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
     const parsed = JSON.parse(text);
 
     return {
@@ -134,7 +135,7 @@ For the coaching note:
       coachingNote: parsed.coachingNote || "",
     };
   } catch (error) {
-    console.error("Workout analysis failed:", error);
+    console.error("[workout-analysis] Matched analysis failed:", error);
     // Fallback: simple distance-based adherence
     const ratio = activity.distance / (plannedMiles || 1);
     let adherence: WorkoutLog["adherence"] = "on_target";
@@ -206,14 +207,15 @@ Rules:
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 4096,
       temperature: 0.5,
       messages: [{ role: "user", content: prompt }],
     });
 
-    const text =
+    const rawText =
       response.content[0].type === "text" ? response.content[0].text : "";
+    const text = rawText.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
     const parsed = JSON.parse(text);
 
     return {

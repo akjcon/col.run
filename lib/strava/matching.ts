@@ -10,11 +10,20 @@ import type { Activity } from "./types";
 import type { TrainingPlan } from "@/lib/types";
 import type { Week, Day } from "@/lib/blocks/types";
 import { getWeeksWithDates } from "@/lib/workout-utils";
-import { calculateDayTotalMiles } from "@/lib/blocks/calculations";
 import { isRestDay } from "@/lib/workout-display";
 
-const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
-const DISTANCE_TOLERANCE = 0.3; // ±30%
+const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+
+/** Compare two timestamps by local calendar date (year/month/day). */
+function sameLocalDate(a: number, b: number): boolean {
+  const da = new Date(a);
+  const db = new Date(b);
+  return (
+    da.getFullYear() === db.getFullYear() &&
+    da.getMonth() === db.getMonth() &&
+    da.getDate() === db.getDate()
+  );
+}
 
 interface MatchResult {
   week: Week;
@@ -42,36 +51,21 @@ export function matchActivityToDay(
     for (const day of week.days) {
       if (!day.date) continue;
 
-      // Check date match (±12 hours)
+      // Quick filter: skip days more than 24 hours apart
       const timeDiff = Math.abs(activity.date - day.date);
-      if (timeDiff > TWELVE_HOURS_MS) continue;
+      if (timeDiff > TWENTY_FOUR_HOURS_MS) continue;
+
+      // Must be the same local calendar day (handles timezone offsets
+      // where day.date is midnight local but activity.date may be
+      // next-day UTC for evening runs)
+      if (!sameLocalDate(activity.date, day.date)) continue;
 
       // Skip rest days
       if (isRestDay(day)) continue;
 
-      // Check distance match
-      const plannedMiles = calculateDayTotalMiles(day);
-      if (plannedMiles <= 0) continue;
-
-      const distanceDiff = Math.abs(activity.distance - plannedMiles);
-      const tolerance = plannedMiles * DISTANCE_TOLERANCE;
-
-      if (distanceDiff <= tolerance) {
-        return { week, day };
-      }
-
-      // If distance doesn't match but date does, still match
-      // (athlete may have cut short or added extra)
-      // Only match by date if it's within a tighter window (same calendar day)
-      const activityDate = new Date(activity.date);
-      const dayDate = new Date(day.date);
-      if (
-        activityDate.getFullYear() === dayDate.getFullYear() &&
-        activityDate.getMonth() === dayDate.getMonth() &&
-        activityDate.getDate() === dayDate.getDate()
-      ) {
-        return { week, day };
-      }
+      // Match by same calendar day — distance is secondary
+      // (athlete may have cut short, added extra, or done a different workout)
+      return { week, day };
     }
   }
 
