@@ -90,6 +90,7 @@ export interface WorkoutLog {
   // AI analysis (filled later by coaching features)
   adherence?: "on_target" | "over" | "under" | "skipped";
   coachingNote?: string;
+  noteDismissed?: boolean;
 }
 
 // Athlete Snapshot — denormalized doc for AI features (chat, plan gen, coaching)

@@ -299,6 +299,31 @@ export const trainingApi = baseApi.injectEndpoints({
       ],
     }),
 
+    // Dismiss coaching note on a workout log
+    dismissCoachingNote: builder.mutation<
+      void,
+      { userId: string; logId: string }
+    >({
+      queryFn: async ({ userId, logId }) => {
+        try {
+          const logRef = doc(
+            db,
+            "users",
+            userId,
+            "workoutLogs",
+            logId
+          );
+          await updateDoc(logRef, { noteDismissed: true });
+          return { data: undefined };
+        } catch (error) {
+          return {
+            error: handleFirestoreError(error, "dismiss coaching note"),
+          };
+        }
+      },
+      invalidatesTags: ["WorkoutLog"],
+    }),
+
     // Get workout logs for a user (optionally filtered by week)
     getWorkoutLogs: builder.query<
       WorkoutLog[],
@@ -429,6 +454,7 @@ export const {
   useGetTomorrowsWorkoutQuery,
   useGetAthleteSnapshotQuery,
   useSaveWorkoutLogMutation,
+  useDismissCoachingNoteMutation,
   useGetWorkoutLogsQuery,
   useGetWorkoutLogByDateQuery,
   useIsWorkoutLoggedQuery,

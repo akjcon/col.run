@@ -2,11 +2,13 @@
 
 import { useUser } from "@/lib/user-context-rtk";
 import { WorkoutCard } from "@/components/WorkoutCard";
+import { CoachingNoteCard } from "@/components/CoachingNoteCard";
 import { TomorrowWorkoutCard } from "@/components/TomorrowWorkoutCard";
 import { ProgressOverview } from "@/components/ProgressOverview";
 
 import {
   useSaveWorkoutLogMutation,
+  useDismissCoachingNoteMutation,
   useIsWorkoutLoggedQuery,
   useGetAthleteSnapshotQuery,
   useGetWorkoutLogByDateQuery,
@@ -31,6 +33,7 @@ export default function HomePage() {
 
   // RTK Query hooks
   const [saveWorkoutLog] = useSaveWorkoutLogMutation();
+  const [dismissCoachingNote] = useDismissCoachingNoteMutation();
   const { data: snapshot } = useGetAthleteSnapshotQuery(clerkUserId || "", {
     skip: !clerkUserId || !isFirebaseReady,
   });
@@ -131,6 +134,20 @@ export default function HomePage() {
       <div className="pt-2 pb-24">
         {/* Top row */}
         <div className="grid grid-cols-1">
+          {/* Coaching Note (dismissable, above today's workout) */}
+          {isWorkoutDone && workoutLog?.coachingNote && !workoutLog.noteDismissed && (
+            <div className="z-30">
+              <CoachingNoteCard
+                workoutLog={workoutLog}
+                onDismiss={() => {
+                  if (clerkUserId && workoutLog.id) {
+                    dismissCoachingNote({ userId: clerkUserId, logId: workoutLog.id });
+                  }
+                }}
+              />
+            </div>
+          )}
+
           {/* Today's Workout */}
           <div className="z-20">
             <WorkoutCard
@@ -140,7 +157,6 @@ export default function HomePage() {
               onWorkoutComplete={handleWorkoutCompletion}
               isLoading={isLoadingWorkoutCard}
               thresholdPace={thresholdPace}
-              workoutLog={workoutLog}
             />
           </div>
 
