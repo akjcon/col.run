@@ -3,6 +3,7 @@
 import { useRef, useEffect, useMemo } from "react";
 import type { Week } from "@/lib/blocks/types";
 import type { PhaseTarget } from "@/lib/agents/types";
+import type { WorkoutLog } from "@/lib/types";
 import { WeekRow } from "./WeekRow";
 import { MobileWeekAccordion } from "./MobileWeekAccordion";
 
@@ -12,6 +13,7 @@ interface CalendarGridProps {
   currentWeek: number;
   completedDates?: Set<number>;
   raceDate?: number;
+  logsByDate?: Map<number, WorkoutLog>;
 }
 
 const DAY_HEADERS_FULL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -22,6 +24,7 @@ export function CalendarGrid({
   currentWeek,
   completedDates,
   raceDate,
+  logsByDate,
 }: CalendarGridProps) {
   const currentWeekRef = useRef<HTMLDivElement>(null);
   const mobileCurrentWeekRef = useRef<HTMLDivElement>(null);
@@ -106,6 +109,7 @@ export function CalendarGrid({
                     completedDates={completedDates}
                     phaseName={weekPhaseMap.get(week.weekNumber)}
                     raceDateMidnight={raceDateMidnight}
+                    logsByDate={logsByDate}
                   />
                 </div>
               );
@@ -158,6 +162,7 @@ export function CalendarGrid({
                     todayDate={todayDate}
                     completedDates={completedDates}
                     raceDateMidnight={raceDateMidnight}
+                    logsByDate={logsByDate}
                   />
                 </div>
               );

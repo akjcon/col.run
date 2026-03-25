@@ -345,6 +345,46 @@ export const trainingApi = baseApi.injectEndpoints({
       providesTags: ["WorkoutLog"],
     }),
 
+    // Get workout log by date + dayOfWeek (for coaching note display)
+    getWorkoutLogByDate: builder.query<
+      WorkoutLog | null,
+      { userId: string; date: number; dayOfWeek: string }
+    >({
+      queryFn: async ({ userId, date, dayOfWeek }) => {
+        try {
+          const logId = `${date}-${dayOfWeek}`;
+          const logRef = doc(
+            db,
+            "users",
+            userId,
+            "workoutLogs",
+            logId
+          );
+          const logSnap = await getDoc(logRef);
+          if (!logSnap.exists()) {
+            return { data: null };
+          }
+          const data = normalizeTimestamps({
+            id: logSnap.id,
+            ...logSnap.data(),
+          } as unknown as WorkoutLog) as WorkoutLog;
+          return { data };
+        } catch (error) {
+          const errorCode = (error as { code?: string })?.code;
+          if (errorCode === "permission-denied") {
+            return { data: null };
+          }
+          return {
+            error: handleFirestoreError(error, "get workout log by date"),
+          };
+        }
+      },
+      providesTags: (result, error, { userId, date }) => [
+        "WorkoutLog",
+        { type: "WorkoutLog", id: `${userId}-${date}` },
+      ],
+    }),
+
     // Check if a workout is logged for a given date
     isWorkoutLogged: builder.query<
       boolean,
@@ -390,5 +430,6 @@ export const {
   useGetAthleteSnapshotQuery,
   useSaveWorkoutLogMutation,
   useGetWorkoutLogsQuery,
+  useGetWorkoutLogByDateQuery,
   useIsWorkoutLoggedQuery,
 } = trainingApi;

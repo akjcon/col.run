@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { Week, Day } from "@/lib/blocks/types";
+import type { WorkoutLog } from "@/lib/types";
 import {
   calculateDayTotalMiles,
   calculateDayTotal,
@@ -50,6 +51,13 @@ const EASE_OUT_QUART: [number, number, number, number] = [0.165, 0.84, 0.44, 1];
 
 // ── Day Row (expanded view) ─────────────────────────────────────────────────
 
+const ADHERENCE_COLORS_MOBILE = {
+  on_target: "text-green-500",
+  over: "text-amber-500",
+  under: "text-red-500",
+  skipped: "text-neutral-400",
+} as const;
+
 function MobileDayRow({
   day,
   index,
@@ -58,6 +66,8 @@ function MobileDayRow({
   isCompleted,
   isRaceDay,
   reducedMotion,
+  coachingNote,
+  adherence,
 }: {
   day: Day;
   index: number;
@@ -66,6 +76,8 @@ function MobileDayRow({
   isCompleted: boolean;
   isRaceDay: boolean;
   reducedMotion: boolean;
+  coachingNote?: string;
+  adherence?: WorkoutLog["adherence"];
 }) {
   const rest = isRestDay(day);
   const miles = calculateDayTotalMiles(day);
@@ -171,12 +183,25 @@ function MobileDayRow({
 
       {/* Completion check */}
       {isCompleted && (
-        <Check className="h-4 w-4 shrink-0 text-green-500" />
+        <Check className={`h-4 w-4 shrink-0 ${adherence ? ADHERENCE_COLORS_MOBILE[adherence] : "text-green-500"}`} />
       )}
     </div>
   );
 
-  if (reducedMotion) return content;
+  const wrappedContent = (
+    <>
+      {content}
+      {coachingNote && isCompleted && (
+        <div className="ml-[52px] mr-3 -mt-1 mb-1 rounded-lg bg-neutral-50 px-3 py-2">
+          <p className="text-xs leading-relaxed text-neutral-500">
+            {coachingNote}
+          </p>
+        </div>
+      )}
+    </>
+  );
+
+  if (reducedMotion) return wrappedContent;
 
   return (
     <motion.div
@@ -184,7 +209,7 @@ function MobileDayRow({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: EASE_OUT_QUART }}
     >
-      {content}
+      {wrappedContent}
     </motion.div>
   );
 }
@@ -198,6 +223,7 @@ interface MobileWeekAccordionProps {
   completedDates?: Set<number>;
   phaseName?: string;
   raceDateMidnight?: number;
+  logsByDate?: Map<number, WorkoutLog>;
 }
 
 export function MobileWeekAccordion({
@@ -206,6 +232,7 @@ export function MobileWeekAccordion({
   todayDate,
   completedDates,
   raceDateMidnight,
+  logsByDate,
 }: MobileWeekAccordionProps) {
   const [expanded, setExpanded] = useState(isCurrentWeek);
   const shouldReduceMotion = useReducedMotion();
@@ -230,6 +257,7 @@ export function MobileWeekAccordion({
     const isPast = dayMidnight !== null && dayMidnight < todayDate;
     const isCompleted = dayMidnight !== null && !!completedDates?.has(dayMidnight);
     const isRaceDay = raceDateMidnight !== undefined && dayMidnight === raceDateMidnight;
+    const log = dayMidnight !== null ? logsByDate?.get(dayMidnight) : undefined;
 
     return (
       <MobileDayRow
@@ -241,6 +269,8 @@ export function MobileWeekAccordion({
         isCompleted={isCompleted}
         isRaceDay={isRaceDay}
         reducedMotion={!!shouldReduceMotion}
+        coachingNote={log?.coachingNote}
+        adherence={log?.adherence}
       />
     );
   });
@@ -278,6 +308,12 @@ export function MobileWeekAccordion({
             const color = rest ? "#E5E5E5" : effortToColor(getDayEffortLevel(day));
             const dayMidnight = day.date ? getDayMidnight(day.date) : null;
             const completed = dayMidnight !== null && completedDates?.has(dayMidnight);
+            const dayLog = dayMidnight !== null ? logsByDate?.get(dayMidnight) : undefined;
+            const dotColor = dayLog?.adherence === "over"
+              ? "bg-amber-500"
+              : dayLog?.adherence === "under"
+                ? "bg-red-500"
+                : "bg-green-500";
 
             return (
               <div key={i} className="relative">
@@ -286,7 +322,7 @@ export function MobileWeekAccordion({
                   style={{ backgroundColor: color }}
                 />
                 {completed && (
-                  <div className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-green-500" />
+                  <div className={`absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full ${dotColor}`} />
                 )}
               </div>
             );

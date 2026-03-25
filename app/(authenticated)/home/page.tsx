@@ -9,6 +9,7 @@ import {
   useSaveWorkoutLogMutation,
   useIsWorkoutLoggedQuery,
   useGetAthleteSnapshotQuery,
+  useGetWorkoutLogByDateQuery,
 } from "@/lib/store/api";
 import { useState, useEffect } from "react";
 import { useClerkFirebase } from "@/lib/clerk-firebase";
@@ -67,6 +68,18 @@ export default function HomePage() {
           !isFirebaseReady || !clerkUserId || !todaysDay?.date,
       }
     );
+
+  // Fetch the actual workout log (for coaching note display)
+  const { data: workoutLog } = useGetWorkoutLogByDateQuery(
+    {
+      userId: clerkUserId || "",
+      date: todaysDay?.date || 0,
+      dayOfWeek: todaysDay?.dayOfWeek || "",
+    },
+    {
+      skip: !isFirebaseReady || !clerkUserId || !todaysDay?.date || !isCompleted,
+    }
+  );
 
   useEffect(() => {
     setIsWorkoutDone(isCompleted || false);
@@ -127,6 +140,7 @@ export default function HomePage() {
               onWorkoutComplete={handleWorkoutCompletion}
               isLoading={isLoadingWorkoutCard}
               thresholdPace={thresholdPace}
+              workoutLog={workoutLog}
             />
           </div>
 

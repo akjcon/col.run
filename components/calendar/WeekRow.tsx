@@ -1,6 +1,7 @@
 "use client";
 
 import type { Week } from "@/lib/blocks/types";
+import type { WorkoutLog } from "@/lib/types";
 import { calculateDayTotalMiles } from "@/lib/blocks/calculations";
 import { DayCell } from "./DayCell";
 
@@ -10,6 +11,7 @@ interface WeekRowProps {
   todayDate: number | null; // epoch ms of today's midnight
   completedDates?: Set<number>;
   raceDateMidnight?: number;
+  logsByDate?: Map<number, WorkoutLog>;
 }
 
 function getDayMidnight(date: number): number {
@@ -17,7 +19,7 @@ function getDayMidnight(date: number): number {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
 
-export function WeekRow({ week, isCurrentWeek, todayDate, completedDates, raceDateMidnight }: WeekRowProps) {
+export function WeekRow({ week, isCurrentWeek, todayDate, completedDates, raceDateMidnight, logsByDate }: WeekRowProps) {
   // Exclude race day from week mileage total
   const weekMiles = week.days.reduce((sum, day) => {
     if (raceDateMidnight !== undefined && day.date !== undefined) {
@@ -68,6 +70,7 @@ export function WeekRow({ week, isCurrentWeek, todayDate, completedDates, raceDa
         }
 
         const isCompleted = dayMidnight !== null && completedDates?.has(dayMidnight);
+        const log = dayMidnight !== null ? logsByDate?.get(dayMidnight) : undefined;
 
         const isRaceDay = raceDateMidnight !== undefined && dayMidnight === raceDateMidnight;
 
@@ -79,6 +82,7 @@ export function WeekRow({ week, isCurrentWeek, todayDate, completedDates, raceDa
             isPast={isPast}
             isCompleted={!!isCompleted}
             isRaceDay={isRaceDay}
+            adherence={log?.adherence}
           />
         );
       })}

@@ -33,10 +33,18 @@ interface DayCellProps {
   isPast: boolean;
   isCompleted: boolean;
   isRaceDay?: boolean;
+  adherence?: "on_target" | "over" | "under" | "skipped";
 }
 
+const ADHERENCE_COLORS = {
+  on_target: "text-green-500",
+  over: "text-amber-500",
+  under: "text-red-500",
+  skipped: "text-neutral-400",
+} as const;
+
 /** Desktop-only grid cell (hidden on mobile — see MobileWeekAccordion). */
-export function DayCell({ day, isToday, isPast, isCompleted, isRaceDay }: DayCellProps) {
+export function DayCell({ day, isToday, isPast, isCompleted, isRaceDay, adherence }: DayCellProps) {
   const rest = isRestDay(day);
   const miles = calculateDayTotalMiles(day);
   const minutes = calculateDayTotal(day);
@@ -103,7 +111,7 @@ export function DayCell({ day, isToday, isPast, isCompleted, isRaceDay }: DayCel
             {dateNum}
           </p>
           {isCompleted && (
-            <Check className="h-2.5 w-2.5 text-green-500" />
+            <Check className={`h-2.5 w-2.5 ${adherence ? ADHERENCE_COLORS[adherence] : "text-green-500"}`} />
           )}
         </div>
       )}

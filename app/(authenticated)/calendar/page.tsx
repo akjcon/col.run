@@ -7,6 +7,7 @@ import { getWeeksWithDates } from "@/lib/workout-utils";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
 import { useGetWorkoutLogsQuery } from "@/lib/store/api/trainingApi";
+import type { WorkoutLog } from "@/lib/types";
 
 export default function CalendarPage() {
   const { userData, isLoading, userId } = useUser();
@@ -16,9 +17,10 @@ export default function CalendarPage() {
     { skip: !userId }
   );
 
-  const completedDates = useMemo(() => {
-    if (!workoutLogs) return undefined;
+  const { completedDates, logsByDate } = useMemo(() => {
+    if (!workoutLogs) return { completedDates: undefined, logsByDate: undefined };
     const set = new Set<number>();
+    const map = new Map<number, WorkoutLog>();
     for (const log of workoutLogs) {
       // Normalize to midnight
       const d = new Date(log.date);
@@ -28,8 +30,9 @@ export default function CalendarPage() {
         d.getDate()
       ).getTime();
       set.add(midnight);
+      map.set(midnight, log);
     }
-    return set;
+    return { completedDates: set, logsByDate: map };
   }, [workoutLogs]);
 
   if (isLoading) {
@@ -83,6 +86,7 @@ export default function CalendarPage() {
           currentWeek={currentWeek}
           completedDates={completedDates}
           raceDate={activePlan.raceDate}
+          logsByDate={logsByDate}
         />
       </div>
     </div>

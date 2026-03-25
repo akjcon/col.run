@@ -8,15 +8,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { syncSingleActivity } from "@/lib/strava/sync";
-import { matchActivityToDay } from "@/lib/strava/matching";
-import { buildAthleteSnapshot } from "@/lib/athlete-snapshot";
+import { processActivityWebhook } from "@/lib/strava/webhook-pipeline";
 import type { StravaTokens } from "@/lib/strava";
-import type { WorkoutLog } from "@/lib/types";
-import { getDayTitle } from "@/lib/workout-display";
-import {
-  calculateDayTotalMiles,
-  calculateDayTotal,
-} from "@/lib/blocks/calculations";
 
 const VERIFY_TOKEN = process.env.STRAVA_WEBHOOK_VERIFY_TOKEN || "col-run-strava";
 
@@ -115,74 +108,8 @@ export async function POST(req: NextRequest) {
       onTokenRefresh,
     });
 
-    // Store the activity
-    const activityRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("activities")
-      .doc(activity.id);
-
-    const cleanActivity = Object.fromEntries(
-      Object.entries(activity).filter(([, v]) => v !== undefined)
-    );
-    await activityRef.set({ ...cleanActivity, syncedAt: Date.now() });
-
-    // Try to match to a plan day
-    const planSnap = await db
-      .collection("users")
-      .doc(userId)
-      .collection("trainingPlans")
-      .where("isActive", "==", true)
-      .limit(1)
-      .get();
-
-    if (!planSnap.empty) {
-      const planDoc = planSnap.docs[0];
-      const plan = { id: planDoc.id, ...planDoc.data() };
-      const match = matchActivityToDay(
-        activity,
-        plan as import("@/lib/types").TrainingPlan
-      );
-
-      if (match) {
-        const logId = `${match.day.date}-${match.day.dayOfWeek}`;
-        const workoutLog: WorkoutLog = {
-          id: logId,
-          date: match.day.date!,
-          weekNumber: match.week.weekNumber,
-          dayOfWeek: match.day.dayOfWeek,
-          plannedTitle: getDayTitle(match.day),
-          plannedMiles: calculateDayTotalMiles(match.day),
-          plannedMinutes: calculateDayTotal(match.day),
-          source: "strava",
-          completedAt: activity.date,
-          stravaActivityId: activity.stravaId,
-          actualMiles: activity.distance,
-          actualMinutes: activity.duration,
-          actualElevation: activity.elevation,
-          avgPace: activity.avgPace,
-          avgHeartRate: activity.avgHeartRate,
-        };
-
-        await db
-          .collection("users")
-          .doc(userId)
-          .collection("workoutLogs")
-          .doc(logId)
-          .set(workoutLog);
-
-        console.log(
-          `Matched activity ${activityId} to ${match.day.dayOfWeek} week ${match.week.weekNumber}`
-        );
-      }
-    }
-
-    // Rebuild athlete snapshot
-    try {
-      await buildAthleteSnapshot(userId);
-    } catch (err) {
-      console.warn("Could not rebuild snapshot after webhook:", err);
-    }
+    // Process through shared pipeline: store → match → log → analyze → snapshot
+    await processActivityWebhook(activity, userId);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

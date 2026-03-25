@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import WorkoutCompletionModal from "@/components/WorkoutCompletionModal";
 import { cn } from "@/lib/utils";
 import type { Day } from "@/lib/blocks/types";
+import type { WorkoutLog } from "@/lib/types";
+import { formatPace } from "@/lib/pace-zones";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/loading-spinner";
@@ -35,7 +37,15 @@ interface WorkoutCardProps {
   onWorkoutComplete: (rating: number, notes?: string) => Promise<void>;
   isLoading?: boolean;
   thresholdPace?: number;
+  workoutLog?: WorkoutLog | null;
 }
+
+const ADHERENCE_CONFIG = {
+  on_target: { label: "On Target", bg: "bg-green-100", text: "text-green-700" },
+  over: { label: "Over", bg: "bg-amber-100", text: "text-amber-700" },
+  under: { label: "Under", bg: "bg-red-100", text: "text-red-700" },
+  skipped: { label: "Skipped", bg: "bg-neutral-100", text: "text-neutral-600" },
+} as const;
 
 export function WorkoutCard({
   todaysDay,
@@ -44,6 +54,7 @@ export function WorkoutCard({
   onWorkoutComplete,
   isLoading = false,
   thresholdPace,
+  workoutLog,
 }: WorkoutCardProps) {
   const [showDetails, setShowDetails] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -193,6 +204,41 @@ export function WorkoutCard({
           </div>
         </div>
       </div>
+
+      {/* Coaching Feedback (from Strava analysis) */}
+      {isWorkoutDone && workoutLog?.coachingNote && (
+        <div className="border-b border-neutral-100 px-6 py-4">
+          {/* Adherence badge + actual metrics */}
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {workoutLog.adherence && (
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ADHERENCE_CONFIG[workoutLog.adherence].bg} ${ADHERENCE_CONFIG[workoutLog.adherence].text}`}
+              >
+                {ADHERENCE_CONFIG[workoutLog.adherence].label}
+              </span>
+            )}
+            {workoutLog.actualMiles != null && (
+              <span className="text-xs tabular-nums text-neutral-500">
+                {workoutLog.actualMiles.toFixed(1)}mi
+              </span>
+            )}
+            {workoutLog.avgPace != null && (
+              <span className="text-xs tabular-nums text-neutral-500">
+                {formatPace(workoutLog.avgPace)}/mi
+              </span>
+            )}
+            {workoutLog.avgHeartRate != null && (
+              <span className="text-xs tabular-nums text-neutral-500">
+                {workoutLog.avgHeartRate}bpm
+              </span>
+            )}
+          </div>
+          {/* Coaching note */}
+          <p className="text-sm leading-relaxed text-neutral-600">
+            {workoutLog.coachingNote}
+          </p>
+        </div>
+      )}
 
       {/* Conditionally render details section */}
       <motion.div
