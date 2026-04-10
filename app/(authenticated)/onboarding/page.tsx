@@ -125,11 +125,10 @@ function SelectionCard({
       aria-pressed={selected}
       className={cn(
         "group relative isolate w-full overflow-hidden rounded-2xl p-5 text-left",
-        // Specific properties only — never `transition: all`. Long for state
-        // changes, snappy for the press feedback below.
+        // Specific properties only — never `transition: all`.
         "transition-[transform,box-shadow,border-color] duration-200 ease-out",
         // Tactile press. Skip when the user prefers reduced motion.
-        "active:scale-[0.98] active:duration-75 motion-reduce:active:scale-100",
+        "active:scale-[0.98] motion-reduce:active:scale-100",
         // Keyboard focus ring — neutral, not brand-colored (per design guide)
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2",
         selected

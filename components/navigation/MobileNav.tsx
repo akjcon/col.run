@@ -29,7 +29,7 @@ export function MobileNav() {
           {/* Mobile hamburger menu */}
           <button
             onClick={toggleMobileMenu}
-            className="rounded-lg p-2 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-50 active:scale-95"
+            className="rounded-lg p-2 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-50 active:scale-[0.98]"
             aria-label="Toggle menu"
           >
             <div className="relative">
@@ -53,8 +53,14 @@ export function MobileNav() {
           </button>
 
           {/* Logo */}
-          <Link href={isSignedIn ? "/home" : "/"} className="flex items-center">
-            <Image src="/col_logo.svg" alt="col" width={70} height={70} />
+          <Link href={isSignedIn ? "/home" : "/"} className="ml-2 flex items-center">
+            <Image
+              src="/col_logo.svg"
+              alt="col"
+              width={36}
+              height={36}
+              priority
+            />
           </Link>
         </div>
       </nav>
@@ -78,15 +84,15 @@ export function MobileNav() {
         {/* Mobile menu header */}
         <div className="border-b border-neutral-100 bg-neutral-50 h-14 flex items-center px-4 w-full">
           <div className="flex items-center justify-between w-full">
-            <div className="flex items-center">
-              <Image src="/col_logo.svg" alt="col" width={50} height={50} />
+            <div className="flex items-center gap-2">
+              <Image src="/col_logo.svg" alt="col" width={32} height={32} />
               <span className="text-lg font-normal text-neutral-900">
                 col.run
               </span>
             </div>
             <button
               onClick={closeMobileMenu}
-              className="ml-auto rounded-lg p-2 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-100 active:scale-95"
+              className="ml-auto rounded-lg p-2 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-100 active:scale-[0.98]"
               aria-label="Close menu"
             >
               <X className="h-5 w-5 text-neutral-600" />
@@ -160,7 +166,7 @@ export function MobileNav() {
                 href="/settings"
                 onClick={closeMobileMenu}
                 aria-label="Settings"
-                className="relative rounded-md p-2.5 text-neutral-400 transition-[background-color,color,transform] duration-150 ease-out hover:bg-neutral-100 hover:text-neutral-600 active:scale-90"
+                className="relative rounded-md p-2.5 text-neutral-400 transition-[background-color,color,transform] duration-150 ease-out hover:bg-neutral-100 hover:text-neutral-600 active:scale-[0.98]"
               >
                 <Settings className="h-4 w-4" />
               </Link>

@@ -81,30 +81,32 @@ export function SideNav() {
           <button
             onClick={toggleChat}
             className={cn(
-              "group relative flex h-10 w-full items-center rounded-lg py-2 transition-[background-color,transform] duration-150 ease-out active:scale-[0.985]",
+              "group relative flex h-10 w-full items-center rounded-lg py-2 text-left transition-[background-color,transform] duration-150 ease-out active:scale-[0.98]",
               isChatOpen ? "bg-neutral-100" : "hover:bg-neutral-50"
             )}
           >
             <div className="flex w-10 shrink-0 items-center justify-center">
-              <MessageCircle className={cn(
-                "h-4 w-4 shrink-0 transition",
-                isChatOpen
-                  ? "text-neutral-900"
-                  : "text-neutral-600 group-hover:text-neutral-900"
-              )} />
+              <MessageCircle
+                className={cn(
+                  "h-4 w-4 shrink-0 transition-colors duration-150",
+                  isChatOpen
+                    ? "text-neutral-900"
+                    : "text-neutral-600 group-hover:text-neutral-900"
+                )}
+              />
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="min-w-0 flex-1 overflow-hidden">
               <AnimatePresence>
                 {isExpanded && (
-                  <motion.div
+                  <motion.span
                     variants={textVariants}
                     initial="hidden"
                     animate="visible"
                     exit="hidden"
-                    className="whitespace-nowrap text-sm text-neutral-700 group-hover:text-neutral-900"
+                    className="block whitespace-nowrap text-left text-sm font-medium text-neutral-700 group-hover:text-neutral-900"
                   >
                     Coach
-                  </motion.div>
+                  </motion.span>
                 )}
               </AnimatePresence>
             </div>

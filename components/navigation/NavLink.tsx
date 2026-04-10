@@ -96,7 +96,7 @@ export function NavLink({
 
   const className = cn(
     "group relative flex h-10 w-full items-center rounded-lg py-2",
-    "transition-[background-color,transform] duration-150 ease-out active:scale-[0.985]",
+    "transition-[background-color,transform] duration-150 ease-out active:scale-[0.98]",
     item.variant === "primary"
       ? cn(isExpanded ? "hover:bg-orange-50" : "hover:bg-transparent")
       : cn(isActive ? "bg-neutral-100" : "hover:bg-neutral-50")

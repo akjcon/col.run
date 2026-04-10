@@ -59,7 +59,7 @@ export function CoachingNoteCard({ workoutLog, onDismiss }: CoachingNoteCardProp
             }}
             // Visual size stays small, but the negative-inset pseudo
             // element pushes the actual hit area to ~44px for touch.
-            className="relative flex h-7 w-7 items-center justify-center rounded-full text-neutral-400 transition-[transform,background-color,color] duration-150 ease-out hover:bg-black/5 hover:text-neutral-600 active:scale-90"
+            className="relative flex h-7 w-7 items-center justify-center rounded-full text-neutral-400 transition-[transform,background-color,color] duration-150 ease-out hover:bg-black/5 hover:text-neutral-600 active:scale-[0.98]"
             aria-label="Dismiss coaching note"
           >
             <span aria-hidden className="absolute -inset-2" />

@@ -289,7 +289,7 @@ export function MobileWeekAccordion({
         onClick={() => setExpanded((v) => !v)}
         className={cn(
           "flex w-full touch-manipulation items-center gap-3 rounded-xl px-3.5 py-3 text-left",
-          "transition-[background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.99]",
+          "transition-[background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98]",
           isCurrentWeek
             ? "bg-neutral-100 shadow-sm"
             : "bg-neutral-50/80 shadow-[0_0_0_1px_rgba(0,0,0,0.04)]"

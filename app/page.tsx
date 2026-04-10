@@ -132,7 +132,7 @@ export default function Home() {
             <Button
               size="lg"
               onClick={() => setAuthMode("sign-up")}
-              className="rounded-full border-0 bg-neutral-900 px-8 py-3 font-serif text-sm font-medium text-white shadow-lg shadow-neutral-900/15 transition-all duration-150 ease-out hover:bg-neutral-800 hover:shadow-xl hover:shadow-neutral-900/20 active:scale-[0.97] sm:px-10 sm:py-4 sm:text-base"
+              className="rounded-full border-0 bg-neutral-900 px-8 py-3 font-serif text-sm font-medium text-white shadow-lg shadow-neutral-900/15 transition-[transform,box-shadow,background-color] duration-150 ease-out hover:bg-neutral-800 hover:shadow-xl hover:shadow-neutral-900/20 active:scale-[0.98] sm:px-10 sm:py-4 sm:text-base"
             >
               Start Training
               <Play className="ml-2 h-3.5 w-3.5 fill-current" />

@@ -21,8 +21,9 @@ export function ToggleButton({
         onClick={onToggle}
         className={cn(
           "relative inline-flex shrink-0 items-center justify-center p-2",
-          "group rounded-md transition-all duration-300 active:scale-95",
-          "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 border-transparent"
+          "group rounded-md border-transparent text-neutral-600",
+          "transition-[background-color,color,transform] duration-150 ease-out",
+          "hover:bg-neutral-100 hover:text-neutral-900 active:scale-[0.98]"
         )}
         type="button"
       >

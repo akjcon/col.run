@@ -247,7 +247,11 @@ export function WorkoutCard({
                 workoutType={title}
                 trigger={
                   <Button
-                    className="w-full rounded-xl border-0 bg-neutral-900 py-4 text-sm font-medium uppercase tracking-wider text-white hover:bg-neutral-800"
+                    // Override the primitive's 0.98 press scale — on a
+                    // full-width, 64px-tall CTA that reads as too much
+                    // movement. 0.995 is barely perceptible but still
+                    // gives a tactile beat.
+                    className="w-full rounded-xl border-0 bg-neutral-900 py-4 text-sm font-medium uppercase tracking-wider text-white hover:bg-neutral-800 active:scale-[0.995]"
                     disabled={!isFirebaseReady}
                   >
                     {isFirebaseReady ? "Mark Complete" : "Loading..."}
