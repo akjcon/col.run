@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Check } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -148,57 +148,107 @@ function formatDate(date: Date): string {
   });
 }
 
-const LOADING_MESSAGES = [
-  "Running simulations...",
-  "Analyzing your fitness...",
-  "Calculating optimal mileage...",
-  "Mapping out recovery days...",
-  "Fine-tuning interval paces...",
-  "Consulting the coaching gods...",
-  "Building your base phase...",
-  "Sprinkling in tempo runs...",
-  "Checking the altitude charts...",
-  "Lacing up virtual shoes...",
-  "Calibrating effort zones...",
-  "Almost there...",
-];
+// Generation pipeline steps mirrored from /api/generate-plan
+type GenerationStep = "syncing" | "analyzing" | "generating" | "reviewing" | "saving";
 
-function PlanLoadingScreen() {
-  const [messageIndex, setMessageIndex] = useState(0);
+const STEP_LABELS: Record<GenerationStep, string> = {
+  syncing: "Syncing your Strava activities",
+  analyzing: "Reading your fitness profile",
+  generating: "Building your training plan",
+  reviewing: "Reviewing for safety and balance",
+  saving: "Finalizing your plan",
+};
+
+function PlanLoadingScreen({
+  currentStep,
+  includeSyncing,
+}: {
+  currentStep: GenerationStep | null;
+  includeSyncing: boolean;
+}) {
   const shouldReduceMotion = useReducedMotion();
 
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  // Build step list — skip "syncing" if Strava isn't connected
+  const steps: GenerationStep[] = includeSyncing
+    ? ["syncing", "analyzing", "generating", "reviewing", "saving"]
+    : ["analyzing", "generating", "reviewing", "saving"];
+
+  // Determine which steps are done vs current vs pending
+  const currentIndex = currentStep ? steps.indexOf(currentStep) : -1;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
-      {/* Pulsing dot */}
-      <div className="mb-8">
-        <motion.div
-          className="h-3 w-3 rounded-full bg-neutral-900"
-          animate={shouldReduceMotion ? {} : { scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </div>
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <h1 className="text-[22px] font-semibold tracking-tight text-neutral-900">
+            Crafting your plan
+          </h1>
+          <p className="mt-1.5 text-[14px] text-neutral-500">
+            This usually takes about two minutes
+          </p>
+        </div>
 
-      {/* Rotating message */}
-      <div className="h-6 overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={messageIndex}
-            initial={shouldReduceMotion ? {} : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={shouldReduceMotion ? {} : { opacity: 0, y: -12 }}
-            transition={{ duration: 0.25, ease: easeOutQuad }}
-            className="text-[15px] text-neutral-500"
-          >
-            {LOADING_MESSAGES[messageIndex]}
-          </motion.p>
-        </AnimatePresence>
+        <ul className="space-y-1">
+          {steps.map((step, idx) => {
+            const isDone = currentIndex > idx;
+            const isCurrent = currentIndex === idx;
+            const isPending = currentIndex < idx;
+
+            return (
+              <li
+                key={step}
+                className="flex items-center gap-3 rounded-lg px-2 py-2.5"
+              >
+                {/* Indicator */}
+                <div className="relative flex h-5 w-5 shrink-0 items-center justify-center">
+                  {isDone && (
+                    <motion.div
+                      initial={shouldReduceMotion ? {} : { scale: 0.6, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.2, ease: easeOutQuad }}
+                      className="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-900"
+                    >
+                      <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                    </motion.div>
+                  )}
+                  {isCurrent && (
+                    <>
+                      <motion.div
+                        className="absolute h-5 w-5 rounded-full bg-neutral-900/10"
+                        animate={
+                          shouldReduceMotion
+                            ? {}
+                            : { scale: [1, 1.6, 1], opacity: [0.6, 0, 0.6] }
+                        }
+                        transition={{
+                          duration: 1.8,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      />
+                      <div className="h-2 w-2 rounded-full bg-neutral-900" />
+                    </>
+                  )}
+                  {isPending && (
+                    <div className="h-2 w-2 rounded-full bg-neutral-200" />
+                  )}
+                </div>
+
+                {/* Label */}
+                <span
+                  className={cn(
+                    "text-[14px] transition-colors duration-300",
+                    isDone && "text-neutral-400",
+                    isCurrent && "font-medium text-neutral-900",
+                    isPending && "text-neutral-300"
+                  )}
+                >
+                  {STEP_LABELS[step]}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
@@ -351,7 +401,6 @@ function GoalStep({
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start" sideOffset={8}>
                       <Calendar
-                        className="w-[310px] [--cell-size:2.75rem]"
                         mode="single"
                         selected={selectedDate}
                         onSelect={(date) => {
@@ -788,6 +837,7 @@ export default function OnboardingPage() {
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [generationStep, setGenerationStep] = useState<GenerationStep | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [goalData, setGoalData] = useState<GoalData>({ type: "race" });
@@ -839,6 +889,7 @@ export default function OnboardingPage() {
 
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
+    setGenerationStep(null);
     setError(null);
 
     try {
@@ -886,12 +937,52 @@ export default function OnboardingPage() {
         }),
       });
 
-      if (!planResponse.ok) {
-        const errorData = await planResponse.json();
-        throw new Error(
-          errorData.details || "Failed to generate training plan"
-        );
+      if (!planResponse.ok || !planResponse.body) {
+        let errMsg = "Failed to generate training plan";
+        try {
+          const errData = await planResponse.json();
+          errMsg = errData.error || errData.details || errMsg;
+        } catch { /* not JSON */ }
+        throw new Error(errMsg);
       }
+
+      // Read NDJSON stream of progress events
+      const reader = planResponse.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let completed = false;
+      let streamError: string | null = null;
+
+      while (!completed && !streamError) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || ""; // keep incomplete line
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          let event: { type: string; step?: string; message?: string };
+          try {
+            event = JSON.parse(line);
+          } catch {
+            console.warn("Failed to parse progress line:", line);
+            continue;
+          }
+          if (event.type === "progress" && event.step) {
+            setGenerationStep(event.step as GenerationStep);
+          } else if (event.type === "complete") {
+            completed = true;
+          } else if (event.type === "error") {
+            streamError = event.message || "Plan generation failed";
+            break;
+          }
+        }
+      }
+
+      if (streamError) throw new Error(streamError);
+      if (!completed) throw new Error("Plan generation ended unexpectedly");
 
       await updateUserProfile({
         userId,
@@ -906,6 +997,7 @@ export default function OnboardingPage() {
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
+      setGenerationStep(null);
     }
   }, [
     userId,
@@ -921,7 +1013,12 @@ export default function OnboardingPage() {
   }
 
   if (isSubmitting) {
-    return <PlanLoadingScreen />;
+    return (
+      <PlanLoadingScreen
+        currentStep={generationStep}
+        includeSyncing={fitnessData.stravaConnected ?? false}
+      />
+    );
   }
 
   const stepVariants = shouldReduceMotion

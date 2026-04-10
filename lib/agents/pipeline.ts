@@ -35,6 +35,16 @@ const DEFAULT_CONFIG: Required<PipelineConfig> = {
   maxRetries: 1,
 };
 
+/** Lifecycle steps the pipeline emits via the onProgress callback. */
+export type PipelineProgressStep =
+  | "generating"
+  | "reviewing"
+  | "evaluating";
+
+export interface GenerateOptions {
+  onProgress?: (step: PipelineProgressStep) => void;
+}
+
 // =============================================================================
 // Plan Generation Pipeline
 // =============================================================================
@@ -53,7 +63,11 @@ export class PlanGenerationPipeline {
   /**
    * Generate a complete training plan
    */
-  async generate(input: PlanGenerationInput): Promise<PlanGenerationOutput> {
+  async generate(
+    input: PlanGenerationInput,
+    options?: GenerateOptions
+  ): Promise<PlanGenerationOutput> {
+    const onProgress = options?.onProgress;
     const traces: AgentTrace[] = [];
     const startTime = Date.now();
 
@@ -78,6 +92,7 @@ export class PlanGenerationPipeline {
 
     // Step 1: Generate the entire plan in one shot
     console.log(`[Pipeline] Generating ${planWeeks}-week plan with Opus...`);
+    onProgress?.("generating");
 
     const generatorInput: PlanGeneratorInput = {
       athlete: input.athlete,
@@ -122,6 +137,7 @@ export class PlanGenerationPipeline {
 
     if (!this.config.skipReview) {
       console.log(`[Pipeline] Running plan review...`);
+      onProgress?.("reviewing");
 
       // Synthesize weekly targets from generated plan for the reviewer
       const weeklyTargets: WeeklyTarget[] = weeks.map((week) => ({
@@ -191,6 +207,7 @@ export class PlanGenerationPipeline {
 
     // Step 4: Evaluate the plan
     console.log(`[Pipeline] Evaluating plan quality...`);
+    onProgress?.("evaluating");
     const evaluation = evaluatePlan({
       id: plan.id,
       userId: plan.userId,
