@@ -29,13 +29,13 @@ export function MobileNav() {
           {/* Mobile hamburger menu */}
           <button
             onClick={toggleMobileMenu}
-            className="rounded-lg p-2 transition-colors hover:bg-neutral-50"
+            className="rounded-lg p-2 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-50 active:scale-95"
             aria-label="Toggle menu"
           >
             <div className="relative">
               <Menu
                 className={cn(
-                  "h-5 w-5 transition-all duration-200",
+                  "h-5 w-5 transition-[transform,opacity] duration-200 ease-out",
                   isMobileMenuOpen
                     ? "rotate-90 opacity-0"
                     : "rotate-0 opacity-100"
@@ -43,7 +43,7 @@ export function MobileNav() {
               />
               <X
                 className={cn(
-                  "absolute left-0 top-0 h-5 w-5 transition-all duration-200",
+                  "absolute left-0 top-0 h-5 w-5 transition-[transform,opacity] duration-200 ease-out",
                   isMobileMenuOpen
                     ? "rotate-0 opacity-100"
                     : "-rotate-90 opacity-0"
@@ -62,24 +62,18 @@ export function MobileNav() {
       {/* Mobile menu overlay */}
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-black/20",
+          "fixed inset-0 z-50 bg-black/20 transition-opacity duration-200 ease-out",
           isMobileMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"
         )}
-        style={{
-          transition: "opacity 0.2s ease-out",
-        }}
         onClick={closeMobileMenu}
       />
 
       {/* Mobile menu drawer */}
       <div
         className={cn(
-          "fixed left-0 top-0 z-60 h-full w-72 transform border-r border-neutral-200 bg-white flex flex-col",
+          "fixed left-0 top-0 z-60 flex h-full w-72 flex-col border-r border-neutral-200 bg-white transition-transform duration-200 ease-out",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
-        style={{
-          transition: "transform 0.2s ease-out",
-        }}
       >
         {/* Mobile menu header */}
         <div className="border-b border-neutral-100 bg-neutral-50 h-14 flex items-center px-4 w-full">
@@ -92,7 +86,7 @@ export function MobileNav() {
             </div>
             <button
               onClick={closeMobileMenu}
-              className="rounded-lg p-2 transition-colors hover:bg-neutral-100 ml-auto"
+              className="ml-auto rounded-lg p-2 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-100 active:scale-95"
               aria-label="Close menu"
             >
               <X className="h-5 w-5 text-neutral-600" />
@@ -126,7 +120,7 @@ export function MobileNav() {
                     key={index}
                     href={item.href!}
                     onClick={closeMobileMenu}
-                    className="flex items-center space-x-3 rounded-lg p-3 transition-colors hover:bg-neutral-50"
+                    className="flex items-center space-x-3 rounded-lg p-3 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-50 active:scale-[0.98] active:bg-neutral-100"
                   >
                     <IconComponent className="h-5 w-5 text-neutral-600" />
                     <span className="font-medium text-neutral-700">
@@ -140,7 +134,7 @@ export function MobileNav() {
                   closeMobileMenu();
                   toggleChat();
                 }}
-                className="flex w-full items-center space-x-3 rounded-lg p-3 transition-colors hover:bg-neutral-50"
+                className="flex w-full items-center space-x-3 rounded-lg p-3 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-50 active:scale-[0.98] active:bg-neutral-100"
               >
                 <MessageCircle className="h-5 w-5 text-neutral-600" />
                 <span className="font-medium text-neutral-700">Coach</span>
@@ -165,7 +159,8 @@ export function MobileNav() {
               <Link
                 href="/settings"
                 onClick={closeMobileMenu}
-                className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+                aria-label="Settings"
+                className="relative rounded-md p-2.5 text-neutral-400 transition-[background-color,color,transform] duration-150 ease-out hover:bg-neutral-100 hover:text-neutral-600 active:scale-90"
               >
                 <Settings className="h-4 w-4" />
               </Link>

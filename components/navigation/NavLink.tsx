@@ -42,27 +42,28 @@ export function NavLink({
         {item.variant === "primary" ? (
           <div
             className={cn(
-              "rounded-full p-1 transition-all ease-in-out",
-              "group-active:bg-orange-600 group-active:scale-[0.98]! group-active:shadow-none!",
-              "group-hover:-rotate-2 group-hover:scale-105 group-active:rotate-3",
-              "bg-[#E98A15] group-hover:shadow-md"
+              "rounded-full bg-brand p-1 transition-[transform,box-shadow] duration-200 ease-out",
+              "group-hover:-rotate-2 group-hover:scale-105 group-hover:shadow-md",
+              "group-active:rotate-3 group-active:scale-[0.98] group-active:shadow-none"
             )}
           >
-            <Icon className="h-4 w-4 shrink-0 text-white transition group-hover:scale-105" />
+            <Icon className="h-4 w-4 shrink-0 text-white transition-transform duration-200 group-hover:scale-105" />
           </div>
         ) : (
           <Icon
             className={cn(
-              "h-4 w-4 shrink-0 transition",
+              "h-4 w-4 shrink-0 transition-colors duration-150",
               isActive
                 ? "text-neutral-900"
-                : "text-neutral-600 group-hover:text-neutral-900!"
+                : "text-neutral-600 group-hover:text-neutral-900"
             )}
           />
         )}
       </div>
 
-      {/* Text area - only visible when expanded */}
+      {/* Text area - only visible when expanded.
+          Font weight stays consistent across states (font-medium) so the
+          label width doesn't shift when the active route changes. */}
       <div className="flex-1 overflow-hidden">
         <AnimatePresence>
           {isExpanded && (
@@ -72,11 +73,11 @@ export function NavLink({
               animate="visible"
               exit="hidden"
               className={cn(
-                "flex items-center gap-2 whitespace-nowrap text-sm",
+                "flex items-center gap-2 whitespace-nowrap text-sm font-medium transition-colors duration-150",
                 item.variant === "primary"
-                  ? "ml-2 font-semibold text-[#E98A15]"
+                  ? "ml-2 text-brand"
                   : isActive
-                    ? "font-medium text-neutral-900"
+                    ? "text-neutral-900"
                     : "text-neutral-700 group-hover:text-neutral-900"
               )}
             >
@@ -94,11 +95,11 @@ export function NavLink({
   );
 
   const className = cn(
-    "group relative flex w-full items-center transition-all ease-out active:scale-[0.985]",
-    "h-10 rounded-lg py-2",
+    "group relative flex h-10 w-full items-center rounded-lg py-2",
+    "transition-[background-color,transform] duration-150 ease-out active:scale-[0.985]",
     item.variant === "primary"
       ? cn(isExpanded ? "hover:bg-orange-50" : "hover:bg-transparent")
-      : cn(isActive && "bg-neutral-100", !isActive && "hover:bg-neutral-50")
+      : cn(isActive ? "bg-neutral-100" : "hover:bg-neutral-50")
   );
 
   return (

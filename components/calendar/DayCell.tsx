@@ -60,24 +60,20 @@ export function DayCell({ day, isToday, isPast, isCompleted, isRaceDay, adherenc
   // Race day gets a completely special treatment
   if (isRaceDay) {
     return (
-      <div className="relative min-h-20 rounded-md border-2 border-[#E98A15] bg-linear-to-br from-orange-50 to-amber-50 p-2 text-left">
+      <div className="relative min-h-20 rounded-md border-2 border-brand bg-linear-to-br from-orange-50 to-amber-50 p-2 text-left">
         {/* Race flag accent */}
-        <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-md bg-[#E98A15]" />
+        <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-md bg-brand" />
 
         {dateNum !== undefined && (
-          <p className="text-xs tabular-nums font-bold text-[#E98A15]">
-            {dateNum}
-          </p>
+          <p className="text-xs font-bold tabular-nums text-brand">{dateNum}</p>
         )}
 
         <div className="mt-1 flex items-center gap-1">
-          <Flag className="h-3.5 w-3.5 text-[#E98A15]" />
+          <Flag className="h-3.5 w-3.5 text-brand" />
           <p className="text-xs font-bold text-neutral-900">Race Day</p>
         </div>
 
-        <p className="mt-0.5 text-[10px] font-medium text-[#E98A15]">
-          Go time.
-        </p>
+        <p className="mt-0.5 text-[10px] font-medium text-brand">Go time.</p>
       </div>
     );
   }
@@ -100,12 +96,14 @@ export function DayCell({ day, isToday, isPast, isCompleted, isRaceDay, adherenc
         />
       )}
 
-      {/* Date number + completion check */}
+      {/* Date number + completion check.
+          Font weight is consistent so the column doesn't shift on the
+          today→tomorrow transition. */}
       {dateNum !== undefined && (
         <div className="flex items-center gap-0.5">
           <p
-            className={`text-xs tabular-nums ${
-              isToday ? "font-bold text-neutral-900" : "text-neutral-400"
+            className={`text-xs font-semibold tabular-nums ${
+              isToday ? "text-neutral-900" : "text-neutral-400"
             }`}
           >
             {dateNum}

@@ -68,9 +68,9 @@ export function ProgressOverview({
         </div>
 
         {/* Full plan progress bar */}
-        <div className="h-2.5 w-full rounded-full bg-neutral-200">
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-neutral-200">
           <div
-            className="h-2.5 rounded-full bg-neutral-900 transition-all duration-500"
+            className="h-2.5 rounded-full bg-neutral-900 transition-[width] duration-300 ease-out"
             style={{ width: `${progressPercent}%` }}
           />
         </div>

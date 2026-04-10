@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Play, X } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { motion, AnimatePresence } from "framer-motion";
+import { easing } from "@/lib/animation";
 
-// Emil Kowalski easing curves
-const easeOutQuint = [0.23, 1, 0.32, 1] as const;
-const easeOutCubic = [0.215, 0.61, 0.355, 1] as const;
+const easeOutQuint = easing.outQuint;
+const easeOutCubic = easing.outCubic;
 
 export default function Home() {
   const { isSignedIn, isLoaded } = useUser();
@@ -45,7 +45,9 @@ export default function Home() {
           alt=""
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,rgba(250,250,249,0.95)_0%,rgba(250,250,249,0.6)_50%,rgba(250,250,249,0.15)_100%)]" />
+        {/* Eased radial overlay — extra stops smooth the falloff and avoid
+            the visible banding you get from a 3-stop linear ramp. */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,rgba(250,250,249,0.95)_0%,rgba(250,250,249,0.88)_15%,rgba(250,250,249,0.74)_30%,rgba(250,250,249,0.6)_45%,rgba(250,250,249,0.42)_60%,rgba(250,250,249,0.25)_78%,rgba(250,250,249,0.15)_100%)]" />
       </motion.div>
 
       {/* Landing content — always in the DOM */}

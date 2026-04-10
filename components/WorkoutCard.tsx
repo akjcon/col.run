@@ -3,7 +3,6 @@ import {
   CheckCircle2,
   ArrowRight,
   ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WorkoutCompletionModal from "@/components/WorkoutCompletionModal";
@@ -12,6 +11,7 @@ import type { Day } from "@/lib/blocks/types";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/loading-spinner";
+import { easing } from "@/lib/animation";
 import {
   getDayTitle,
   getDayEffortLevel,
@@ -202,8 +202,8 @@ export function WorkoutCard({
           opacity: !isWorkoutDone || showDetails ? 1 : 0,
         }}
         transition={{
-          height: { duration: 0.3, ease: "easeInOut" },
-          opacity: { duration: 0.2, ease: "easeInOut" },
+          height: { duration: 0.3, ease: easing.inOutCubic },
+          opacity: { duration: 0.2, ease: easing.inOutCubic },
         }}
         className="overflow-hidden"
       >
@@ -247,7 +247,7 @@ export function WorkoutCard({
                 workoutType={title}
                 trigger={
                   <Button
-                    className=" w-full rounded-xl border-0 bg-neutral-900 py-4 text-sm font-medium uppercase tracking-wider text-white transition-all duration-200 hover:bg-neutral-800"
+                    className="w-full rounded-xl border-0 bg-neutral-900 py-4 text-sm font-medium uppercase tracking-wider text-white hover:bg-neutral-800"
                     disabled={!isFirebaseReady}
                   >
                     {isFirebaseReady ? "Mark Complete" : "Loading..."}
@@ -269,19 +269,16 @@ export function WorkoutCard({
         >
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="flex w-full items-center justify-center gap-2 py-4 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-900"
+            className="flex w-full items-center justify-center gap-2 py-4 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-900 active:bg-neutral-100"
+            aria-expanded={showDetails}
           >
-            {showDetails ? (
-              <>
-                <span>Hide Details</span>
-                <ChevronUp className="h-4 w-4" />
-              </>
-            ) : (
-              <>
-                <span>Show Details</span>
-                <ChevronDown className="h-4 w-4" />
-              </>
-            )}
+            <span>{showDetails ? "Hide Details" : "Show Details"}</span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 transition-transform duration-200 ease-out",
+                showDetails && "rotate-180"
+              )}
+            />
           </button>
         </motion.div>
       )}

@@ -26,6 +26,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Check } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { easing } from "@/lib/animation";
 
 // =============================================================================
 // Types
@@ -54,7 +55,7 @@ interface FitnessData {
 // Constants
 // =============================================================================
 
-const easeOutQuad: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
+const easeOutQuad = easing.outQuad;
 
 const DISTANCE_OPTIONS = [
   { value: "5k", label: "5K" },

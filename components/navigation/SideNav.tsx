@@ -13,25 +13,20 @@ import { Tooltip } from "./Tooltip";
 import { cn } from "@/lib/utils";
 
 export function SideNav() {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+  // Read the persisted state synchronously from the data-attribute set by
+  // the no-flash script in app/layout.tsx. This avoids the brief snap from
+  // the default state to the user's saved state on every page load.
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof document === "undefined") return false;
+    return document.documentElement.dataset.sideNav === "expanded";
+  });
   const { toggleChat, isOpen: isChatOpen } = useChatContext();
 
-  // Load expanded state from localStorage on mount
+  // Persist whenever the user toggles
   useEffect(() => {
-    const stored = localStorage.getItem("sideNavExpanded");
-    if (stored !== null) {
-      setIsExpanded(JSON.parse(stored));
-    }
-    setIsInitialized(true);
-  }, []);
-
-  // Save expanded state when it changes
-  useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem("sideNavExpanded", JSON.stringify(isExpanded));
-    }
-  }, [isExpanded, isInitialized]);
+    localStorage.setItem("sideNavExpanded", JSON.stringify(isExpanded));
+    document.documentElement.dataset.sideNav = isExpanded ? "expanded" : "collapsed";
+  }, [isExpanded]);
 
   return (
     <motion.aside
@@ -86,10 +81,8 @@ export function SideNav() {
           <button
             onClick={toggleChat}
             className={cn(
-              "group relative flex w-full items-center rounded-lg py-2 transition-all ease-out active:scale-[0.985] h-10",
-              isChatOpen
-                ? "bg-neutral-100"
-                : "hover:bg-neutral-50"
+              "group relative flex h-10 w-full items-center rounded-lg py-2 transition-[background-color,transform] duration-150 ease-out active:scale-[0.985]",
+              isChatOpen ? "bg-neutral-100" : "hover:bg-neutral-50"
             )}
           >
             <div className="flex w-10 shrink-0 items-center justify-center">

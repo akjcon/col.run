@@ -619,7 +619,7 @@ function ChatUI() {
                 onClick={() => handlePromptClick(sp.prompt)}
                 onMouseEnter={() => setHoveredPrompt(sp.prompt)}
                 onMouseLeave={() => setHoveredPrompt("")}
-                className="shrink-0 whitespace-nowrap rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100"
+                className="shrink-0 whitespace-nowrap rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-700 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-100 active:scale-95"
               >
                 {sp.label}
               </button>
@@ -648,8 +648,11 @@ function ChatUI() {
           <button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || isStreaming}
-            className="absolute bottom-3 right-2 flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white transition-colors hover:bg-neutral-800 disabled:opacity-40"
+            aria-label="Send message"
+            className="absolute bottom-3 right-2 flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-800 active:scale-90 disabled:opacity-40 disabled:active:scale-100"
           >
+            {/* Hit-area expansion for touch — visual size stays small */}
+            <span aria-hidden className="absolute -inset-2" />
             <Send className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -737,8 +740,11 @@ export function DesktopChatPanel() {
           </div>
           <button
             onClick={closeChat}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+            aria-label="Close chat"
+            className="relative flex h-7 w-7 items-center justify-center rounded-md text-neutral-400 transition-[background-color,color,transform] duration-150 ease-out hover:bg-neutral-100 hover:text-neutral-600 active:scale-90"
           >
+            {/* Hit-area expansion for touch */}
+            <span aria-hidden className="absolute -inset-2" />
             <X className="h-4 w-4" />
           </button>
         </div>

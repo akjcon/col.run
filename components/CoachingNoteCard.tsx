@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { WorkoutLog } from "@/lib/types";
 import { formatPace } from "@/lib/pace-zones";
 import { AskCoachButton } from "@/components/AskCoachButton";
+import { easing } from "@/lib/animation";
 
 const ADHERENCE_PILL = {
   on_target: { label: "On Target", className: "bg-green-100 text-green-700" },
@@ -13,8 +14,6 @@ const ADHERENCE_PILL = {
   under: { label: "Under", className: "bg-red-100 text-red-700" },
   skipped: { label: "Skipped", className: "bg-neutral-100 text-neutral-600" },
 } as const;
-
-const EASE_OUT_QUART: [number, number, number, number] = [0.165, 0.84, 0.44, 1];
 
 interface CoachingNoteCardProps {
   workoutLog: WorkoutLog;
@@ -58,9 +57,12 @@ export function CoachingNoteCard({ workoutLog, onDismiss }: CoachingNoteCardProp
               setDismissed(true);
               onDismiss?.();
             }}
-            className="flex h-7 w-7 items-center justify-center rounded-full text-neutral-400 transition-colors duration-150 ease-out hover:bg-black/5 hover:text-neutral-600"
+            // Visual size stays small, but the negative-inset pseudo
+            // element pushes the actual hit area to ~44px for touch.
+            className="relative flex h-7 w-7 items-center justify-center rounded-full text-neutral-400 transition-[transform,background-color,color] duration-150 ease-out hover:bg-black/5 hover:text-neutral-600 active:scale-90"
             aria-label="Dismiss coaching note"
           >
+            <span aria-hidden className="absolute -inset-2" />
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -108,9 +110,9 @@ export function CoachingNoteCard({ workoutLog, onDismiss }: CoachingNoteCardProp
             marginBottom: 0,
           }}
           transition={{
-            opacity: { duration: 0.2, ease: EASE_OUT_QUART },
-            height: { duration: 0.25, ease: EASE_OUT_QUART, delay: 0.05 },
-            marginBottom: { duration: 0.25, ease: EASE_OUT_QUART, delay: 0.05 },
+            opacity: { duration: 0.2, ease: easing.outQuart },
+            height: { duration: 0.25, ease: easing.outQuart, delay: 0.05 },
+            marginBottom: { duration: 0.25, ease: easing.outQuart, delay: 0.05 },
           }}
           className="mb-3 overflow-hidden"
         >

@@ -17,6 +17,8 @@ import {
   effortToColor,
 } from "@/lib/workout-display";
 import { Mountain, Zap, Timer, Check, ChevronDown, Flag } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { easing } from "@/lib/animation";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -44,10 +46,6 @@ function getDayMidnight(date: number): number {
   const d = new Date(date);
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
-
-// ── Animation constants ─────────────────────────────────────────────────────
-
-const EASE_OUT_QUART: [number, number, number, number] = [0.165, 0.84, 0.44, 1];
 
 // ── Day Row (expanded view) ─────────────────────────────────────────────────
 
@@ -92,23 +90,21 @@ function MobileDayRow({
   // Race day special rendering
   if (isRaceDay) {
     const raceDayContent = (
-      <div className="relative flex items-center gap-3 rounded-lg border-2 border-[#E98A15] bg-linear-to-r from-orange-50 to-amber-50 px-3 py-3">
-        <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-lg bg-[#E98A15]" />
+      <div className="relative flex items-center gap-3 rounded-lg border-2 border-brand bg-linear-to-r from-orange-50 to-amber-50 px-3 py-3">
+        <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-lg bg-brand" />
 
         <div className="w-10 shrink-0 text-center">
-          <p className="text-[10px] uppercase tracking-wide font-bold text-[#E98A15]">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-brand">
             {DAY_LABELS[index]}
           </p>
-          <p className="text-sm tabular-nums font-bold text-[#E98A15]">
-            {dateNum}
-          </p>
+          <p className="text-sm font-bold tabular-nums text-brand">{dateNum}</p>
         </div>
 
-        <div className="flex items-center gap-2 flex-1">
-          <Flag className="h-4 w-4 text-[#E98A15]" />
+        <div className="flex flex-1 items-center gap-2">
+          <Flag className="h-4 w-4 text-brand" />
           <div>
             <p className="text-sm font-bold text-neutral-900">Race Day</p>
-            <p className="text-xs font-medium text-[#E98A15]">Go time.</p>
+            <p className="text-xs font-medium text-brand">Go time.</p>
           </div>
         </div>
       </div>
@@ -119,7 +115,7 @@ function MobileDayRow({
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2, ease: EASE_OUT_QUART }}
+        transition={{ duration: 0.2, ease: easing.outQuart }}
       >
         {raceDayContent}
       </motion.div>
@@ -149,12 +145,23 @@ function MobileDayRow({
         />
       )}
 
-      {/* Day label + date */}
+      {/* Day label + date — keep font weight consistent across states so the
+          column width doesn't shift when the active day changes. */}
       <div className="w-10 shrink-0 text-center">
-        <p className={`text-[10px] uppercase tracking-wide ${isToday ? "font-bold text-neutral-900" : "text-neutral-400"}`}>
+        <p
+          className={cn(
+            "text-[10px] font-semibold uppercase tracking-wide",
+            isToday ? "text-neutral-900" : "text-neutral-400"
+          )}
+        >
           {DAY_LABELS[index]}
         </p>
-        <p className={`text-sm tabular-nums ${isToday ? "font-bold text-neutral-900" : "text-neutral-600"}`}>
+        <p
+          className={cn(
+            "text-sm font-semibold tabular-nums",
+            isToday ? "text-neutral-900" : "text-neutral-600"
+          )}
+        >
           {dateNum}
         </p>
       </div>
@@ -207,7 +214,7 @@ function MobileDayRow({
     <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: EASE_OUT_QUART }}
+      transition={{ duration: 0.2, ease: easing.outQuart }}
     >
       {wrappedContent}
     </motion.div>
@@ -280,23 +287,21 @@ export function MobileWeekAccordion({
       {/* Week header */}
       <button
         onClick={() => setExpanded((v) => !v)}
-        className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left touch-manipulation ${
+        className={cn(
+          "flex w-full touch-manipulation items-center gap-3 rounded-xl px-3.5 py-3 text-left",
+          "transition-[background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.99]",
           isCurrentWeek
-            ? "bg-neutral-100"
-            : "bg-neutral-50/80"
-        }`}
-        style={{
-          boxShadow: isCurrentWeek
-            ? "0 0 0 1px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04)"
-            : "0 0 0 1px rgba(0,0,0,0.04)",
-          transition: "background-color 150ms ease",
-        }}
+            ? "bg-neutral-100 shadow-sm"
+            : "bg-neutral-50/80 shadow-[0_0_0_1px_rgba(0,0,0,0.04)]"
+        )}
+        aria-expanded={expanded}
       >
-        {/* Week number */}
+        {/* Week number — font weight stays constant so width doesn't shift */}
         <span
-          className={`text-sm tabular-nums ${
-            isCurrentWeek ? "font-bold text-neutral-900" : "font-medium text-neutral-500"
-          }`}
+          className={cn(
+            "text-sm font-semibold tabular-nums",
+            isCurrentWeek ? "text-neutral-900" : "text-neutral-500"
+          )}
         >
           W{week.weekNumber}
         </span>
@@ -337,11 +342,10 @@ export function MobileWeekAccordion({
         </span>
 
         <ChevronDown
-          className="h-4 w-4 shrink-0 text-neutral-400"
-          style={{
-            transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-            transition: "transform 200ms cubic-bezier(0.165, 0.84, 0.44, 1)",
-          }}
+          className={cn(
+            "h-4 w-4 shrink-0 text-neutral-400 transition-transform duration-200 ease-out",
+            expanded && "rotate-180"
+          )}
         />
       </button>
 
@@ -366,7 +370,7 @@ export function MobileWeekAccordion({
                 height: 0,
                 opacity: 0,
               }}
-              transition={{ duration: 0.25, ease: EASE_OUT_QUART }}
+              transition={{ duration: 0.25, ease: easing.outQuart }}
               style={{ overflow: "hidden" }}
             >
               <div className="space-y-1 px-0.5 pb-1 pt-1.5">
