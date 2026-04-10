@@ -63,8 +63,7 @@ const DISTANCE_OPTIONS = [
   { value: "marathon", label: "Marathon" },
   { value: "50k", label: "50K Ultra" },
   { value: "50mi", label: "50 Mile Ultra" },
-  { value: "100k", label: "100K Ultra" },
-  { value: "100mi", label: "100 Mile Ultra" },
+  { value: "other", label: "Other..." },
 ];
 
 const EXPERIENCE_OPTIONS = [
@@ -98,6 +97,13 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
   );
 }
 
+// Eased gradient (vs a 2-stop linear) — extra intermediate stops smooth out
+// the brand → brand-light transition and avoid the visible banding you get
+// from a plain `from-brand to-brand-light`. Built with the brand palette
+// (#E06900 → #FF9233) plus a darker anchor for depth.
+const SELECTED_GRADIENT =
+  "linear-gradient(135deg, #B85100 0%, #C95B00 14%, #D86200 29%, #E06900 43%, #E87214 57%, #F07F22 71%, #F88830 86%, #FF9233 100%)";
+
 function SelectionCard({
   selected,
   onClick,
@@ -115,23 +121,74 @@ function SelectionCard({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className={cn(
-        "group relative w-full rounded-xl p-5 text-left transition-colors duration-150 ease",
-        selected ? "bg-neutral-900 text-white" : "bg-neutral-50 text-neutral-900"
+        "group relative isolate w-full overflow-hidden rounded-2xl p-5 text-left",
+        // Specific properties only — never `transition: all`. Long for state
+        // changes, snappy for the press feedback below.
+        "transition-[transform,box-shadow,border-color] duration-200 ease-out",
+        // Tactile press. Skip when the user prefers reduced motion.
+        "active:scale-[0.98] active:duration-75 motion-reduce:active:scale-100",
+        // Keyboard focus ring — neutral, not brand-colored (per design guide)
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2",
+        selected
+          ? "border border-transparent text-white shadow-lg shadow-brand/30"
+          : "border border-neutral-200 bg-white text-neutral-900 shadow-sm hover:-translate-y-px hover:border-neutral-300 hover:shadow-md"
       )}
       style={{
-        boxShadow: selected ? "none" : "0 0 0 1px rgba(0, 0, 0, 0.06)",
         touchAction: "manipulation",
+        backgroundImage: selected ? SELECTED_GRADIENT : undefined,
       }}
     >
-      <div className={cn("mb-2.5", selected ? "text-white" : "text-neutral-400")}>
+      {/* Subtle inner highlight at the top to give the gradient depth.
+          Decorative — pointer-events disabled so it doesn't eat clicks. */}
+      {selected && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30"
+        />
+      )}
+
+      {/* Selected check indicator */}
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.5, opacity: 0 }}
+            transition={{ duration: 0.15, ease: easeOutQuad }}
+            className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm"
+          >
+            <Check className="h-3 w-3 text-brand" strokeWidth={3} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Icon badge */}
+      <div
+        className={cn(
+          "mb-3 flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-200",
+          selected
+            ? "bg-white/15 text-white ring-1 ring-inset ring-white/20"
+            : "bg-neutral-100 text-neutral-700 group-hover:bg-neutral-200"
+        )}
+      >
         {icon}
       </div>
-      <div className="text-[15px] font-medium">{title}</div>
+
+      {/* font-semibold consistent across states — no layout shift on select */}
+      <div
+        className={cn(
+          "text-[15px] font-semibold tracking-tight",
+          selected ? "text-white" : "text-neutral-900"
+        )}
+      >
+        {title}
+      </div>
       <div
         className={cn(
           "mt-0.5 text-[13px] leading-snug",
-          selected ? "text-neutral-400" : "text-neutral-500"
+          selected ? "text-white/75" : "text-neutral-500"
         )}
       >
         {description}
@@ -159,6 +216,57 @@ const STEP_LABELS: Record<GenerationStep, string> = {
   saving: "Finalizing your plan",
 };
 
+// Rotating sub-messages shown beneath the current step. Rotation is purely
+// cosmetic — they don't reflect real server activity — but they make the
+// "nothing moved for 15s" feel of static steps go away.
+const STEP_SUBMESSAGES: Record<GenerationStep, string[]> = {
+  syncing: [
+    "Fetching recent activities",
+    "Parsing GPS data",
+    "Computing fitness load",
+    "Estimating threshold pace",
+    "Measuring recovery capacity",
+  ],
+  analyzing: [
+    "Reading training background",
+    "Checking goal constraints",
+    "Estimating current fitness",
+    "Mapping experience to paces",
+  ],
+  generating: [
+    "Structuring training phases",
+    "Planning weekly volume",
+    "Placing key workouts",
+    "Balancing easy and hard days",
+    "Sequencing recovery weeks",
+    "Refining workout prescriptions",
+  ],
+  reviewing: [
+    "Checking volume progression",
+    "Verifying recovery placement",
+    "Auditing workout balance",
+  ],
+  saving: ["Writing to database"],
+};
+
+const SUBMESSAGE_INTERVAL_MS = 4000;
+
+// Minimum wall-clock duration for each step. If Strava isn't connected we
+// skip the "syncing" step entirely, so "analyzing" becomes the first thing
+// the user sees — bump its duration so it feels substantive instead of
+// flashing past in a second.
+function getStepMinDurations(
+  includeSyncing: boolean
+): Partial<Record<GenerationStep, number>> {
+  return {
+    syncing: 12000,
+    analyzing: includeSyncing ? 2000 : 12000,
+    reviewing: 4000,
+    saving: 1500,
+    // generating has no minimum — it's naturally slow
+  };
+}
+
 function PlanLoadingScreen({
   currentStep,
   includeSyncing,
@@ -175,6 +283,23 @@ function PlanLoadingScreen({
 
   // Determine which steps are done vs current vs pending
   const currentIndex = currentStep ? steps.indexOf(currentStep) : -1;
+
+  // Rotate the sub-message for the current step on an interval.
+  // Reset to 0 whenever currentStep changes.
+  const [subIdx, setSubIdx] = useState(0);
+  React.useEffect(() => {
+    setSubIdx(0);
+    if (!currentStep) return;
+    const messages = STEP_SUBMESSAGES[currentStep];
+    if (messages.length <= 1) return;
+    const id = setInterval(() => {
+      setSubIdx((i) => (i + 1) % messages.length);
+    }, SUBMESSAGE_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [currentStep]);
+
+  const currentSubmessage =
+    currentStep && STEP_SUBMESSAGES[currentStep][subIdx % STEP_SUBMESSAGES[currentStep].length];
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6">
@@ -234,17 +359,35 @@ function PlanLoadingScreen({
                   )}
                 </div>
 
-                {/* Label */}
-                <span
-                  className={cn(
-                    "text-[14px] transition-colors duration-300",
-                    isDone && "text-neutral-400",
-                    isCurrent && "font-medium text-neutral-900",
-                    isPending && "text-neutral-300"
+                {/* Label + rotating sub-message */}
+                <div className="min-w-0 flex-1">
+                  <div
+                    className={cn(
+                      "text-[14px] transition-colors duration-300",
+                      isDone && "text-neutral-400",
+                      isCurrent && "font-medium text-neutral-900",
+                      isPending && "text-neutral-300"
+                    )}
+                  >
+                    {STEP_LABELS[step]}
+                  </div>
+                  {isCurrent && currentSubmessage && (
+                    <div className="mt-0.5 h-4 overflow-hidden">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={`${step}-${subIdx}`}
+                          initial={shouldReduceMotion ? {} : { opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={shouldReduceMotion ? {} : { opacity: 0, y: -6 }}
+                          transition={{ duration: 0.22, ease: easeOutQuad }}
+                          className="text-[12px] text-neutral-400"
+                        >
+                          {currentSubmessage}
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
                   )}
-                >
-                  {STEP_LABELS[step]}
-                </span>
+                </div>
               </li>
             );
           })}
@@ -272,14 +415,38 @@ function GoalStep({
   );
   const [dateOpen, setDateOpen] = useState(false);
 
+  // Track whether the user picked "Other..." in the distance dropdown.
+  // Initialized from existing data: if raceDistance is set but isn't one of
+  // the presets, we're in custom mode (user navigated back to this step).
+  const isPresetDistance = (v: string | undefined) =>
+    !!v && DISTANCE_OPTIONS.some((o) => o.value === v && o.value !== "other");
+  const [isCustomDistance, setIsCustomDistance] = useState(
+    !!data.raceDistance && !isPresetDistance(data.raceDistance)
+  );
+
   const canProceed =
     goalType === "race"
-      ? data.raceDistance && data.raceDate
+      ? data.raceDistance && data.raceDistance.trim().length > 0 && data.raceDate
       : goalType === "general"
       ? data.description && data.description.trim().length > 0
       : false;
 
   const selectedDate = data.raceDate ? new Date(data.raceDate) : undefined;
+  const selectValue = isCustomDistance
+    ? "other"
+    : data.raceDistance || "";
+
+  const handleDistanceChange = (value: string) => {
+    if (value === "other") {
+      setIsCustomDistance(true);
+      // Clear the stored value so the custom input starts empty and the
+      // user has to type something before continuing.
+      onChange({ ...data, raceDistance: "" });
+    } else {
+      setIsCustomDistance(false);
+      onChange({ ...data, raceDistance: value });
+    }
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -365,12 +532,7 @@ function GoalStep({
                   <Label className="text-[13px] text-neutral-500">
                     Distance
                   </Label>
-                  <Select
-                    value={data.raceDistance || ""}
-                    onValueChange={(value) =>
-                      onChange({ ...data, raceDistance: value })
-                    }
-                  >
+                  <Select value={selectValue} onValueChange={handleDistanceChange}>
                     <SelectTrigger className="w-full h-10">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
@@ -417,6 +579,44 @@ function GoalStep({
                   </Popover>
                 </div>
               </div>
+
+              {/* Custom distance input — only when "Other..." is selected.
+                  The wrapper needs `overflow-hidden` for the height animation,
+                  but that clips the input's focus ring. We give the inner
+                  content padding (so the ring has room) and offset the
+                  wrapper with negative margins so the input stays aligned
+                  with the rest of the form. */}
+              <AnimatePresence initial={false}>
+                {isCustomDistance && (
+                  <motion.div
+                    key="custom-distance"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2, ease: easeOutQuad }}
+                    className="-mx-1.5 overflow-hidden"
+                  >
+                    <div className="space-y-1.5 px-1.5 py-1.5">
+                      <Label
+                        htmlFor="custom-distance-input"
+                        className="text-[13px] text-neutral-500"
+                      >
+                        Custom distance
+                      </Label>
+                      <Input
+                        id="custom-distance-input"
+                        type="text"
+                        value={data.raceDistance || ""}
+                        onChange={(e) =>
+                          onChange({ ...data, raceDistance: e.target.value })
+                        }
+                        placeholder="e.g., 18k, 30k, 25 mile trail"
+                        className="h-10"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div className="space-y-1.5">
                 <Label htmlFor="elevation" className="text-[13px] text-neutral-500">
@@ -839,6 +1039,9 @@ export default function OnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generationStep, setGenerationStep] = useState<GenerationStep | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Ref guards against double-submission — state updates are async, so
+  // `disabled={isSubmitting}` on the button can't stop a rapid second click.
+  const submitInFlight = React.useRef(false);
 
   const [goalData, setGoalData] = useState<GoalData>({ type: "race" });
   const [fitnessData, setFitnessData] = useState<FitnessData>({
@@ -888,6 +1091,8 @@ export default function OnboardingPage() {
   }, [userLoading, userId, userData, router]);
 
   const handleSubmit = useCallback(async () => {
+    if (submitInFlight.current) return;
+    submitInFlight.current = true;
     setIsSubmitting(true);
     setGenerationStep(null);
     setError(null);
@@ -946,12 +1151,38 @@ export default function OnboardingPage() {
         throw new Error(errMsg);
       }
 
-      // Read NDJSON stream of progress events
+      // Read NDJSON stream of progress events. We pace the UI so each step
+      // is visible for at least its minimum duration — the server doesn't
+      // wait, only the display advances slow down.
       const reader = planResponse.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
       let completed = false;
       let streamError: string | null = null;
+
+      const minDurations = getStepMinDurations(
+        fitnessData.stravaConnected ?? false
+      );
+      let displayedStep: GenerationStep | null = null;
+      let displayedAt = Date.now();
+
+      const waitForMinDuration = async (step: GenerationStep | null) => {
+        if (!step) return;
+        const min = minDurations[step];
+        if (!min) return;
+        const elapsed = Date.now() - displayedAt;
+        if (elapsed < min) {
+          await new Promise((r) => setTimeout(r, min - elapsed));
+        }
+      };
+
+      const advanceDisplay = async (next: GenerationStep) => {
+        if (next === displayedStep) return;
+        await waitForMinDuration(displayedStep);
+        displayedStep = next;
+        displayedAt = Date.now();
+        setGenerationStep(next);
+      };
 
       while (!completed && !streamError) {
         const { done, value } = await reader.read();
@@ -971,7 +1202,7 @@ export default function OnboardingPage() {
             continue;
           }
           if (event.type === "progress" && event.step) {
-            setGenerationStep(event.step as GenerationStep);
+            await advanceDisplay(event.step as GenerationStep);
           } else if (event.type === "complete") {
             completed = true;
           } else if (event.type === "error") {
@@ -983,6 +1214,10 @@ export default function OnboardingPage() {
 
       if (streamError) throw new Error(streamError);
       if (!completed) throw new Error("Plan generation ended unexpectedly");
+
+      // Let the last step finish its minimum display duration before we
+      // redirect, so the "Finalizing your plan" checkmark actually lands.
+      await waitForMinDuration(displayedStep);
 
       await updateUserProfile({
         userId,
@@ -998,6 +1233,7 @@ export default function OnboardingPage() {
     } finally {
       setIsSubmitting(false);
       setGenerationStep(null);
+      submitInFlight.current = false;
     }
   }, [
     userId,
