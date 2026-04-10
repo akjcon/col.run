@@ -170,7 +170,7 @@ export const trainingApi = baseApi.injectEndpoints({
 
     // Update training plan
     updateTrainingPlan: builder.mutation<
-      void,
+      null,
       {
         userId: string;
         planId: string;
@@ -182,7 +182,7 @@ export const trainingApi = baseApi.injectEndpoints({
           const planRef = doc(db, "users", userId, "trainingPlans", planId);
           const sanitizedUpdates = sanitizeForFirestore(updates);
           await updateDoc(planRef, sanitizedUpdates);
-          return { data: undefined };
+          return { data: null };
         } catch (error) {
           return { error: handleFirestoreError(error, "update training plan") };
         }
@@ -301,7 +301,7 @@ export const trainingApi = baseApi.injectEndpoints({
 
     // Dismiss coaching note on a workout log
     dismissCoachingNote: builder.mutation<
-      void,
+      null,
       { userId: string; logId: string }
     >({
       queryFn: async ({ userId, logId }) => {
@@ -314,7 +314,7 @@ export const trainingApi = baseApi.injectEndpoints({
             logId
           );
           await updateDoc(logRef, { noteDismissed: true });
-          return { data: undefined };
+          return { data: null };
         } catch (error) {
           return {
             error: handleFirestoreError(error, "dismiss coaching note"),

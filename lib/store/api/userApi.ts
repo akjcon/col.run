@@ -118,7 +118,7 @@ export const userApi = baseApi.injectEndpoints({
 
     // Create user profile
     createUserProfile: builder.mutation<
-      void,
+      null,
       { userId: string; data: Omit<UserProfile, "id"> }
     >({
       queryFn: async ({ userId, data }) => {
@@ -131,7 +131,7 @@ export const userApi = baseApi.injectEndpoints({
           });
 
           await setDoc(userRef, sanitizedData);
-          return { data: undefined };
+          return { data: null };
         } catch (error) {
           return { error: handleFirestoreError(error, "create user profile") };
         }
@@ -144,7 +144,7 @@ export const userApi = baseApi.injectEndpoints({
 
     // Update user profile
     updateUserProfile: builder.mutation<
-      void,
+      null,
       { userId: string; updates: Partial<UserProfile> }
     >({
       queryFn: async ({ userId, updates }) => {
@@ -156,7 +156,7 @@ export const userApi = baseApi.injectEndpoints({
           });
 
           await setDoc(userRef, sanitizedUpdates, { merge: true });
-          return { data: undefined };
+          return { data: null };
         } catch (error) {
           return { error: handleFirestoreError(error, "update user profile") };
         }
@@ -184,7 +184,7 @@ export const userApi = baseApi.injectEndpoints({
 
     // Initialize new user
     initializeNewUser: builder.mutation<
-      void,
+      null,
       { userId: string; email: string; name: string }
     >({
       queryFn: async ({ userId, email, name }) => {
@@ -196,10 +196,16 @@ export const userApi = baseApi.injectEndpoints({
             id: userId,
             createdAt: Date.now(),
             completedOnboarding: false,
+            // Tag the deploy environment so dev/preview/prod users can be
+            // told apart from a single Firestore. Vercel sets VERCEL_ENV;
+            // local `next dev` falls through to "development".
+            env:
+              process.env.NEXT_PUBLIC_VERCEL_ENV ||
+              (process.env.NODE_ENV === "development" ? "development" : "unknown"),
           });
 
           await setDoc(userRef, sanitizedData);
-          return { data: undefined };
+          return { data: null };
         } catch (error) {
           return { error: handleFirestoreError(error, "initialize new user") };
         }

@@ -1,13 +1,21 @@
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Timestamp, Unsubscribe } from "firebase/firestore";
+import { FieldValue, Timestamp, Unsubscribe } from "firebase/firestore";
 
-// Type-safe Firestore field value sanitizer
+// Type-safe Firestore field value sanitizer.
+// Recurses into objects/arrays and strips undefined values, but passes
+// Date, Timestamp, and FieldValue (e.g. serverTimestamp(), increment()) through
+// untouched — recursing into those would destroy their sentinel identity and
+// Firestore would write them as plain objects.
 export function sanitizeForFirestore<T>(data: T): T {
   if (!data || typeof data !== "object") {
     return data;
   }
 
-  if (data instanceof Date || data instanceof Timestamp) {
+  if (
+    data instanceof Date ||
+    data instanceof Timestamp ||
+    data instanceof FieldValue
+  ) {
     return data;
   }
 

@@ -5,6 +5,10 @@ export interface UserProfile {
   name: string;
   createdAt: number; // epoch timestamp
   completedOnboarding: boolean;
+  // Deploy environment the user signed up under: "production", "preview",
+  // "development", or "unknown". Stamped on user creation so dev/prod
+  // accounts in the same Firestore can be told apart.
+  env?: string;
 }
 
 export interface TrainingBackground {

@@ -137,6 +137,13 @@ function DevToolPanelInner() {
       setTimeOffset(0);
       // Invalidate all RTK Query cache
       dispatch(baseApi.util.resetApiState());
+      // Clear client-side persistence that could leak across resets —
+      // e.g. the onboarding form's sessionStorage snapshot that the Strava
+      // OAuth flow stashes and restores.
+      try {
+        sessionStorage.removeItem("onboarding_goal");
+        localStorage.removeItem("onboarding_goal");
+      } catch { /* storage may be unavailable — ignore */ }
       router.push("/onboarding");
       // Force full reload to clear all state
       setTimeout(() => window.location.href = "/onboarding", 100);

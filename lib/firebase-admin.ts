@@ -13,22 +13,8 @@ import {
 } from "firebase-admin/app";
 import { getFirestore, Firestore } from "firebase-admin/firestore";
 
-// Cache the Firestore instance on globalThis so it survives Next.js dev
-// hot-reloads and module-scope isolation across route bundles. Calling
-// `settings()` twice on the same Firestore instance throws, which is what
-// happened when different API routes each tried to re-initialize.
-const globalForFirebase = globalThis as typeof globalThis & {
-  __colrunAdminApp?: App;
-  __colrunAdminDb?: Firestore;
-};
-
 function getAdminApp(): App {
-  if (globalForFirebase.__colrunAdminApp) return globalForFirebase.__colrunAdminApp;
-
-  if (getApps().length > 0) {
-    globalForFirebase.__colrunAdminApp = getApps()[0];
-    return globalForFirebase.__colrunAdminApp;
-  }
+  if (getApps().length > 0) return getApps()[0];
 
   const requiredEnvVars = {
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -61,20 +47,24 @@ function getAdminApp(): App {
     client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${requiredEnvVars.clientEmail}`,
   };
 
-  globalForFirebase.__colrunAdminApp = initializeApp({
+  return initializeApp({
     credential: cert(serviceAccount as ServiceAccount),
     projectId: requiredEnvVars.projectId,
   });
-
-  return globalForFirebase.__colrunAdminApp;
 }
 
 export function getAdminDb(): Firestore {
-  if (globalForFirebase.__colrunAdminDb) return globalForFirebase.__colrunAdminDb;
   getAdminApp();
   const db = getFirestore();
-  db.settings({ ignoreUndefinedProperties: true });
-  globalForFirebase.__colrunAdminDb = db;
+  // `getFirestore()` returns a singleton, but `settings()` can only be called
+  // once per instance. In Next.js dev mode, different route bundles each try
+  // to initialize the same instance, so we just swallow the duplicate-init
+  // error instead of trying to track "has this been set" state manually.
+  try {
+    db.settings({ ignoreUndefinedProperties: true });
+  } catch {
+    // Already initialized on this Firestore instance — nothing to do.
+  }
   return db;
 }
 
