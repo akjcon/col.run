@@ -21,8 +21,8 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    "/((?!.+\\.[\\w]+$|_next|api/v2/strava/webhook|api/dev/).*)",
+    "/((?!.+\\.[\\w]+$|_next|api/v2/strava/webhook|api/dev/mock-webhook).*)",
     "/",
-    "/(api(?!/v2/strava/webhook|/dev/)|trpc)(.*)",
+    "/(api(?!/v2/strava/webhook|/dev/mock-webhook)|trpc)(.*)",
   ],
 };
