@@ -13,15 +13,21 @@ import {
 } from "firebase-admin/app";
 import { getFirestore, Firestore } from "firebase-admin/firestore";
 
-let adminApp: App | undefined;
-let adminDb: Firestore | undefined;
+// Cache the Firestore instance on globalThis so it survives Next.js dev
+// hot-reloads and module-scope isolation across route bundles. Calling
+// `settings()` twice on the same Firestore instance throws, which is what
+// happened when different API routes each tried to re-initialize.
+const globalForFirebase = globalThis as typeof globalThis & {
+  __colrunAdminApp?: App;
+  __colrunAdminDb?: Firestore;
+};
 
 function getAdminApp(): App {
-  if (adminApp) return adminApp;
+  if (globalForFirebase.__colrunAdminApp) return globalForFirebase.__colrunAdminApp;
 
   if (getApps().length > 0) {
-    adminApp = getApps()[0];
-    return adminApp;
+    globalForFirebase.__colrunAdminApp = getApps()[0];
+    return globalForFirebase.__colrunAdminApp;
   }
 
   const requiredEnvVars = {
@@ -55,20 +61,21 @@ function getAdminApp(): App {
     client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${requiredEnvVars.clientEmail}`,
   };
 
-  adminApp = initializeApp({
+  globalForFirebase.__colrunAdminApp = initializeApp({
     credential: cert(serviceAccount as ServiceAccount),
     projectId: requiredEnvVars.projectId,
   });
 
-  return adminApp;
+  return globalForFirebase.__colrunAdminApp;
 }
 
 export function getAdminDb(): Firestore {
-  if (adminDb) return adminDb;
+  if (globalForFirebase.__colrunAdminDb) return globalForFirebase.__colrunAdminDb;
   getAdminApp();
-  adminDb = getFirestore();
-  adminDb.settings({ ignoreUndefinedProperties: true });
-  return adminDb;
+  const db = getFirestore();
+  db.settings({ ignoreUndefinedProperties: true });
+  globalForFirebase.__colrunAdminDb = db;
+  return db;
 }
 
 /**
