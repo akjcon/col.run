@@ -118,7 +118,7 @@ export function PaceZoneUpdateCard({
           {ZONE_ORDER.map((zone) => (
             <div key={zone} className="flex items-center gap-2">
               <div
-                className="h-2 w-2 flex-shrink-0 rounded-full"
+                className="h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: effortToColor(zone) }}
               />
               <span className="w-16 text-[11px] font-medium text-neutral-700">

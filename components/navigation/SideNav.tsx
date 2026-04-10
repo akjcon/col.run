@@ -38,7 +38,7 @@ export function SideNav() {
       initial={false}
       animate={isExpanded ? "expanded" : "collapsed"}
       variants={sidebarVariants}
-      className="relative flex h-screen flex-col border-r border-neutral-200 bg-white shadow-sm"
+      className="relative flex h-screen flex-col border-r border-neutral-200 bg-white shadow-xs"
     >
       {/* Logo and Toggle Button */}
       <div className="flex h-14 items-center justify-between px-2">

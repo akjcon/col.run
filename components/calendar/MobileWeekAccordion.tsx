@@ -92,7 +92,7 @@ function MobileDayRow({
   // Race day special rendering
   if (isRaceDay) {
     const raceDayContent = (
-      <div className="relative flex items-center gap-3 rounded-lg border-2 border-[#E98A15] bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-3">
+      <div className="relative flex items-center gap-3 rounded-lg border-2 border-[#E98A15] bg-linear-to-r from-orange-50 to-amber-50 px-3 py-3">
         <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-lg bg-[#E98A15]" />
 
         <div className="w-10 shrink-0 text-center">

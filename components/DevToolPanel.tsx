@@ -194,7 +194,7 @@ function DevToolPanelInner() {
             </span>
             <button
               onClick={() => setMinimized(true)}
-              className="flex h-5 w-5 items-center justify-center rounded text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+              className="flex h-5 w-5 items-center justify-center rounded-sm text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <line x1="5" y1="12" x2="19" y2="12" />
@@ -207,7 +207,7 @@ function DevToolPanelInner() {
             <div className="mb-2 flex items-center justify-between">
               <span className="text-xs text-neutral-500">Today</span>
               {offset !== 0 && (
-                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+                <span className="rounded-sm bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
                   {offset > 0 ? `+${offset}d` : `${offset}d`}
                 </span>
               )}
@@ -216,14 +216,14 @@ function DevToolPanelInner() {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => changeOffset(-7)}
-                className="rounded border border-neutral-200 px-1.5 py-1 text-[11px] text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
+                className="rounded-sm border border-neutral-200 px-1.5 py-1 text-[11px] text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
                 title="Back 1 week"
               >
                 &laquo;7
               </button>
               <button
                 onClick={() => changeOffset(-1)}
-                className="rounded border border-neutral-200 px-2 py-1 text-[11px] text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
+                className="rounded-sm border border-neutral-200 px-2 py-1 text-[11px] text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
                 title="Back 1 day"
               >
                 &laquo;
@@ -231,20 +231,20 @@ function DevToolPanelInner() {
               <button
                 onClick={resetTime}
                 disabled={offset === 0}
-                className="flex-1 rounded border border-neutral-200 py-1 text-[11px] text-neutral-500 hover:bg-neutral-50 active:bg-neutral-100 disabled:opacity-30 disabled:hover:bg-transparent"
+                className="flex-1 rounded-sm border border-neutral-200 py-1 text-[11px] text-neutral-500 hover:bg-neutral-50 active:bg-neutral-100 disabled:opacity-30 disabled:hover:bg-transparent"
               >
                 Today
               </button>
               <button
                 onClick={() => changeOffset(1)}
-                className="rounded border border-neutral-200 px-2 py-1 text-[11px] text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
+                className="rounded-sm border border-neutral-200 px-2 py-1 text-[11px] text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
                 title="Forward 1 day"
               >
                 &raquo;
               </button>
               <button
                 onClick={() => changeOffset(7)}
-                className="rounded border border-neutral-200 px-1.5 py-1 text-[11px] text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
+                className="rounded-sm border border-neutral-200 px-1.5 py-1 text-[11px] text-neutral-600 hover:bg-neutral-50 active:bg-neutral-100"
                 title="Forward 1 week"
               >
                 7&raquo;

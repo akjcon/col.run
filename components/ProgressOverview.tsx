@@ -29,12 +29,12 @@ export function ProgressOverview({
   if (isLoading) {
     return (
       <div className="mx-4 grid grid-cols-2 gap-6">
-        <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-6 shadow-sm">
+        <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-6 shadow-xs">
           <Skeleton className="h-6 w-32 mb-4" />
           <Skeleton className="h-8 w-full mb-2" />
           <Skeleton className="h-2 w-full rounded-full" />
         </div>
-        <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-6 shadow-sm">
+        <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-6 shadow-xs">
           <Skeleton className="h-6 w-32 mb-4" />
           <Skeleton className="h-6 w-full mb-2" />
           <Skeleton className="h-4 w-20" />
@@ -54,7 +54,7 @@ export function ProgressOverview({
   return (
     <div className="mx-4 space-y-4">
       {/* Main progress bar — full width */}
-      <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-5 shadow-sm">
+      <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 p-5 shadow-xs">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-neutral-500" />
@@ -112,7 +112,7 @@ export function ProgressOverview({
       <div className="grid grid-cols-2 gap-4">
         {/* This week miles */}
         {thisWeekMiles !== undefined && (
-          <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 px-5 py-4 shadow-sm">
+          <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 px-5 py-4 shadow-xs">
             <span className="text-xs font-medium uppercase tracking-wider text-neutral-500">
               This Week
             </span>
@@ -125,7 +125,7 @@ export function ProgressOverview({
 
         {/* Race countdown */}
         {raceDate && (
-          <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 px-5 py-4 shadow-sm">
+          <div className="rounded-2xl ring-1 ring-neutral-200 border border-white bg-stone-50 px-5 py-4 shadow-xs">
             <div className="flex items-center gap-1.5">
               <Flag className="h-3 w-3 text-neutral-500" />
               <span className="text-xs font-medium uppercase tracking-wider text-neutral-500">

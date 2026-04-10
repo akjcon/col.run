@@ -12,18 +12,18 @@ const clerkButtonVariants = cva(
     "ease-[cubic-bezier(0.4,0.36,0,1)] text-left font-medium transition duration-300",
     "rounded-md",
     // The magic shadow - inset highlight + drop shadow
-    "shadow-[0_1px_theme(colors.white/0.07)_inset,0_1px_3px_theme(colors.gray.900/0.2)]",
+    "shadow-[0_1px_--theme(--color-white/0.07)_inset,0_1px_3px_--theme(--color-gray-900/0.2)]",
     // Before pseudo-element - main gradient overlay
     "before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-md",
-    "before:bg-gradient-to-b before:from-white/20 before:opacity-50",
+    "before:bg-linear-to-b before:from-white/20 before:opacity-50",
     "before:ease-[cubic-bezier(0.4,0.36,0,1)] before:transition-opacity before:duration-300",
     "hover:before:opacity-100",
     // After pseudo-element - subtle middle gradient
     "after:pointer-events-none after:absolute after:inset-0 after:-z-10 after:rounded-md",
-    "after:bg-gradient-to-b after:from-white/10 after:from-[46%] after:to-[54%]",
+    "after:bg-linear-to-b after:from-white/10 after:from-46% after:to-54%",
     "after:mix-blend-overlay",
     // Base sizing
-    "h-[1.875rem] px-3 text-sm ring-1",
+    "h-7.5 px-3 text-sm ring-1",
   ],
   {
     variants: {
@@ -35,9 +35,9 @@ const clerkButtonVariants = cva(
         gray: "bg-gray-500 text-white ring-gray-500",
       },
       size: {
-        sm: "h-[1.5rem] px-2 text-xs",
-        md: "h-[1.875rem] px-3 text-sm",
-        lg: "h-[2.25rem] px-4 text-base",
+        sm: "h-6 px-2 text-xs",
+        md: "h-7.5 px-3 text-sm",
+        lg: "h-9 px-4 text-base",
       },
     },
     defaultVariants: {

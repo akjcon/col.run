@@ -152,8 +152,8 @@ export default function ReviewListPage() {
       <div className="min-h-screen bg-neutral-50 p-4 sm:p-8">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-neutral-200 rounded w-48" />
-            <div className="h-4 bg-neutral-200 rounded w-64" />
+            <div className="h-8 bg-neutral-200 rounded-sm w-48" />
+            <div className="h-4 bg-neutral-200 rounded-sm w-64" />
             <div className="space-y-3 mt-8">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-24 bg-neutral-200 rounded-xl" />
@@ -242,7 +242,7 @@ export default function ReviewListPage() {
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="e.g. Fast Beginner Marathon"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                 />
               </div>
 
@@ -253,7 +253,7 @@ export default function ReviewListPage() {
                 <select
                   value={customExperience}
                   onChange={(e) => setCustomExperience(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent bg-white"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent bg-white"
                 >
                   {EXPERIENCE_OPTIONS.map((e) => (
                     <option key={e} value={e}>
@@ -270,7 +270,7 @@ export default function ReviewListPage() {
                 <select
                   value={customRaceDistance}
                   onChange={(e) => setCustomRaceDistance(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent bg-white"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent bg-white"
                 >
                   {RACE_OPTIONS.map((r) => (
                     <option key={r} value={r}>
@@ -288,7 +288,7 @@ export default function ReviewListPage() {
                   type="number"
                   value={customMileage}
                   onChange={(e) => setCustomMileage(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                 />
               </div>
 
@@ -300,7 +300,7 @@ export default function ReviewListPage() {
                   type="number"
                   value={customLongestRun}
                   onChange={(e) => setCustomLongestRun(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                 />
               </div>
 
@@ -316,7 +316,7 @@ export default function ReviewListPage() {
                     placeholder="min"
                     min="4"
                     max="20"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                   />
                   <span className="text-neutral-400">:</span>
                   <input
@@ -326,7 +326,7 @@ export default function ReviewListPage() {
                     placeholder="sec"
                     min="0"
                     max="59"
-                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                   />
                   <span className="text-xs text-neutral-400 shrink-0">/mi</span>
                 </div>
@@ -376,7 +376,7 @@ export default function ReviewListPage() {
                   value={customElevation}
                   onChange={(e) => setCustomElevation(e.target.value)}
                   placeholder="e.g. 5000"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                 />
               </div>
 
@@ -387,7 +387,7 @@ export default function ReviewListPage() {
                 <select
                   value={customTerrain}
                   onChange={(e) => setCustomTerrain(e.target.value)}
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent bg-white"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent bg-white"
                 >
                   <option value="road">Road</option>
                   <option value="trail">Trail</option>

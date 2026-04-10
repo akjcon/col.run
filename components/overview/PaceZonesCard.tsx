@@ -116,7 +116,7 @@ export function PaceZonesCard({ thresholdPace }: PaceZonesCardProps) {
         {ZONE_ORDER.map((zone) => (
           <div key={zone} className="flex items-center gap-3">
             <div
-              className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+              className="h-2.5 w-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: effortToColor(zone) }}
             />
             <div className="flex-1 min-w-0">

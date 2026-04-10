@@ -28,7 +28,7 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
           key={star}
           type="button"
           onClick={() => onChange(star)}
-          className="focus:outline-none"
+          className="focus:outline-hidden"
         >
           <Star
             className={`h-8 w-8 transition-colors ${
@@ -120,7 +120,7 @@ export function FeedbackForm({ planId, athleteExperience, raceType, onSubmit }: 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-neutral-200 rounded-xl bg-white shadow-sm">
+    <form onSubmit={handleSubmit} className="border border-neutral-200 rounded-xl bg-white shadow-xs">
       <div className="p-6 border-b border-neutral-100">
         <h3 className="font-serif text-xl font-light text-neutral-900">
           Rate This Plan
@@ -188,7 +188,7 @@ export function FeedbackForm({ planId, athleteExperience, raceType, onSubmit }: 
             onChange={(e) => setNotes(e.target.value)}
             placeholder="What would you change? Any specific issues?"
             rows={3}
-            className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+            className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
           />
         </div>
       </div>

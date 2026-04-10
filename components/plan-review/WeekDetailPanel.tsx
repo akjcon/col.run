@@ -80,7 +80,7 @@ function isRestDay(day: Day): boolean {
 function BlockPill({ block }: { block: Block }) {
   if (block.type === "rest") {
     return (
-      <span className="text-xs px-2 py-1 bg-neutral-100 text-neutral-500 rounded">
+      <span className="text-xs px-2 py-1 bg-neutral-100 text-neutral-500 rounded-sm">
         Rest
       </span>
     );
@@ -90,7 +90,7 @@ function BlockPill({ block }: { block: Block }) {
 
   return (
     <div className="flex flex-col gap-0.5">
-      <span className={`text-xs px-2 py-1 rounded ${zoneColor}`}>
+      <span className={`text-xs px-2 py-1 rounded-sm ${zoneColor}`}>
         {BLOCK_NAMES[block.type] || block.type} {formatBlockValue(block)}
       </span>
       {block.notes && (
@@ -167,7 +167,7 @@ export function WeekDetailPanel({ week }: WeekDetailPanelProps) {
         <p className="text-xs text-neutral-500 mb-2">Effort Zones:</p>
         <div className="flex flex-wrap gap-2">
           {Object.entries(ZONE_COLORS).map(([zone, color]) => (
-            <span key={zone} className={`text-xs px-2 py-0.5 rounded ${color}`}>
+            <span key={zone} className={`text-xs px-2 py-0.5 rounded-sm ${color}`}>
               {zone.toUpperCase()}
             </span>
           ))}

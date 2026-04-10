@@ -141,7 +141,7 @@ export default function StrengthTraining() {
         </div>
 
         {/* Stage 3 Strength Program */}
-        <Card className="border shadow-sm">
+        <Card className="border shadow-xs">
           <CardHeader className="border-b bg-slate-50">
             <CardTitle className="text-gray-900">
               Stage 3 Strength Program
@@ -205,7 +205,7 @@ export default function StrengthTraining() {
         </Card>
 
         {/* Core Strength Progression */}
-        <Card className="border shadow-sm">
+        <Card className="border shadow-xs">
           <CardHeader className="border-b bg-slate-50">
             <CardTitle className="text-gray-900">
               Core Strength Progression
@@ -267,7 +267,7 @@ export default function StrengthTraining() {
         </Card>
 
         {/* Hill Sprint Protocol */}
-        <Card className="border shadow-sm">
+        <Card className="border shadow-xs">
           <CardHeader className="border-b bg-slate-50">
             <CardTitle className="text-gray-900">
               Hill Sprint Protocol
@@ -334,37 +334,37 @@ export default function StrengthTraining() {
                 </h3>
                 <div className="space-y-2">
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-orange-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-orange-500"></div>
                     <p className="text-sm text-gray-700">
                       Find the steepest hill available
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-orange-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-orange-500"></div>
                     <p className="text-sm text-gray-700">
                       Focus on explosive power, not speed
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-orange-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-orange-500"></div>
                     <p className="text-sm text-gray-700">
                       Drive knees high and pump arms
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-orange-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-orange-500"></div>
                     <p className="text-sm text-gray-700">
                       Full recovery between reps is crucial
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-orange-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-orange-500"></div>
                     <p className="text-sm text-gray-700">
                       Quality over quantity always
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-orange-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-orange-500"></div>
                     <p className="text-sm text-gray-700">
                       Stop if form deteriorates
                     </p>
@@ -375,7 +375,7 @@ export default function StrengthTraining() {
 
             <div className="mt-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
               <div className="flex items-start gap-3">
-                <Zap className="mt-1 h-5 w-5 flex-shrink-0 text-yellow-600" />
+                <Zap className="mt-1 h-5 w-5 shrink-0 text-yellow-600" />
                 <div>
                   <p className="mb-1 font-semibold text-yellow-800">
                     Purpose:
@@ -393,7 +393,7 @@ export default function StrengthTraining() {
         </Card>
 
         {/* Exercise Technique Guide */}
-        <Card className="border shadow-sm">
+        <Card className="border shadow-xs">
           <CardHeader className="border-b bg-slate-50">
             <CardTitle className="text-gray-900">
               Exercise Technique Guide
@@ -432,7 +432,7 @@ export default function StrengthTraining() {
         </Card>
 
         {/* Integration with Running Schedule */}
-        <Card className="border shadow-sm">
+        <Card className="border shadow-xs">
           <CardHeader className="border-b bg-slate-50">
             <CardTitle className="text-gray-900">
               Integration with Running Schedule
@@ -465,7 +465,7 @@ export default function StrengthTraining() {
         </Card>
 
         {/* Progression Guidelines */}
-        <Card className="border shadow-sm">
+        <Card className="border shadow-xs">
           <CardHeader className="border-b bg-slate-50">
             <CardTitle className="text-gray-900">
               Progression Guidelines
@@ -483,33 +483,33 @@ export default function StrengthTraining() {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500"></div>
                     <p className="text-sm text-gray-700">
                       Week 1-2: Master form with bodyweight
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500"></div>
                     <p className="text-sm text-gray-700">
                       Week 3-4: Add 5-10% body weight
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500"></div>
                     <p className="text-sm text-gray-700">
                       Week 5-6: Progress to 10-15% body
                       weight
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500"></div>
                     <p className="text-sm text-gray-700">
                       Use dumbbells, weighted vest, or
                       barbell
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-500"></div>
                     <p className="text-sm text-gray-700">
                       Never sacrifice form for weight
                     </p>
@@ -524,33 +524,33 @@ export default function StrengthTraining() {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500"></div>
                     <p className="text-sm text-gray-700">
                       Can complete all sets with perfect
                       form
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500"></div>
                     <p className="text-sm text-gray-700">
                       No excessive soreness lasting more
                       than 48 hours
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500"></div>
                     <p className="text-sm text-gray-700">
                       Feel recovered between sessions
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500"></div>
                     <p className="text-sm text-gray-700">
                       Movement feels controlled and stable
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
+                    <div className="mt-2 h-2 w-2 shrink-0 rounded-full bg-green-500"></div>
                     <p className="text-sm text-gray-700">
                       Ready for increased challenge
                     </p>

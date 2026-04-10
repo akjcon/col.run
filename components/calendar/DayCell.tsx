@@ -60,7 +60,7 @@ export function DayCell({ day, isToday, isPast, isCompleted, isRaceDay, adherenc
   // Race day gets a completely special treatment
   if (isRaceDay) {
     return (
-      <div className="relative min-h-[5rem] rounded-md border-2 border-[#E98A15] bg-gradient-to-br from-orange-50 to-amber-50 p-2 text-left">
+      <div className="relative min-h-20 rounded-md border-2 border-[#E98A15] bg-linear-to-br from-orange-50 to-amber-50 p-2 text-left">
         {/* Race flag accent */}
         <div className="absolute left-0 top-0 h-full w-[3px] rounded-l-md bg-[#E98A15]" />
 
@@ -84,7 +84,7 @@ export function DayCell({ day, isToday, isPast, isCompleted, isRaceDay, adherenc
 
   return (
     <div
-      className={`relative min-h-[5rem] rounded-md border p-2 text-left transition-colors ${
+      className={`relative min-h-20 rounded-md border p-2 text-left transition-colors ${
         isToday
           ? "ring-2 ring-neutral-900 border-transparent"
           : rest

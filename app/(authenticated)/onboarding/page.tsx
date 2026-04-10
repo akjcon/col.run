@@ -565,7 +565,7 @@ function FitnessStep({
           }}
         >
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex-shrink-0">
+            <div className="mt-0.5 shrink-0">
               <svg className="w-6 h-6" viewBox="0 0 64 64" fill="none">
                 <path
                   d="M41.03 47.852l-5.572-10.976h-8.172L41.03 64l13.736-27.124h-8.18"

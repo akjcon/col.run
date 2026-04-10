@@ -58,7 +58,7 @@ export function WorkoutCard({
 
   if (isLoading) {
     return (
-      <div className="mx-0 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div className="mx-0 rounded-2xl border border-neutral-200 bg-white shadow-xs">
         <div className="p-6">
           <Skeleton className="h-4 w-24 mb-2" />
           <Skeleton className="h-8 w-48 mb-4" />
@@ -79,7 +79,7 @@ export function WorkoutCard({
 
   if (isRestDay(todaysDay)) {
     return (
-      <div className="mx-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div className="mx-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xs">
         <div className="px-6 pt-6">
           <div className="flex items-center gap-3">
             <Calendar className="h-4 w-4 text-neutral-600" />
@@ -113,7 +113,7 @@ export function WorkoutCard({
   );
 
   return (
-    <div className="mx-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+    <div className="mx-0 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xs">
       <div className="px-6 pt-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -215,7 +215,7 @@ export function WorkoutCard({
                 {allBlocks.map((block, index) => (
                   <div key={index} className="flex items-start gap-4">
                     <div
-                      className="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                      className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full"
                       style={{ backgroundColor: effortToColor(block.effortLevel) }}
                     ></div>
                     <p className="text-sm leading-relaxed text-neutral-700">

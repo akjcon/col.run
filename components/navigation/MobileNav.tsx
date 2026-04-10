@@ -24,7 +24,7 @@ export function MobileNav() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-40 w-full border-b border-neutral-200 bg-white backdrop-blur">
+      <nav className="fixed top-0 left-0 right-0 z-40 w-full border-b border-neutral-200 bg-white backdrop-blur-sm">
         <div className="container mx-auto flex h-14 items-center px-4">
           {/* Mobile hamburger menu */}
           <button
@@ -74,7 +74,7 @@ export function MobileNav() {
       {/* Mobile menu drawer */}
       <div
         className={cn(
-          "fixed left-0 top-0 z-[60] h-full w-72 transform border-r border-neutral-200 bg-white flex flex-col",
+          "fixed left-0 top-0 z-60 h-full w-72 transform border-r border-neutral-200 bg-white flex flex-col",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
         style={{

@@ -45,7 +45,7 @@ export default function Home() {
           alt=""
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,_rgba(250,250,249,0.95)_0%,_rgba(250,250,249,0.6)_50%,_rgba(250,250,249,0.15)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,rgba(250,250,249,0.95)_0%,rgba(250,250,249,0.6)_50%,rgba(250,250,249,0.15)_100%)]" />
       </motion.div>
 
       {/* Landing content — always in the DOM */}

@@ -43,7 +43,7 @@ export function NavLink({
           <div
             className={cn(
               "rounded-full p-1 transition-all ease-in-out",
-              "group-active:bg-orange-600 group-active:!scale-[0.98] group-active:!shadow-none",
+              "group-active:bg-orange-600 group-active:scale-[0.98]! group-active:shadow-none!",
               "group-hover:-rotate-2 group-hover:scale-105 group-active:rotate-3",
               "bg-[#E98A15] group-hover:shadow-md"
             )}
@@ -56,7 +56,7 @@ export function NavLink({
               "h-4 w-4 shrink-0 transition",
               isActive
                 ? "text-neutral-900"
-                : "text-neutral-600 group-hover:!text-neutral-900"
+                : "text-neutral-600 group-hover:text-neutral-900!"
             )}
           />
         )}

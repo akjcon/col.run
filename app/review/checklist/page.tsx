@@ -122,7 +122,7 @@ export default function ChecklistPage() {
       <div className="min-h-screen bg-neutral-50 p-4 sm:p-8">
         <div className="max-w-3xl mx-auto">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-neutral-200 rounded w-48" />
+            <div className="h-8 bg-neutral-200 rounded-sm w-48" />
             <div className="space-y-3 mt-8">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="h-20 bg-neutral-200 rounded-xl" />
@@ -179,7 +179,7 @@ export default function ChecklistPage() {
                 key={item.id}
                 className={`bg-white border rounded-xl transition-all ${
                   isExpanded
-                    ? "border-neutral-400 shadow-sm"
+                    ? "border-neutral-400 shadow-xs"
                     : "border-neutral-200"
                 }`}
               >
@@ -231,7 +231,7 @@ export default function ChecklistPage() {
                         onChange={(e) =>
                           handleUpdate(item.id, "id", e.target.value.toUpperCase().replace(/\s+/g, "_"))
                         }
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm font-mono focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                       />
                     </div>
 
@@ -246,7 +246,7 @@ export default function ChecklistPage() {
                           onChange={(e) =>
                             handleUpdate(item.id, "severity", e.target.value)
                           }
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent bg-white"
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent bg-white"
                         >
                           {SEVERITIES.map((s) => (
                             <option key={s} value={s}>
@@ -264,7 +264,7 @@ export default function ChecklistPage() {
                           onChange={(e) =>
                             handleUpdate(item.id, "category", e.target.value)
                           }
-                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent bg-white"
+                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent bg-white"
                         >
                           {CATEGORIES.map((c) => (
                             <option key={c} value={c}>
@@ -286,7 +286,7 @@ export default function ChecklistPage() {
                           handleUpdate(item.id, "description", e.target.value)
                         }
                         rows={3}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                       />
                     </div>
 
@@ -301,7 +301,7 @@ export default function ChecklistPage() {
                           handleUpdate(item.id, "rationale", e.target.value)
                         }
                         rows={2}
-                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-hidden focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                       />
                     </div>
 

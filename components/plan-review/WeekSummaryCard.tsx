@@ -122,7 +122,7 @@ export function WeekSummaryCard({ week, peakMiles, isExpanded, onToggle, isRaceW
 
   return (
     <div
-      className={`border border-neutral-200 rounded-xl shadow-sm bg-white hover:shadow-md transition-shadow cursor-pointer ${
+      className={`border border-neutral-200 rounded-xl shadow-xs bg-white hover:shadow-md transition-shadow cursor-pointer ${
         isExpanded ? "ring-2 ring-neutral-900" : ""
       }`}
       onClick={onToggle}
@@ -176,7 +176,7 @@ export function WeekSummaryCard({ week, peakMiles, isExpanded, onToggle, isRaceW
         {/* Key workout indicator */}
         {keyWorkout && (
           <div className="mb-3">
-            <span className="text-xs px-2 py-1 bg-neutral-100 rounded text-neutral-600">
+            <span className="text-xs px-2 py-1 bg-neutral-100 rounded-sm text-neutral-600">
               {keyWorkout}
             </span>
           </div>

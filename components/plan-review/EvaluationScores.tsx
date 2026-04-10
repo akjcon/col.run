@@ -61,7 +61,7 @@ export function EvaluationScores({ evaluation }: EvaluationScoresProps | { evalu
       : "text-red-600";
 
     return (
-      <div className="border border-neutral-200 rounded-xl bg-white shadow-sm">
+      <div className="border border-neutral-200 rounded-xl bg-white shadow-xs">
         <div className="p-6 border-b border-neutral-100">
           <p className="text-xs font-medium uppercase tracking-wider text-neutral-500 mb-2">
             Overall Score
@@ -108,7 +108,7 @@ export function EvaluationScores({ evaluation }: EvaluationScoresProps | { evalu
   }
 
   return (
-    <div className="border border-neutral-200 rounded-xl bg-white shadow-sm">
+    <div className="border border-neutral-200 rounded-xl bg-white shadow-xs">
       {/* Overall Score Header */}
       <div className="p-6 border-b border-neutral-100">
         <p className="text-xs font-medium uppercase tracking-wider text-neutral-500 mb-2">
@@ -170,7 +170,7 @@ export function EvaluationScores({ evaluation }: EvaluationScoresProps | { evalu
           <ul className="space-y-1">
             {allIssues.slice(0, 5).map((issue, idx) => (
               <li key={idx} className="text-sm text-neutral-600 flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
                 {issue}
               </li>
             ))}

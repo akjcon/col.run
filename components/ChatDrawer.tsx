@@ -280,7 +280,7 @@ function InlineMarkdown({ text }: { text: string }) {
             return (
               <code
                 key={i}
-                className="rounded bg-neutral-200/60 px-1 py-0.5 text-[13px]"
+                className="rounded-sm bg-neutral-200/60 px-1 py-0.5 text-[13px]"
               >
                 {part.value}
               </code>
@@ -619,7 +619,7 @@ function ChatUI() {
                 onClick={() => handlePromptClick(sp.prompt)}
                 onMouseEnter={() => setHoveredPrompt(sp.prompt)}
                 onMouseLeave={() => setHoveredPrompt("")}
-                className="flex-shrink-0 whitespace-nowrap rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100"
+                className="shrink-0 whitespace-nowrap rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100"
               >
                 {sp.label}
               </button>
@@ -637,7 +637,7 @@ function ChatUI() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={hoveredPrompt || "Ask about your training..."}
-            className="w-full resize-none rounded-lg border border-neutral-200 p-3 pr-12 text-sm focus:border-neutral-300 focus:outline-none focus:ring-0"
+            className="w-full resize-none rounded-lg border border-neutral-200 p-3 pr-12 text-sm focus:border-neutral-300 focus:outline-hidden focus:ring-0"
             disabled={isStreaming}
             rows={2}
             autoComplete="off"
@@ -722,7 +722,7 @@ export function DesktopChatPanel() {
   return (
     <div
       className={cn(
-        "flex-shrink-0 overflow-hidden transition-[width] duration-300 ease-in-out",
+        "shrink-0 overflow-hidden transition-[width] duration-300 ease-in-out",
         isOpen ? "w-[400px]" : "w-0"
       )}
     >
