@@ -80,6 +80,8 @@ export async function buildAthleteSnapshot(
     snapshot.atl = fitness.atl;
     snapshot.tsb = fitness.tsb;
     snapshot.currentWeeklyMileage = fitness.weeklyMileage;
+    snapshot.currentLongestRun = fitness.longestRun;
+    snapshot.currentAvgPace = fitness.avgPace;
     snapshot.estimatedThresholdPace = fitness.estimatedThresholdPace;
 
     // Resolve threshold pace: manual entry > Strava estimate
@@ -92,6 +94,8 @@ export async function buildAthleteSnapshot(
   if (experienceSnap.exists) {
     const exp = experienceSnap.data()!;
     snapshot.lifetimeMiles = exp.lifetimeMiles;
+    snapshot.lifetimeRuns = exp.lifetimeRuns;
+    snapshot.longestRunEver = exp.longestRunEver;
     snapshot.peakWeeklyMileage = exp.peakWeeklyMileage;
     snapshot.experienceLevel = exp.experienceLevel;
     snapshot.ultraExperience = exp.ultraExperience;

@@ -123,11 +123,29 @@ export async function POST(req: NextRequest) {
             if (snap.ctl) athlete.ctl = snap.ctl;
             if (snap.atl) athlete.atl = snap.atl;
             if (snap.currentWeeklyMileage) athlete.weeklyMileage = snap.currentWeeklyMileage;
+            // Prefer recent long run, fall back to all-time. Either is
+            // more accurate than the training-background field, which is
+            // always 0 when the user selected Strava (the form doesn't
+            // ask for it in that path).
+            if (snap.currentLongestRun) athlete.longestRun = snap.currentLongestRun;
+            else if (snap.longestRunEver) athlete.longestRun = snap.longestRunEver;
             if (snap.estimatedThresholdPace) athlete.thresholdPace = snap.estimatedThresholdPace;
             if (snap.lifetimeMiles) athlete.lifetimeMiles = snap.lifetimeMiles;
+            if (snap.longestRunEver) athlete.longestRunEver = snap.longestRunEver;
             if (snap.peakWeeklyMileage) athlete.peakWeeklyMileage = snap.peakWeeklyMileage;
             if (snap.ultraExperience !== undefined) athlete.ultraExperience = snap.ultraExperience;
             if (snap.trailExperience !== undefined) athlete.trailExperience = snap.trailExperience;
+            // Override experience with the Strava-derived experienceLevel
+            // when available — lifetimeMiles-based classification is more
+            // reliable than what the user self-reported in onboarding.
+            if (
+              snap.experienceLevel === "beginner" ||
+              snap.experienceLevel === "intermediate" ||
+              snap.experienceLevel === "advanced" ||
+              snap.experienceLevel === "elite"
+            ) {
+              athlete.experience = snap.experienceLevel;
+            }
           }
         } catch (err) {
           console.warn("Could not read athlete snapshot, proceeding with manual data:", err);

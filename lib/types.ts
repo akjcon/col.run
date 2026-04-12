@@ -135,11 +135,15 @@ export interface AthleteSnapshot {
   atl?: number;
   tsb?: number;
   currentWeeklyMileage?: number;
+  currentLongestRun?: number; // longest run in the last 12 weeks (miles)
+  currentAvgPace?: number; // recent avg pace (min/mile)
   estimatedThresholdPace?: number;
   thresholdPace?: number; // resolved: manual entry > Strava estimate
 
   // From ExperienceProfile (Strava, lifetime)
   lifetimeMiles?: number;
+  lifetimeRuns?: number;
+  longestRunEver?: number; // all-time longest single run (miles)
   peakWeeklyMileage?: number;
   experienceLevel?: string;
   ultraExperience?: boolean;
