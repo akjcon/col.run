@@ -131,9 +131,12 @@ If the plan looks good and has no issues, return:
       .map((p) => `${p.name}: weeks ${p.startWeek}-${p.endWeek} (${p.focus})`)
       .join(", ");
 
-    // Weekly targets summary
+    // Weekly targets summary — note: targetVolume here is in MILES.
+    // Any `adjust_week_volume` fix you produce must express `targetMiles`
+    // in miles (not minutes). A suggested value is directly scaled against
+    // the week's current mileage by the deterministic fixer.
     const targetsSummary = weeklyTargets
-      .map((t) => `W${t.weekNumber}:${t.targetVolume}min/${t.phase}`)
+      .map((t) => `W${t.weekNumber}:${t.targetVolume}mi/${t.phase}`)
       .join(", ");
 
     return `Review this ${weeks.length}-week training plan:

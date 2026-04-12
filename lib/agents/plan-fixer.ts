@@ -115,13 +115,29 @@ function applyAdjustWeekVolume(
 
   if (currentMiles <= 0) return null;
 
+  // Safety clamp: refuse obviously broken scale factors. A legitimate
+  // volume adjustment is typically ±10-30%; anything outside [0.3, 2.0]
+  // is almost certainly a confused LLM (e.g. suggesting a value meant
+  // as minutes, or mixing up units). Skip rather than blow up the plan.
   const scale = fix.targetMiles / currentMiles;
+  if (scale < 0.3 || scale > 2.0) {
+    console.warn(
+      `[Fixer] Refusing adjust_week_volume for W${fix.weekNumber}: ` +
+        `scale ${scale.toFixed(2)}x (current=${currentMiles.toFixed(0)}mi, ` +
+        `target=${fix.targetMiles}mi) is out of sane bounds [0.3, 2.0]`
+    );
+    return null;
+  }
 
   const updatedWeek: Week = {
     ...week,
     days: week.days.map((day) => ({
       ...day,
       workouts: day.workouts.map((workout) => ({
+        // Preserve title + any other workout fields; previously this
+        // dropped title when only `blocks` was spread into the new
+        // object, leaving the plan with unlabeled workouts.
+        ...workout,
         blocks: workout.blocks.map((block) => {
           if (block.type === "rest") return block;
 
@@ -210,7 +226,7 @@ function applyRemoveHardWorkout(
   const updatedDays = [...week.days];
   updatedDays[dayIndex] = {
     ...day,
-    workouts: [{ blocks: [easyBlock] }],
+    workouts: [{ title: "Easy Run", blocks: [easyBlock] }],
   };
 
   const newWeeks = [...weeks];
@@ -256,6 +272,7 @@ function applyReduceBlockValue(
   updatedDays[dayIndex] = {
     ...day,
     workouts: day.workouts.map((workout) => ({
+      ...workout,
       blocks: workout.blocks.map((block) => {
         const currentIndex = blockCounter++;
         if (currentIndex === fix.blockIndex) {
@@ -307,6 +324,7 @@ function applyChangeEffortLevel(
   updatedDays[dayIndex] = {
     ...day,
     workouts: day.workouts.map((workout) => ({
+      ...workout,
       blocks: workout.blocks.map((block) => {
         const currentIndex = blockCounter++;
         if (currentIndex === fix.blockIndex) {

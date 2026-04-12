@@ -139,11 +139,18 @@ export class PlanGenerationPipeline {
       console.log(`[Pipeline] Running plan review...`);
       onProgress?.("reviewing");
 
-      // Synthesize weekly targets from generated plan for the reviewer
+      // Synthesize weekly targets from generated plan for the reviewer.
+      // `targetVolume` on WeeklyTarget is historically documented as
+      // minutes, but the single-shot pipeline works entirely in miles —
+      // the reviewer here receives and reasons in miles, and its
+      // `targetMiles` fix output flows straight into the deterministic
+      // fixer. Passing `miles × 10` to fake minutes caused a 9x volume
+      // blow-up when the fixer applied the reviewer's suggestion
+      // (`targetMiles: 200` intended as minutes).
       const weeklyTargets: WeeklyTarget[] = weeks.map((week) => ({
         weekNumber: week.weekNumber,
         phase: week.phase,
-        targetVolume: Math.round(calculateWeekTotalMiles(week) * 10), // approximate minutes
+        targetVolume: Math.round(calculateWeekTotalMiles(week)),
         keyWorkoutType: null,
       }));
 
