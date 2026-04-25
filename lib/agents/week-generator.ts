@@ -68,7 +68,7 @@ Each workout is composed of blocks. A block has:
 - value: DEPENDS ON TYPE (see below)
 - unit: "miles" for easy/longRun, "minutes" or "seconds" for workouts
 - effortLevel: One of [${effortLevelsStr}]
-- notes: (optional) Additional instructions, e.g., "on steep hill", "at race pace"
+- notes: (optional) ONLY for specific, actionable instructions that add info beyond the zone/pace, e.g., "on steep hill", "at race pace", "negative split". Do NOT use for vague descriptions like "steady effort", "maintain pace", "comfortable run" — those add nothing.
 - repeat: (optional) For interval workouts, specifies repetitions:
   - times: number of repetitions
   - restBetween: { value, unit, effortLevel } for recovery between reps

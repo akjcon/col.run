@@ -160,6 +160,7 @@ Block types and their units:
 - rest: value=0, unit="minutes". Complete rest day.
 
 Each block has: type, value, unit ("miles"/"minutes"/"seconds"), effortLevel ("z1"-"z5"), optional notes, optional repeat.
+Notes should ONLY contain specific, actionable instructions beyond the zone/pace (e.g., "steep hill", "negative split"). Omit notes for generic descriptions like "steady effort" or "comfortable pace".
 
 Repeat structure (for intervals): { "times": 6, "restBetween": { "value": 90, "unit": "seconds", "effortLevel": "z1" } }
 
