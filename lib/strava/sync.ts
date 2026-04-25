@@ -39,7 +39,7 @@ export function transformActivity(stravaActivity: StravaActivity, userId: string
     userId,
     name: stravaActivity.name,
     type: stravaActivity.type,
-    date: new Date(stravaActivity.start_date).getTime(),
+    date: new Date(stravaActivity.start_date_local).getTime(),
     distance: Math.round(distanceMiles * 100) / 100,
     duration: Math.round(durationMinutes * 10) / 10,
     elevation: Math.round(elevationFeet),
