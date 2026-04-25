@@ -7,6 +7,17 @@
 import type { Week, Day } from "@/lib/blocks/types";
 import { getNow } from "@/lib/time";
 
+/**
+ * Normalize a timestamp to noon UTC of that calendar date.
+ * Noon UTC is safe because no timezone is more than ±12h from UTC,
+ * so the calendar date is the same everywhere. This eliminates
+ * server-vs-browser midnight mismatches.
+ */
+export function toNoonUTC(ts: number): number {
+  const d = new Date(ts);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 12);
+}
+
 const DAY_MAP: Record<string, number> = {
   Monday: 0,
   Tuesday: 1,
@@ -31,24 +42,27 @@ export function getWeeksWithDates(
   const baseDate = startDate || generatedAt;
   if (!baseDate) return weeks;
 
-  // Find the Monday of the week containing the base date
+  // Find the Monday of the week containing the base date (UTC)
   const baseDateObj = new Date(baseDate);
-  const dayOfWeek = baseDateObj.getDay(); // 0=Sun, 1=Mon...
+  const dayOfWeek = baseDateObj.getUTCDay(); // 0=Sun, 1=Mon...
   const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const firstWeekMonday = new Date(baseDateObj);
-  firstWeekMonday.setDate(baseDateObj.getDate() - daysFromMonday);
-  firstWeekMonday.setHours(0, 0, 0, 0);
+  const mondayMs = Date.UTC(
+    baseDateObj.getUTCFullYear(),
+    baseDateObj.getUTCMonth(),
+    baseDateObj.getUTCDate() - daysFromMonday,
+    12 // noon UTC — timezone-safe canonical date
+  );
+
+  const ONE_DAY = 24 * 60 * 60 * 1000;
 
   return weeks.map((week) => ({
     ...week,
     days: week.days.map((day) => {
       const dayOffset = DAY_MAP[day.dayOfWeek] ?? 0;
       const weekOffset = (week.weekNumber - 1) * 7;
-      const dayDate = new Date(firstWeekMonday);
-      dayDate.setDate(firstWeekMonday.getDate() + weekOffset + dayOffset);
       return {
         ...day,
-        date: dayDate.getTime(),
+        date: mondayMs + (weekOffset + dayOffset) * ONE_DAY,
       };
     }),
   }));
@@ -58,17 +72,11 @@ export function getWeeksWithDates(
  * Find the Day matching today's date from weeks with dates assigned.
  */
 export function getTodaysDay(weeksWithDates: Week[]): Day | undefined {
-  const today = getNow();
-  const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const todayNoon = toNoonUTC(getNow().getTime());
 
   for (const week of weeksWithDates) {
     for (const day of week.days) {
-      if (!day.date) continue;
-      const dayDate = new Date(day.date);
-      const dayLocal = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
-      if (dayLocal.getTime() === todayLocal.getTime()) {
-        return day;
-      }
+      if (day.date && toNoonUTC(day.date) === todayNoon) return day;
     }
   }
   return undefined;
@@ -78,17 +86,12 @@ export function getTodaysDay(weeksWithDates: Week[]): Day | undefined {
  * Find the Day matching tomorrow's date from weeks with dates assigned.
  */
 export function getTomorrowsDay(weeksWithDates: Week[]): Day | undefined {
-  const today = getNow();
-  const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+  const tomorrowNoon = toNoonUTC(getNow().getTime()) + ONE_DAY;
 
   for (const week of weeksWithDates) {
     for (const day of week.days) {
-      if (!day.date) continue;
-      const dayDate = new Date(day.date);
-      const dayLocal = new Date(dayDate.getFullYear(), dayDate.getMonth(), dayDate.getDate());
-      if (dayLocal.getTime() === tomorrow.getTime()) {
-        return day;
-      }
+      if (day.date && toNoonUTC(day.date) === tomorrowNoon) return day;
     }
   }
   return undefined;

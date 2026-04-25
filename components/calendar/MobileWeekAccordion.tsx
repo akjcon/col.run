@@ -19,6 +19,7 @@ import {
 import { Mountain, Zap, Timer, Check, ChevronDown, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { easing } from "@/lib/animation";
+import { toNoonUTC } from "@/lib/workout-utils";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -40,11 +41,6 @@ function getWorkoutTypeIcon(day: Day) {
   if (blocks.some((b) => b.type === "intervals")) return Zap;
   if (blocks.some((b) => b.type === "tempo")) return Timer;
   return null;
-}
-
-function getDayMidnight(date: number): number {
-  const d = new Date(date);
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
 
 // ── Day Row (expanded view) ─────────────────────────────────────────────────
@@ -247,7 +243,7 @@ export function MobileWeekAccordion({
   // Exclude race day from week mileage total
   const weekMiles = week.days.reduce((sum, day) => {
     if (raceDateMidnight !== undefined && day.date !== undefined) {
-      if (getDayMidnight(day.date) === raceDateMidnight) return sum;
+      if (toNoonUTC(day.date) === raceDateMidnight) return sum;
     }
     return sum + calculateDayTotalMiles(day);
   }, 0);
@@ -255,11 +251,11 @@ export function MobileWeekAccordion({
   // A week is past if its last day is before today
   const lastDay = week.days[week.days.length - 1];
   const isPastWeek = lastDay?.date
-    ? getDayMidnight(lastDay.date) < todayDate
+    ? toNoonUTC(lastDay.date) < todayDate
     : false;
 
   const dayRows = week.days.map((day, i) => {
-    const dayMidnight = day.date ? getDayMidnight(day.date) : null;
+    const dayMidnight = day.date ? toNoonUTC(day.date) : null;
     const isToday = dayMidnight === todayDate;
     const isPast = dayMidnight !== null && dayMidnight < todayDate;
     const isCompleted = dayMidnight !== null && !!completedDates?.has(dayMidnight);
@@ -311,7 +307,7 @@ export function MobileWeekAccordion({
           {week.days.map((day, i) => {
             const rest = isRestDay(day);
             const color = rest ? "#E5E5E5" : effortToColor(getDayEffortLevel(day));
-            const dayMidnight = day.date ? getDayMidnight(day.date) : null;
+            const dayMidnight = day.date ? toNoonUTC(day.date) : null;
             const completed = dayMidnight !== null && completedDates?.has(dayMidnight);
             const dayLog = dayMidnight !== null ? logsByDate?.get(dayMidnight) : undefined;
             const dotColor = dayLog?.adherence === "over"

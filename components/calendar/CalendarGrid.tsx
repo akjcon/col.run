@@ -6,6 +6,7 @@ import type { PhaseTarget } from "@/lib/agents/types";
 import type { WorkoutLog } from "@/lib/types";
 import { WeekRow } from "./WeekRow";
 import { MobileWeekAccordion } from "./MobileWeekAccordion";
+import { toNoonUTC } from "@/lib/workout-utils";
 
 interface CalendarGridProps {
   weeks: Week[];
@@ -29,17 +30,13 @@ export function CalendarGrid({
   const currentWeekRef = useRef<HTMLDivElement>(null);
   const mobileCurrentWeekRef = useRef<HTMLDivElement>(null);
 
-  // Today as epoch midnight for comparison
-  const todayDate = useMemo(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  }, []);
+  // Today as noon UTC for comparison
+  const todayDate = useMemo(() => toNoonUTC(Date.now()), []);
 
-  // Race date as epoch midnight
+  // Race date as noon UTC
   const raceDateMidnight = useMemo(() => {
     if (!raceDate) return undefined;
-    const d = new Date(raceDate);
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    return toNoonUTC(raceDate);
   }, [raceDate]);
 
   // Scroll current week into view on mount

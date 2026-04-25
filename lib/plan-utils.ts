@@ -47,20 +47,20 @@ export function calculateCurrentWeek(
   const today = getNow();
   const start = new Date(startDate);
 
-  const startDayOfWeek = start.getDay();
+  const startDayOfWeek = start.getUTCDay();
   const daysFromMonday = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
-  const startWeekMonday = new Date(start);
-  startWeekMonday.setDate(start.getDate() - daysFromMonday);
-  startWeekMonday.setHours(0, 0, 0, 0);
+  const startMondayMs = Date.UTC(
+    start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() - daysFromMonday, 12
+  );
 
-  const todayDayOfWeek = today.getDay();
+  const todayDayOfWeek = today.getUTCDay();
   const todayDaysFromMonday = todayDayOfWeek === 0 ? 6 : todayDayOfWeek - 1;
-  const todayWeekMonday = new Date(today);
-  todayWeekMonday.setDate(today.getDate() - todayDaysFromMonday);
-  todayWeekMonday.setHours(0, 0, 0, 0);
+  const todayMondayMs = Date.UTC(
+    today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - todayDaysFromMonday, 12
+  );
 
-  const timeDiff = todayWeekMonday.getTime() - startWeekMonday.getTime();
-  const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+  const daysDiff = Math.floor((todayMondayMs - startMondayMs) / ONE_DAY);
   const weekNumber = Math.floor(daysDiff / 7) + 1;
 
   return Math.max(1, Math.min(totalWeeks, weekNumber));

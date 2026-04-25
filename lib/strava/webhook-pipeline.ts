@@ -23,7 +23,7 @@ import {
   calculateDayTotalMiles,
   calculateDayTotal,
 } from "@/lib/blocks/calculations";
-import { getWeeksWithDates } from "@/lib/workout-utils";
+import { getWeeksWithDates, toNoonUTC } from "@/lib/workout-utils";
 
 // =============================================================================
 // Types
@@ -116,13 +116,8 @@ export async function processActivityWebhook(
     };
   } else {
     // Unplanned activity
-    const activityDate = new Date(activity.date);
-    const dayMidnight = new Date(
-      activityDate.getFullYear(),
-      activityDate.getMonth(),
-      activityDate.getDate()
-    ).getTime();
-    const logId = `${dayMidnight}-unplanned-${activity.stravaId}`;
+    const activityNoon = toNoonUTC(activity.date);
+    const logId = `${activityNoon}-unplanned-${activity.stravaId}`;
 
     // Find current week if plan exists
     let currentWeekNumber = 0;
@@ -135,13 +130,7 @@ export async function processActivityWebhook(
       for (const w of weeksWithDates) {
         for (const d of w.days) {
           if (!d.date) continue;
-          const dDate = new Date(d.date);
-          const dMidnight = new Date(
-            dDate.getFullYear(),
-            dDate.getMonth(),
-            dDate.getDate()
-          ).getTime();
-          if (dMidnight === dayMidnight) {
+          if (toNoonUTC(d.date) === activityNoon) {
             currentWeekNumber = w.weekNumber;
             break;
           }
@@ -152,7 +141,7 @@ export async function processActivityWebhook(
 
     workoutLog = {
       id: logId,
-      date: dayMidnight,
+      date: activityNoon,
       weekNumber: currentWeekNumber,
       dayOfWeek: "unplanned",
       plannedTitle: "Unplanned Activity",
@@ -227,23 +216,12 @@ export async function processActivityWebhook(
           plan.generatedAt,
           plan.weeks
         );
-        const activityDate = new Date(activity.date);
-        const activityMidnight = new Date(
-          activityDate.getFullYear(),
-          activityDate.getMonth(),
-          activityDate.getDate()
-        ).getTime();
+        const actNoon = toNoonUTC(activity.date);
 
         for (const w of weeksWithDates) {
           for (const d of w.days) {
             if (!d.date) continue;
-            const dDate = new Date(d.date);
-            const dMidnight = new Date(
-              dDate.getFullYear(),
-              dDate.getMonth(),
-              dDate.getDate()
-            ).getTime();
-            if (dMidnight === activityMidnight) {
+            if (toNoonUTC(d.date) === actNoon) {
               todayPlannedDay = d;
               todayWeek = w;
               break;

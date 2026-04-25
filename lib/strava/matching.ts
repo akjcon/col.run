@@ -9,21 +9,8 @@
 import type { Activity } from "./types";
 import type { TrainingPlan } from "@/lib/types";
 import type { Week, Day } from "@/lib/blocks/types";
-import { getWeeksWithDates } from "@/lib/workout-utils";
+import { getWeeksWithDates, toNoonUTC } from "@/lib/workout-utils";
 import { isRestDay } from "@/lib/workout-display";
-
-const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
-
-/** Compare two timestamps by local calendar date (year/month/day). */
-function sameLocalDate(a: number, b: number): boolean {
-  const da = new Date(a);
-  const db = new Date(b);
-  return (
-    da.getFullYear() === db.getFullYear() &&
-    da.getMonth() === db.getMonth() &&
-    da.getDate() === db.getDate()
-  );
-}
 
 interface MatchResult {
   week: Week;
@@ -47,18 +34,12 @@ export function matchActivityToDay(
     plan.weeks
   );
 
+  const activityNoon = toNoonUTC(activity.date);
+
   for (const week of weeksWithDates) {
     for (const day of week.days) {
       if (!day.date) continue;
-
-      // Quick filter: skip days more than 24 hours apart
-      const timeDiff = Math.abs(activity.date - day.date);
-      if (timeDiff > TWENTY_FOUR_HOURS_MS) continue;
-
-      // Must be the same local calendar day (handles timezone offsets
-      // where day.date is midnight local but activity.date may be
-      // next-day UTC for evening runs)
-      if (!sameLocalDate(activity.date, day.date)) continue;
+      if (toNoonUTC(day.date) !== activityNoon) continue;
 
       // Skip rest days
       if (isRestDay(day)) continue;

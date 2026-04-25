@@ -4,26 +4,22 @@ import type { Week } from "@/lib/blocks/types";
 import type { WorkoutLog } from "@/lib/types";
 import { calculateDayTotalMiles } from "@/lib/blocks/calculations";
 import { DayCell } from "./DayCell";
+import { toNoonUTC } from "@/lib/workout-utils";
 
 interface WeekRowProps {
   week: Week;
   isCurrentWeek: boolean;
-  todayDate: number | null; // epoch ms of today's midnight
+  todayDate: number | null;
   completedDates?: Set<number>;
   raceDateMidnight?: number;
   logsByDate?: Map<number, WorkoutLog>;
-}
-
-function getDayMidnight(date: number): number {
-  const d = new Date(date);
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
 
 export function WeekRow({ week, isCurrentWeek, todayDate, completedDates, raceDateMidnight, logsByDate }: WeekRowProps) {
   // Exclude race day from week mileage total
   const weekMiles = week.days.reduce((sum, day) => {
     if (raceDateMidnight !== undefined && day.date !== undefined) {
-      if (getDayMidnight(day.date) === raceDateMidnight) return sum;
+      if (toNoonUTC(day.date) === raceDateMidnight) return sum;
     }
     return sum + calculateDayTotalMiles(day);
   }, 0);

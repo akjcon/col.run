@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useUser } from "@/lib/user-context-rtk";
 import { calculateCurrentWeek } from "@/lib/plan-utils";
-import { getWeeksWithDates } from "@/lib/workout-utils";
+import { getWeeksWithDates, toNoonUTC } from "@/lib/workout-utils";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
 import { useGetWorkoutLogsQuery } from "@/lib/store/api/trainingApi";
@@ -22,15 +22,9 @@ export default function CalendarPage() {
     const set = new Set<number>();
     const map = new Map<number, WorkoutLog>();
     for (const log of workoutLogs) {
-      // Normalize to midnight
-      const d = new Date(log.date);
-      const midnight = new Date(
-        d.getFullYear(),
-        d.getMonth(),
-        d.getDate()
-      ).getTime();
-      set.add(midnight);
-      map.set(midnight, log);
+      const noon = toNoonUTC(log.date);
+      set.add(noon);
+      map.set(noon, log);
     }
     return { completedDates: set, logsByDate: map };
   }, [workoutLogs]);
