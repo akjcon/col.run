@@ -11,18 +11,44 @@ import {
 } from "./firestore";
 import { UserData } from "./types";
 
+// Impersonation helpers
+const IMPERSONATE_KEY = "col_impersonate_userId";
+const IMPERSONATE_NAME_KEY = "col_impersonate_name";
+
+export function getImpersonatedUserId(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(IMPERSONATE_KEY);
+}
+
+export function getImpersonatedName(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(IMPERSONATE_NAME_KEY);
+}
+
+export function startImpersonating(targetUserId: string, name: string) {
+  localStorage.setItem(IMPERSONATE_KEY, targetUserId);
+  localStorage.setItem(IMPERSONATE_NAME_KEY, name);
+}
+
+export function stopImpersonating() {
+  localStorage.removeItem(IMPERSONATE_KEY);
+  localStorage.removeItem(IMPERSONATE_NAME_KEY);
+}
+
 // Hook to handle Clerk + Firebase Auth integration
 export function useClerkFirebase() {
-  const { userId, isSignedIn } = useAuth();
+  const { userId: clerkUserId, isSignedIn } = useAuth();
   const { user } = useUser();
   const [isFirebaseReady, setIsFirebaseReady] =
     useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const impersonatedId = getImpersonatedUserId();
+  const effectiveUserId = impersonatedId || clerkUserId;
+
   useEffect(() => {
     const authenticateWithFirebase = async () => {
-      if (!isSignedIn || !userId) {
-        // Sign out of Firebase if user is not signed in to Clerk
+      if (!isSignedIn || !clerkUserId) {
         if (auth.currentUser) {
           await signOut(auth);
         }
@@ -31,46 +57,65 @@ export function useClerkFirebase() {
       }
 
       try {
-        // If already authenticated with Firebase with the same user, skip
+        // If already authenticated with Firebase as the effective user, skip
         if (
           auth.currentUser &&
-          auth.currentUser.uid === userId
+          auth.currentUser.uid === effectiveUserId
         ) {
           setIsFirebaseReady(true);
           return;
         }
 
-        // Get Firebase custom token from our API
-        const response = await fetch(
-          "/api/auth/firebase-token",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        let firebaseToken: string;
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(
-            `Failed to get Firebase token: ${response.status} ${errorText}`
-          );
+        if (impersonatedId) {
+          // Get Firebase token for the impersonated user
+          const response = await fetch("/api/dev/impersonate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ targetUserId: impersonatedId }),
+          });
+
+          if (!response.ok) {
+            // If impersonation fails, clear it and fall through to normal auth
+            stopImpersonating();
+            window.location.reload();
+            return;
+          }
+
+          const data = await response.json();
+          firebaseToken = data.firebaseToken;
+        } else {
+          // Normal auth flow
+          const response = await fetch("/api/auth/firebase-token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `Failed to get Firebase token: ${response.status} ${errorText}`
+            );
+          }
+
+          const data = await response.json();
+          firebaseToken = data.firebaseToken;
         }
 
-        const { firebaseToken } = await response.json();
-
-        // Sign in to Firebase with the custom token
+        // Sign in to Firebase with the token
         await signInWithCustomToken(auth, firebaseToken);
 
-        // Check if this is a new user and initialize if needed
-        const existingUserData = await getUserData(userId);
-        if (!existingUserData && user) {
-          await initializeNewUser(
-            userId,
-            user.primaryEmailAddress?.emailAddress || "",
-            user.fullName || user.firstName || "User"
-          );
+        // Only initialize new users during normal (non-impersonated) auth
+        if (!impersonatedId) {
+          const existingUserData = await getUserData(clerkUserId);
+          if (!existingUserData && user) {
+            await initializeNewUser(
+              clerkUserId,
+              user.primaryEmailAddress?.emailAddress || "",
+              user.fullName || user.firstName || "User"
+            );
+          }
         }
 
         setIsFirebaseReady(true);
@@ -90,12 +135,12 @@ export function useClerkFirebase() {
     };
 
     authenticateWithFirebase();
-  }, [isSignedIn, userId, user]);
+  }, [isSignedIn, clerkUserId, effectiveUserId, impersonatedId, user]);
 
   return {
     isFirebaseReady,
     error,
-    userId,
+    userId: effectiveUserId,
     isSignedIn,
   };
 }

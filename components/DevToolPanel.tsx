@@ -7,6 +7,12 @@ import { getNow, getTimeOffset, setTimeOffset } from "@/lib/time";
 import { useDispatch } from "react-redux";
 import { baseApi } from "@/lib/store/api/baseApi";
 import { useUser } from "@/lib/user-context-rtk";
+import {
+  getImpersonatedUserId,
+  getImpersonatedName,
+  startImpersonating,
+  stopImpersonating,
+} from "@/lib/clerk-firebase";
 
 type Corner = "tl" | "tr" | "bl" | "br";
 
@@ -50,8 +56,13 @@ function DevToolPanelInner() {
   const [confirming, setConfirming] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [showUserPicker, setShowUserPicker] = useState(false);
+  const [userList, setUserList] = useState<{ userId: string; name: string; email: string }[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
-  const isImpersonating = !!userData?.activePlan?.previousPlanId;
+  const hasReviewPlan = !!userData?.activePlan?.previousPlanId;
+  const impersonatedId = getImpersonatedUserId();
+  const impersonatedName = getImpersonatedName();
 
   // Drag state
   const [dragging, setDragging] = useState(false);
@@ -182,12 +193,19 @@ function DevToolPanelInner() {
     >
       {minimized ? (
         <div
-          className="flex h-9 w-9 cursor-grab items-center justify-center rounded-full bg-neutral-900 text-white shadow-lg active:cursor-grabbing"
-          title="Dev Tools"
+          className={`flex h-9 cursor-grab items-center justify-center rounded-full shadow-lg active:cursor-grabbing ${
+            impersonatedId
+              ? "gap-1.5 bg-violet-600 px-3 text-white"
+              : "w-9 bg-neutral-900 text-white"
+          }`}
+          title={impersonatedId ? `Viewing as ${impersonatedName}` : "Dev Tools"}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
           </svg>
+          {impersonatedId && (
+            <span className="text-[11px] font-medium">{impersonatedName}</span>
+          )}
         </div>
       ) : (
         <div
@@ -259,8 +277,8 @@ function DevToolPanelInner() {
             </div>
           </div>
 
-          {/* Restore previous plan (only shows when impersonating) */}
-          {isImpersonating && (
+          {/* Restore previous plan (only shows when reviewing a plan) */}
+          {hasReviewPlan && (
             <div className="border-b border-neutral-100 px-3 py-2.5">
               <button
                 onClick={async () => {
@@ -287,6 +305,93 @@ function DevToolPanelInner() {
               </button>
             </div>
           )}
+
+          {/* User impersonation */}
+          <div className="border-b border-neutral-100 px-3 py-2.5">
+            {impersonatedId ? (
+              <div>
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <span className="rounded-sm bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium text-violet-700">
+                    Viewing as
+                  </span>
+                </div>
+                <p className="mb-2 truncate text-xs font-medium text-neutral-900">
+                  {impersonatedName || impersonatedId}
+                </p>
+                <button
+                  onClick={() => {
+                    stopImpersonating();
+                    dispatch(baseApi.util.resetApiState());
+                    window.location.reload();
+                  }}
+                  className="w-full rounded-lg bg-violet-100 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-200 transition-colors"
+                >
+                  Stop Impersonating
+                </button>
+              </div>
+            ) : (
+              <div>
+                <button
+                  onClick={async () => {
+                    if (showUserPicker) {
+                      setShowUserPicker(false);
+                      return;
+                    }
+                    setShowUserPicker(true);
+                    if (userList.length === 0) {
+                      setLoadingUsers(true);
+                      try {
+                        const res = await fetch("/api/dev/impersonate");
+                        if (res.ok) {
+                          const data = await res.json();
+                          setUserList(data.users);
+                        }
+                      } catch {
+                        /* ignore */
+                      } finally {
+                        setLoadingUsers(false);
+                      }
+                    }
+                  }}
+                  className="w-full rounded-lg bg-neutral-100 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200 transition-colors"
+                >
+                  {showUserPicker ? "Cancel" : "Impersonate User"}
+                </button>
+                {showUserPicker && (
+                  <div className="mt-2 max-h-32 overflow-y-auto rounded-md border border-neutral-200">
+                    {loadingUsers ? (
+                      <p className="px-2 py-3 text-center text-[11px] text-neutral-400">
+                        Loading...
+                      </p>
+                    ) : userList.length === 0 ? (
+                      <p className="px-2 py-3 text-center text-[11px] text-neutral-400">
+                        No users found
+                      </p>
+                    ) : (
+                      userList.map((u) => (
+                        <button
+                          key={u.userId}
+                          onClick={() => {
+                            startImpersonating(u.userId, u.name || u.email);
+                            dispatch(baseApi.util.resetApiState());
+                            window.location.reload();
+                          }}
+                          className="flex w-full flex-col px-2 py-1.5 text-left hover:bg-neutral-50 transition-colors"
+                        >
+                          <span className="truncate text-xs font-medium text-neutral-900">
+                            {u.name || "Unnamed"}
+                          </span>
+                          <span className="truncate text-[10px] text-neutral-400">
+                            {u.email}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Reset account */}
           <div className="px-3 py-2.5">
