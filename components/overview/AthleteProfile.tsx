@@ -75,8 +75,9 @@ export function AthleteProfile({
   currentWeekData,
   totalPlanMiles,
 }: AthleteProfileProps) {
-  const experience = trainingBackground.experience;
-  const longestRun = trainingBackground.longestRun;
+  const experience = snapshot?.experienceLevel ?? trainingBackground.experience;
+  const weeklyMileage = snapshot?.currentWeeklyMileage ?? trainingBackground.weeklyMileage;
+  const longestRun = snapshot?.currentLongestRun ?? trainingBackground.longestRun;
   const marathonPR = trainingBackground.marathonPR;
   const goals = trainingBackground.goals;
   const currentWeekMiles = currentWeekData
@@ -96,8 +97,8 @@ export function AthleteProfile({
           label="Experience"
           value={experience.charAt(0).toUpperCase() + experience.slice(1)}
         />
-        <Stat label="Baseline" value={`${trainingBackground.weeklyMileage} mi/wk`} />
-        <Stat label="Longest Run" value={`${longestRun} mi`} />
+        <Stat label="Baseline" value={`${Math.round(weeklyMileage)} mi/wk`} />
+        <Stat label="Longest Run" value={`${Math.round(longestRun)} mi`} />
         {currentWeekMiles !== null && (
           <Stat label="This Week (Planned)" value={`${currentWeekMiles} mi`} />
         )}
