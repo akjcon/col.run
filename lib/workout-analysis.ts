@@ -19,9 +19,11 @@ import {
   isRestBlock,
 } from "@/lib/blocks/calculations";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+let _client: Anthropic | null = null;
+function getClient() {
+  if (!_client) _client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  return _client;
+}
 
 // =============================================================================
 // Types
@@ -66,10 +68,38 @@ export async function analyzeMatchedWorkout(
     return desc;
   });
 
-  // Build athlete context
+  // Build pace zone table if threshold is available
+  let paceZoneTable = "";
+  if (thresholdPace) {
+    const zones = calculatePaceZones(thresholdPace);
+    paceZoneTable = `
+## Pace Zone Reference (based on ${formatPace(thresholdPace)}/mi threshold)
+| Zone | Pace Range | Purpose |
+|------|-----------|---------|
+| Z1 | ${formatPaceRange(zones.z1)} | Recovery |
+| Z2 | ${formatPaceRange(zones.z2)} | Aerobic base |
+| Z3 | ${formatPaceRange(zones.z3)} | Tempo/Threshold |
+| Z4 | ${formatPaceRange(zones.z4)} | VO2max |
+| Z5 | ${formatPaceRange(zones.z5)} | Anaerobic |
+
+Use these ranges to judge whether the athlete's avg pace was appropriate for the prescribed zone.`;
+  }
+
+  // Build rich athlete context
   const athleteContext = snapshot
     ? [
-        `Experience: ${snapshot.experience}`,
+        `Experience: ${snapshot.experienceLevel ?? snapshot.experience}`,
+        snapshot.weeklyMileage
+          ? `Typical weekly mileage: ${snapshot.weeklyMileage} mi`
+          : null,
+        snapshot.currentWeeklyMileage
+          ? `Recent weekly mileage: ${snapshot.currentWeeklyMileage} mi`
+          : null,
+        snapshot.ctl ? `Fitness load (CTL): ${snapshot.ctl}` : null,
+        snapshot.lifetimeMiles
+          ? `Lifetime miles: ${Math.round(snapshot.lifetimeMiles)}`
+          : null,
+        snapshot.trailExperience ? `Trail runner: yes` : null,
         snapshot.thresholdPace
           ? `Threshold pace: ${formatPace(snapshot.thresholdPace)}/mi`
           : null,
@@ -84,6 +114,7 @@ export async function analyzeMatchedWorkout(
 ## Planned Workout (Week ${week.weekNumber}, ${week.phase})
 - Blocks: ${blockDescriptions.join(" → ")}
 - Total planned: ${plannedMiles.toFixed(1)} miles, ~${Math.round(plannedMinutes)} minutes
+${paceZoneTable}
 
 ## Actual Activity
 - Name: ${activity.name}
@@ -98,32 +129,38 @@ ${activity.elevation ? `- Elevation: ${activity.elevation} ft` : ""}
 ${athleteContext}
 
 ## Instructions
-Respond with valid JSON only, no markdown:
+You MUST respond with ONLY a JSON object. No preamble, no explanation, no markdown. Start your response with "{".
 {
   "adherence": "on_target" | "over" | "under",
-  "coachingNote": "1-2 sentences"
+  "coachingNote": "string (MUST be under 280 characters)"
 }
 
 Rules for adherence:
-- "on_target": distance within ±15% of planned AND effort/HR appropriate for the prescribed zones
-- "over": ran significantly farther than planned (>15% over) OR ran at a much harder effort than prescribed (e.g., Zone 2 run done at Zone 4 HR)
-- "under": ran significantly less than planned (>15% under) OR effort was well below prescribed zones
+- "on_target": distance within ±15% of planned AND effort/pace appropriate for the prescribed zone (compare avg pace to the zone table above)
+- "over": distance >15% over planned, OR effort was significantly harder than prescribed (e.g. Z2 run done at Z3/Z4 pace or HR)
+- "under": distance >15% under planned, OR effort was well below prescribed zones
+- For hilly runs (>1500 ft elevation): pace will be slower — judge effort by HR and elevation context, not pace alone
+- For multi-block workouts (warmup+tempo+cooldown): judge the overall session, not just average pace
 
-Rules for coachingNote:
-- 1-2 sentences max
-- Speak like a coach who knows the athlete — warm, direct, a little tough love when needed, never hollow
-- Do NOT list numbers or stats. The athlete can see those. Speak to what it means, not what it was.
-- Do NOT use filler praise like "great job", "love the consistency", "awesome effort"
-- If something was off, name it plainly and end with a soft question or suggestion — not a directive
-- If it went well, say something specific about why it matters, not just that it was good
+Rules for coachingNote (CRITICAL — follow exactly):
+- MUST be 1-2 sentences, under 280 characters total. This is a hard limit.
+- Lead with acknowledgment of what went right, then pivot to what to adjust (if anything)
+- Do NOT repeat stats the athlete can already see (distance, pace, HR numbers). Talk about what it means.
+- Do NOT use hollow praise: "great job", "awesome", "fantastic", "well done", "nice work", "love the consistency"
+- Avoid em dashes (—). Use them sparingly at most; prefer commas or periods.
+- Do NOT start sentences with "But", "However", or "That said". Connect ideas naturally or just start a new thought.
+- Vary your openers. Avoid leaning on the same word repeatedly (e.g. don't start every note with "Solid").
+- If something was off, name it plainly and offer a suggestion, not a lecture
+- If it went well, say something specific about why it matters for their training
 
-Examples of the right tone:
-- "You got it done, but this one crept into harder territory than intended — HR was a bit elevated for an easy day. Want to dial in your paces?"
-- "That's exactly what an easy day should look like. Keep stacking these and you'll feel it in a few weeks."
-- "Good feel for effort today. Pace was a bit quick for this one, but if HR stayed controlled, don't stress it — just worth keeping in mind."`;
+Good examples (notice: short, natural phrasing, no stats):
+- "Right where you want to be on an easy day. This kind of discipline builds the base for everything harder."
+- "Effort crept above what was prescribed, so try cueing off feel rather than chasing a pace next time."
+- "All that climbing earned the slower pace. Real mountain work that flat long runs can't replicate."
+- "Came up short on distance today. If something felt off, flag it; otherwise just aim for the full volume next time."`;
 
   try {
-    const response = await anthropic.messages.create({
+    const response = await getClient().messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 4096,
       temperature: 0.5,
@@ -173,7 +210,14 @@ export async function analyzeUnplannedWorkout(
 
   const athleteContext = snapshot
     ? [
-        `Experience: ${snapshot.experience}`,
+        `Experience: ${snapshot.experienceLevel ?? snapshot.experience}`,
+        snapshot.weeklyMileage
+          ? `Typical weekly mileage: ${snapshot.weeklyMileage} mi`
+          : null,
+        snapshot.ctl ? `Fitness load (CTL): ${snapshot.ctl}` : null,
+        snapshot.thresholdPace
+          ? `Threshold pace: ${formatPace(snapshot.thresholdPace)}/mi`
+          : null,
       ]
         .filter(Boolean)
         .join("\n")
@@ -197,19 +241,26 @@ ${week ? `Current training week: ${week.weekNumber} (${week.phase})` : ""}
 ${athleteContext}
 
 ## Instructions
-Respond with valid JSON only, no markdown:
+You MUST respond with ONLY a JSON object. No preamble, no explanation, no markdown. Start your response with "{".
 {
   "affectsPlan": true/false,
-  "coachingNote": "1-2 sentences"
+  "coachingNote": "string (MUST be under 280 characters)"
 }
 
-Rules:
-- affectsPlan = true only if this was a hard effort (high HR, fast pace, long distance) on what was supposed to be a rest/easy day, which could compromise upcoming workouts
-- affectsPlan = false for easy shakeout runs, cross-training, or short recovery jogs
-- Keep the coaching note brief and supportive`;
+Rules for affectsPlan:
+- true if this was a hard effort (high HR >160, fast pace near/above threshold, long distance >6mi) on a rest/easy day, which could compromise upcoming workouts
+- false for easy shakeout runs (<3mi, low HR), cross-training, or short recovery jogs
+
+Rules for coachingNote (CRITICAL — follow exactly):
+- MUST be 1-2 sentences, under 280 characters total
+- Acknowledge the activity first, then note any concerns
+- Do NOT use hollow praise: "great job", "awesome", "fantastic", "well done", "nice work"
+- Avoid em dashes (—). Use them sparingly at most; prefer commas or periods.
+- Do NOT start sentences with "But", "However", or "That said"
+- Do NOT repeat stats the athlete can already see`;
 
   try {
-    const response = await anthropic.messages.create({
+    const response = await getClient().messages.create({
       model: "claude-sonnet-4-6",
       max_tokens: 4096,
       temperature: 0.5,
