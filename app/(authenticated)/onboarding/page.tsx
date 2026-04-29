@@ -119,17 +119,14 @@ function SelectionCard({
   description: string;
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
       aria-pressed={selected}
+      whileTap={{ scale: 0.98 }}
       className={cn(
         "group relative isolate w-full overflow-hidden rounded-2xl p-5 text-left",
-        // Specific properties only — never `transition: all`.
-        "transition-[transform,box-shadow,border-color] duration-200 ease-out",
-        // Tactile press. Skip when the user prefers reduced motion.
-        "active:scale-[0.98] motion-reduce:active:scale-100",
-        // Keyboard focus ring — neutral, not brand-colored (per design guide)
+        "transition-[box-shadow,border-color] duration-200 ease-out",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2",
         selected
           ? "border border-transparent text-white shadow-lg shadow-brand/30"
@@ -193,7 +190,7 @@ function SelectionCard({
       >
         {description}
       </div>
-    </button>
+    </motion.button>
   );
 }
 
@@ -449,7 +446,7 @@ function GoalStep({
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-1 min-h-0 flex-col">
       <div className="mb-6">
         <h1
           className="text-[26px] font-semibold tracking-tight text-neutral-900"
@@ -462,6 +459,7 @@ function GoalStep({
         </p>
       </div>
 
+      <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 p-1">
       {/* Goal Type Selection */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         <SelectionCard
@@ -515,7 +513,7 @@ function GoalStep({
       </div>
 
       {/* Conditional Fields */}
-      <div className="flex-1">
+      <div>
         <AnimatePresence mode="wait">
           {goalType === "race" && (
             <motion.div
@@ -669,8 +667,10 @@ function GoalStep({
         </AnimatePresence>
       </div>
 
+      </div>
+
       {/* Next Button — pinned at bottom */}
-      <div className="mt-auto pt-6">
+      <div className="shrink-0 pt-6">
         <Button
           onClick={onNext}
           disabled={!canProceed}
@@ -740,7 +740,7 @@ function FitnessStep({
         data.longestRun !== undefined;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-1 min-h-0 flex-col">
       <div className="mb-6">
         <h1
           className="text-[26px] font-semibold tracking-tight text-neutral-900"
@@ -753,15 +753,17 @@ function FitnessStep({
         </p>
       </div>
 
-      <div className="flex-1 space-y-4">
+      <div className="flex-1 space-y-4 overflow-y-auto min-h-0 p-0.5 -m-0.5">
         {/* Strava Option */}
         <div
-          className="rounded-xl p-4"
+          onClick={() => onChange({ ...data, source: "strava" })}
+          className="rounded-xl p-4 cursor-pointer"
           style={{
             boxShadow:
               data.source === "strava"
-                ? "0 0 0 2px #000"
+                ? "0 0 0 1.5px #E98A15"
                 : "0 0 0 1px rgba(0, 0, 0, 0.06)",
+            touchAction: "manipulation",
           }}
         >
           <div className="flex items-start gap-3">
@@ -847,7 +849,7 @@ function FitnessStep({
           style={{
             boxShadow:
               data.source === "manual"
-                ? "0 0 0 2px #000"
+                ? "0 0 0 1.5px #E98A15"
                 : "0 0 0 1px rgba(0, 0, 0, 0.06)",
             touchAction: "manipulation",
           }}
@@ -1002,7 +1004,7 @@ function FitnessStep({
       </div>
 
       {/* Navigation — pinned at bottom */}
-      <div className="mt-auto flex gap-3 pt-6">
+      <div className="shrink-0 flex gap-3 pt-4 mt-auto">
         <Button
           type="button"
           variant="outline"
@@ -1266,8 +1268,8 @@ export default function OnboardingPage() {
       };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white">
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-6 pt-10 pb-8">
+    <div className="fixed inset-0 z-50 flex flex-col bg-white overflow-hidden">
+      <div className="mx-auto flex w-full max-w-xl flex-1 min-h-0 flex-col px-6 pt-10 pb-8">
         {/* Progress */}
         <div className="mb-8 flex items-center justify-between">
           <StepIndicator current={step} total={2} />
@@ -1285,7 +1287,7 @@ export default function OnboardingPage() {
             {step === 1 && (
               <motion.div
                 key="step-1"
-                className="flex-1 flex flex-col"
+                className="flex-1 flex flex-col min-h-0"
                 {...stepVariants}
                 transition={{ duration: 0.2, ease: easeOutQuad }}
               >
@@ -1299,7 +1301,7 @@ export default function OnboardingPage() {
             {step === 2 && (
               <motion.div
                 key="step-2"
-                className="flex-1 flex flex-col"
+                className="flex-1 flex flex-col min-h-0"
                 {...stepVariants}
                 transition={{ duration: 0.2, ease: easeOutQuad }}
               >
