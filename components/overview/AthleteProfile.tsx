@@ -85,9 +85,9 @@ export function AthleteProfile({
     : null;
 
   return (
-    <div className="rounded-xl border border-brand/20 bg-brand/5 p-5">
+    <div className="rounded-xl border border-neutral-200 bg-white p-5">
       <div className="mb-4 flex items-center gap-2">
-        <div className="h-2 w-2 rounded-full bg-brand" />
+        <div className="h-2 w-2 rounded-full bg-neutral-400" />
         <h3 className="text-sm font-semibold text-neutral-900">Athlete</h3>
       </div>
 
@@ -110,7 +110,7 @@ export function AthleteProfile({
 
       {/* Strava fitness metrics */}
       {snapshot?.ctl != null && (
-        <div className="mt-4 border-t border-brand/10 pt-4">
+        <div className="mt-4 border-t border-neutral-100 pt-4">
           <p className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500">
             Training Load
           </p>
@@ -148,7 +148,7 @@ export function AthleteProfile({
 
       {/* Goal */}
       {goals && (
-        <div className="mt-4 border-t border-brand/10 pt-4">
+        <div className="mt-4 border-t border-neutral-100 pt-4">
           <p className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500">
             Goal
           </p>
@@ -175,7 +175,7 @@ export function AthleteProfile({
 
       {/* Notes */}
       {(trainingBackground.injuries || trainingBackground.specialNotes) && (
-        <div className="mt-4 border-t border-brand/10 pt-4">
+        <div className="mt-4 border-t border-neutral-100 pt-4">
           {trainingBackground.injuries && (
             <div className="mb-2">
               <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">

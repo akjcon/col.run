@@ -62,27 +62,12 @@ export default function Overview() {
   return (
     <div className="min-h-screen bg-white pb-24">
       <div className="mx-auto max-w-3xl px-4 py-6">
-        {/* Athlete Section */}
-        {userData?.trainingBackground && (
-          <div className="mb-8">
-            <AthleteProfile
-              trainingBackground={userData.trainingBackground}
-              snapshot={snapshot}
-              currentWeekData={currentWeekData}
-              totalPlanMiles={totalPlanMiles}
-            />
-          </div>
-        )}
-
-        {/* Pace Zones */}
-        <div className="mb-8">
-          <PaceZonesCard
-            thresholdPace={snapshot?.thresholdPace ?? snapshot?.estimatedThresholdPace ?? userData?.trainingBackground?.thresholdPace}
-          />
-        </div>
-
-        {/* Training Plan Section */}
         <div className="space-y-4">
+          <WeeklyVolumeChart
+            weeks={activePlan.weeks}
+            currentWeek={currentWeek}
+          />
+
           {activePlan.phases && activePlan.phases.length > 0 && (
             <PhaseTimeline
               phases={activePlan.phases}
@@ -91,12 +76,20 @@ export default function Overview() {
             />
           )}
 
-          <WeeklyVolumeChart
-            weeks={activePlan.weeks}
-            currentWeek={currentWeek}
+          <PaceZonesCard
+            thresholdPace={snapshot?.thresholdPace ?? snapshot?.estimatedThresholdPace ?? userData?.trainingBackground?.thresholdPace}
           />
 
           <PlanStats weeks={activePlan.weeks} />
+
+          {userData?.trainingBackground && (
+            <AthleteProfile
+              trainingBackground={userData.trainingBackground}
+              snapshot={snapshot}
+              currentWeekData={currentWeekData}
+              totalPlanMiles={totalPlanMiles}
+            />
+          )}
         </div>
       </div>
     </div>
