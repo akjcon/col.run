@@ -183,11 +183,22 @@ export function calculateFitnessProfile(activities: Activity[], userId: string):
   // TSB = CTL - ATL
   const tsb = ctl - atl;
 
-  // Calculate weekly stats (last 7 days)
-  const weekAgo = now - 7 * oneDay;
-  const weekActivities = sorted.filter((a) => a.date >= weekAgo);
-  const weeklyVolume = weekActivities.reduce((sum, a) => sum + a.duration, 0);
-  const weeklyMileage = weekActivities.reduce((sum, a) => sum + a.distance, 0);
+  // Calculate weekly mileage as a rolling average over the last 6 completed weeks.
+  // We exclude the current in-progress week since it will almost always be
+  // artificially low (e.g. 5 miles on a Monday of a 40-mile week).
+  const currentWeekStart = getWeekStartTimestamp(now);
+  const ROLLING_WEEKS = 6;
+  const rollingStart = currentWeekStart - ROLLING_WEEKS * 7 * oneDay;
+  const completedWeekActivities = sorted.filter(
+    (a) => a.date >= rollingStart && a.date < currentWeekStart
+  );
+  const rollingMileage = completedWeekActivities.reduce((sum, a) => sum + a.distance, 0);
+  const rollingVolume = completedWeekActivities.reduce((sum, a) => sum + a.duration, 0);
+
+  // Count how many of those weeks actually had activities
+  const weeksWithData = countWeeksWithActivities(completedWeekActivities, rollingStart, currentWeekStart);
+  const weeklyMileage = weeksWithData > 0 ? rollingMileage / weeksWithData : 0;
+  const weeklyVolume = weeksWithData > 0 ? rollingVolume / weeksWithData : 0;
 
   // Find longest run in last 12 weeks
   const twelveWeeksAgo = now - 84 * oneDay;
@@ -302,4 +313,36 @@ function estimateThresholdPace(activities: Activity[]): number | undefined {
     thresholdEfforts.reduce((sum, a) => sum + a.avgPace, 0) / thresholdEfforts.length;
 
   return Math.round(avgThresholdPace * 100) / 100;
+}
+
+/**
+ * Get the Monday 00:00 timestamp for the week containing the given timestamp
+ */
+function getWeekStartTimestamp(timestamp: number): number {
+  const date = new Date(timestamp);
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day; // Monday = 1
+  date.setDate(date.getDate() + diff);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+}
+
+/**
+ * Count how many distinct weeks within a range had at least one activity.
+ * This prevents weeks with zero running (vacation, illness) from dragging
+ * the average down — we want average volume when actually training.
+ */
+function countWeeksWithActivities(
+  activities: Activity[],
+  rangeStart: number,
+  rangeEnd: number
+): number {
+  const activeWeeks = new Set<string>();
+  for (const activity of activities) {
+    if (activity.date >= rangeStart && activity.date < rangeEnd) {
+      const weekStart = getWeekStartTimestamp(activity.date);
+      activeWeeks.add(String(weekStart));
+    }
+  }
+  return activeWeeks.size;
 }
