@@ -1,7 +1,7 @@
 "use client";
 
 import { Drawer } from "vaul";
-import { Send, X } from "lucide-react";
+import { Loader2, Send, X } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useChatContext, type ChatMessage, type PlanModificationData, type PaceZoneUpdateData } from "@/lib/chat-context";
@@ -426,8 +426,6 @@ function ChatUI() {
         const reader = response.body!.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
-        let planMod: PlanModificationData | null = null;
-        let paceZoneMod: PaceZoneUpdateData | null = null;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -462,43 +460,68 @@ function ChatUI() {
                   ];
                 });
               } else if (event.type === "plan_modification") {
-                planMod = { ...event.data, status: "proposed" as const };
+                const mod = { ...event.data, status: "proposed" as const };
+                setMessages((prev) => {
+                  const last = prev[prev.length - 1];
+                  return [
+                    ...prev.slice(0, -1),
+                    {
+                      ...last,
+                      status: undefined,
+                      content: last.content || "Here are my proposed changes to your plan:",
+                      planModification: mod,
+                    },
+                  ];
+                });
               } else if (event.type === "plan_modification_failed") {
-                // All changes failed validation — show inline error
-                planMod = {
+                const mod = {
                   reasoning: event.data.reasoning,
                   changes: [],
                   status: "error" as const,
                   error: `Validation failed: ${(event.data.errors as string[]).join("; ")}`,
                 };
+                setMessages((prev) => {
+                  const last = prev[prev.length - 1];
+                  return [
+                    ...prev.slice(0, -1),
+                    {
+                      ...last,
+                      status: undefined,
+                      content: last.content || "I tried to modify your plan, but ran into an issue:",
+                      planModification: mod,
+                    },
+                  ];
+                });
               } else if (event.type === "pace_zone_update") {
-                paceZoneMod = { ...event.data, status: "proposed" as const };
+                const mod = { ...event.data, status: "proposed" as const };
+                setMessages((prev) => {
+                  const last = prev[prev.length - 1];
+                  return [
+                    ...prev.slice(0, -1),
+                    {
+                      ...last,
+                      status: undefined,
+                      content: last.content || "Here's my proposed pace zone update:",
+                      paceZoneUpdate: mod,
+                    },
+                  ];
+                });
               } else if (event.type === "error") {
                 throw new Error(event.data?.message || "Something went wrong");
               }
-            } catch {
-              console.warn("Failed to parse NDJSON line:", line);
+            } catch (parseErr) {
+              // Only swallow JSON parse errors. Re-throw intentional
+              // errors (from error events) so the outer catch can
+              // show them to the user via toast.
+              if (parseErr instanceof SyntaxError) {
+                console.warn("Failed to parse NDJSON line:", line);
+              } else {
+                throw parseErr;
+              }
             }
           }
         }
 
-        // After stream ends, attach tool results if present
-        if (planMod || paceZoneMod) {
-          setMessages((prev) => {
-            const last = prev[prev.length - 1];
-            const content =
-              last.content || (planMod ? "Here are my proposed changes to your plan:" : "Here's my proposed pace zone update:");
-            return [
-              ...prev.slice(0, -1),
-              {
-                ...last,
-                content,
-                ...(planMod ? { planModification: planMod } : {}),
-                ...(paceZoneMod ? { paceZoneUpdate: paceZoneMod } : {}),
-              },
-            ];
-          });
-        }
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Something went wrong";
@@ -563,7 +586,7 @@ function ChatUI() {
                     <ChatMarkdown content={message.content} />
                     {message.status && (
                       <div className="mt-2 flex items-center gap-2 text-xs text-neutral-400">
-                        <div className="h-1 w-1 animate-pulse rounded-full bg-neutral-400" />
+                        <Loader2 className="h-3 w-3 animate-spin" />
                         {message.status}
                       </div>
                     )}
@@ -575,7 +598,7 @@ function ChatUI() {
                 )
               ) : message.status ? (
                 <div className="flex items-center gap-2 text-xs text-neutral-400">
-                  <div className="h-1 w-1 animate-pulse rounded-full bg-neutral-400" />
+                  <Loader2 className="h-3 w-3 animate-spin" />
                   {message.status}
                 </div>
               ) : (

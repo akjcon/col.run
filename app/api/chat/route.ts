@@ -281,11 +281,32 @@ export async function POST(req: NextRequest) {
         };
 
         try {
+          // Send status as soon as a tool_use block starts streaming
+          // (before the full JSON is received), so the client can show a spinner
+          const attachToolStartListener = (s: typeof stream) => {
+            s.on("streamEvent", (event) => {
+              if (
+                event.type === "content_block_start" &&
+                event.content_block.type === "tool_use"
+              ) {
+                const name = event.content_block.name;
+                if (name === "propose_plan_changes") {
+                  sendEvent({ type: "status", data: "Preparing plan changes..." });
+                } else if (name === "update_threshold_pace") {
+                  sendEvent({ type: "status", data: "Updating pace zones..." });
+                } else if (name === "read_athlete_data") {
+                  sendEvent({ type: "status", data: "Looking up your data..." });
+                }
+              }
+            });
+          };
+
           // Stream text events in real-time
           stream.on("text", (text) => {
             fullText += text;
             sendEvent({ type: "text", data: text });
           });
+          attachToolStartListener(stream);
 
           // Wait for the full message to resolve (accumulates tool_use blocks)
           let finalMessage = await stream.finalMessage();
@@ -300,9 +321,6 @@ export async function POST(req: NextRequest) {
 
             // If no read_athlete_data calls, break to handle other tools below
             if (readToolCalls.length === 0) break;
-
-            // Notify client that we're looking up data
-            sendEvent({ type: "status", data: "Looking up your data..." });
 
             // Execute all read_athlete_data calls
             const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
@@ -354,6 +372,7 @@ export async function POST(req: NextRequest) {
               fullText += text;
               sendEvent({ type: "text", data: text });
             });
+            attachToolStartListener(continuationStream);
 
             finalMessage = await continuationStream.finalMessage();
           }

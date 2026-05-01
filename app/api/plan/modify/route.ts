@@ -35,12 +35,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Limit change count
-    const weekChanges = changes.filter((c) => c.type === "replace_week");
-    const dayChanges = changes.filter((c) => c.type === "replace_day");
-    if (weekChanges.length > 4 || dayChanges.length > 7) {
+    // Cap payload size to prevent abuse (plans are typically ≤30 weeks)
+    if (changes.length > 30) {
       return NextResponse.json(
-        { error: "Too many changes: max 4 week replacements or 7 day replacements" },
+        { error: "Too many changes in a single request" },
         { status: 400 }
       );
     }
