@@ -8,6 +8,7 @@ import { getAdminDb } from "@/lib/firebase-admin";
 import { validateWeek, validateDay } from "@/lib/blocks/validation";
 import type { ChatContext, UserData, TrainingPlan, TrainingBackground, CoachMemoryEntry } from "@/lib/types";
 import type { Week, Day } from "@/lib/blocks/types";
+import { readCoachMemory, executeCoachMemoryUpdate, type CoachMemoryUpdate } from "@/lib/coach-memory";
 
 // =============================================================================
 // Firestore Read Tool Executor
@@ -172,96 +173,6 @@ async function saveMessageAdmin(userId: string, message: { role: string; content
       });
   } catch (error) {
     console.error("Failed to save chat message:", error);
-  }
-}
-
-// =============================================================================
-// Coach Memory — persistent notes across chat sessions
-// =============================================================================
-
-async function readCoachMemory(userId: string): Promise<CoachMemoryEntry[]> {
-  try {
-    const db = getAdminDb();
-    const doc = await db
-      .collection("users")
-      .doc(userId)
-      .collection("coachMemory")
-      .doc("notes")
-      .get();
-
-    if (!doc.exists) return [];
-    const data = doc.data()!;
-    return (data.entries as CoachMemoryEntry[]) || [];
-  } catch (error) {
-    console.warn("Could not read coach memory:", error);
-    return [];
-  }
-}
-
-interface CoachMemoryUpdate {
-  additions?: string[];
-  updates?: { id: string; content: string }[];
-  removals?: string[];
-}
-
-async function executeCoachMemoryUpdate(
-  userId: string,
-  input: CoachMemoryUpdate
-): Promise<string> {
-  try {
-    const db = getAdminDb();
-    const docRef = db
-      .collection("users")
-      .doc(userId)
-      .collection("coachMemory")
-      .doc("notes");
-
-    const doc = await docRef.get();
-    const entries: CoachMemoryEntry[] = doc.exists
-      ? (doc.data()!.entries as CoachMemoryEntry[]) || []
-      : [];
-
-    const now = Date.now();
-
-    // Process removals
-    if (input.removals?.length) {
-      const removeSet = new Set(input.removals);
-      const before = entries.length;
-      const filtered = entries.filter((e) => !removeSet.has(e.id));
-      entries.length = 0;
-      entries.push(...filtered);
-      console.log(`Coach memory: removed ${before - entries.length} notes`);
-    }
-
-    // Process updates
-    if (input.updates?.length) {
-      for (const update of input.updates) {
-        const entry = entries.find((e) => e.id === update.id);
-        if (entry) {
-          entry.content = update.content;
-          entry.updatedAt = now;
-        }
-      }
-    }
-
-    // Process additions (cap at 30 notes)
-    if (input.additions?.length) {
-      for (const content of input.additions) {
-        if (entries.length >= 30) break;
-        entries.push({
-          id: `m_${now}_${Math.random().toString(36).slice(2, 8)}`,
-          content,
-          createdAt: now,
-          updatedAt: now,
-        });
-      }
-    }
-
-    await docRef.set({ entries, updatedAt: now });
-    return JSON.stringify({ success: true, totalNotes: entries.length });
-  } catch (error) {
-    console.error("Failed to update coach memory:", error);
-    return JSON.stringify({ error: String(error) });
   }
 }
 
