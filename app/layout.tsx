@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { UserProvider } from "@/lib/user-context-rtk";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -8,6 +8,13 @@ import { DevToolPanel } from "@/components/DevToolPanel";
 export const metadata: Metadata = {
   title: "col",
   description: "simply training",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 // Runs before React hydration to apply persisted UI preferences (sidebar

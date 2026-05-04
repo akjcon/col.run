@@ -563,7 +563,7 @@ function ChatUI() {
   return (
     <>
       {/* Messages */}
-      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -660,7 +660,7 @@ function ChatUI() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={hoveredPrompt || "Ask about your training..."}
-            className="w-full resize-none rounded-lg border border-neutral-200 p-3 pr-12 text-sm focus:border-neutral-300 focus:outline-hidden focus:ring-0"
+            className="w-full resize-none rounded-lg border border-neutral-200 p-3 pr-12 text-[16px] focus:border-neutral-300 focus:outline-hidden focus:ring-0"
             disabled={isStreaming}
             rows={2}
             autoComplete="off"
@@ -679,7 +679,7 @@ function ChatUI() {
             <Send className="h-3.5 w-3.5" />
           </button>
         </div>
-        <p className="mt-1.5 text-[10px] text-neutral-400">
+        <p className="mt-1.5 hidden text-[10px] text-neutral-400 md:block">
           Enter to send, Shift+Enter for newline
         </p>
       </div>
@@ -694,6 +694,7 @@ function ChatUI() {
 export function MobileChatDrawer() {
   const { isOpen, closeChat } = useChatContext();
   const [isDesktop, setIsDesktop] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 768px)");
@@ -701,6 +702,24 @@ export function MobileChatDrawer() {
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     mql.addEventListener("change", handler);
     return () => mql.removeEventListener("change", handler);
+  }, []);
+
+  // Track iOS keyboard via visualViewport so the input stays visible
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const handleResize = () => {
+      const kbh = window.innerHeight - viewport.height - viewport.offsetTop;
+      setKeyboardHeight(kbh > 150 ? kbh : 0);
+    };
+
+    viewport.addEventListener("resize", handleResize);
+    viewport.addEventListener("scroll", handleResize);
+    return () => {
+      viewport.removeEventListener("resize", handleResize);
+      viewport.removeEventListener("scroll", handleResize);
+    };
   }, []);
 
   // Don't open Vaul on desktop — DesktopChatPanel handles it
@@ -712,10 +731,14 @@ export function MobileChatDrawer() {
       onOpenChange={(open) => {
         if (!open) closeChat();
       }}
+      repositionInputs={false}
     >
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 mt-24 flex h-[85vh] flex-col rounded-t-[10px] border-t border-neutral-200 bg-white">
+        <Drawer.Content
+          className="fixed bottom-0 left-0 right-0 z-50 mt-24 flex h-[85vh] flex-col rounded-t-[10px] border-t border-neutral-200 bg-white"
+          style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : undefined}
+        >
           {/* Handle */}
           <div className="flex justify-center p-2">
             <div className="h-1 w-12 rounded-full bg-neutral-300" />
