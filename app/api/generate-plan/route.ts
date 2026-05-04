@@ -135,16 +135,14 @@ export async function POST(req: NextRequest) {
             if (snap.peakWeeklyMileage) athlete.peakWeeklyMileage = snap.peakWeeklyMileage;
             if (snap.ultraExperience !== undefined) athlete.ultraExperience = snap.ultraExperience;
             if (snap.trailExperience !== undefined) athlete.trailExperience = snap.trailExperience;
-            // Override experience with the Strava-derived experienceLevel
-            // when available — lifetimeMiles-based classification is more
-            // reliable than what the user self-reported in onboarding.
+            // Experience is already resolved in the snapshot (Strava > self-reported)
             if (
-              snap.experienceLevel === "beginner" ||
-              snap.experienceLevel === "intermediate" ||
-              snap.experienceLevel === "advanced" ||
-              snap.experienceLevel === "elite"
+              snap.experience === "beginner" ||
+              snap.experience === "intermediate" ||
+              snap.experience === "advanced" ||
+              snap.experience === "elite"
             ) {
-              athlete.experience = snap.experienceLevel;
+              athlete.experience = snap.experience;
             }
           }
         } catch (err) {

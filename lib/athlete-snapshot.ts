@@ -97,9 +97,13 @@ export async function buildAthleteSnapshot(
     snapshot.lifetimeRuns = exp.lifetimeRuns;
     snapshot.longestRunEver = exp.longestRunEver;
     snapshot.peakWeeklyMileage = exp.peakWeeklyMileage;
-    snapshot.experienceLevel = exp.experienceLevel;
     snapshot.ultraExperience = exp.ultraExperience;
     snapshot.trailExperience = exp.trailExperience;
+
+    // Strava-derived experience overrides self-reported (objective > subjective)
+    if (exp.experienceLevel) {
+      snapshot.experience = exp.experienceLevel;
+    }
   }
 
   // Calculate recent adherence from WorkoutLogs (last 4 weeks)

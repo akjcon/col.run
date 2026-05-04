@@ -111,12 +111,12 @@ async function main() {
     if (snap.trailExperience !== undefined)
       athlete.trailExperience = snap.trailExperience;
     if (
-      snap.experienceLevel === "beginner" ||
-      snap.experienceLevel === "intermediate" ||
-      snap.experienceLevel === "advanced" ||
-      snap.experienceLevel === "elite"
+      snap.experience === "beginner" ||
+      snap.experience === "intermediate" ||
+      snap.experience === "advanced" ||
+      snap.experience === "elite"
     ) {
-      athlete.experience = snap.experienceLevel;
+      athlete.experience = snap.experience;
     }
   }
 

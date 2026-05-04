@@ -88,7 +88,7 @@ Use these ranges to judge whether the athlete's avg pace was appropriate for the
   // Build rich athlete context
   const athleteContext = snapshot
     ? [
-        `Experience: ${snapshot.experienceLevel ?? snapshot.experience}`,
+        `Experience: ${snapshot.experience}`,
         snapshot.weeklyMileage
           ? `Typical weekly mileage: ${snapshot.weeklyMileage} mi`
           : null,
@@ -210,7 +210,7 @@ export async function analyzeUnplannedWorkout(
 
   const athleteContext = snapshot
     ? [
-        `Experience: ${snapshot.experienceLevel ?? snapshot.experience}`,
+        `Experience: ${snapshot.experience}`,
         snapshot.weeklyMileage
           ? `Typical weekly mileage: ${snapshot.weeklyMileage} mi`
           : null,

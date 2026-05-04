@@ -76,7 +76,7 @@ function generateChatPrompt(userData: UserData): string {
   const profileLines: string[] = [];
 
   if (snapshot) {
-    if (snapshot.experienceLevel) profileLines.push(`- Experience level: ${snapshot.experienceLevel}`);
+    if (snapshot.experience) profileLines.push(`- Experience level: ${snapshot.experience}`);
     if (snapshot.currentWeeklyMileage) profileLines.push(`- Current weekly mileage: ${snapshot.currentWeeklyMileage} miles`);
     if (snapshot.peakWeeklyMileage) profileLines.push(`- Peak weekly mileage: ${snapshot.peakWeeklyMileage} miles`);
     if (snapshot.lifetimeMiles) profileLines.push(`- Lifetime miles: ${snapshot.lifetimeMiles}`);
@@ -98,7 +98,7 @@ function generateChatPrompt(userData: UserData): string {
   }
 
   if (background) {
-    if (background.experience && !snapshot?.experienceLevel)
+    if (background.experience && !snapshot?.experience)
       profileLines.push(`- Experience: ${background.experience}`);
     if (background.weeklyMileage && !snapshot?.currentWeeklyMileage)
       profileLines.push(`- Current volume: ${background.weeklyMileage} miles/week`);

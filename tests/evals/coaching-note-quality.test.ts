@@ -76,7 +76,6 @@ function snap(overrides: Partial<AthleteSnapshot> = {}): AthleteSnapshot {
     ctl: 42,
     currentWeeklyMileage: 32,
     lifetimeMiles: 4200,
-    experienceLevel: "intermediate",
     trailExperience: true,
     ...overrides,
   };

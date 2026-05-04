@@ -75,7 +75,7 @@ export function AthleteProfile({
   currentWeekData,
   totalPlanMiles,
 }: AthleteProfileProps) {
-  const experience = snapshot?.experienceLevel ?? trainingBackground.experience;
+  const experience = snapshot?.experience ?? trainingBackground.experience;
   const weeklyMileage = snapshot?.currentWeeklyMileage ?? trainingBackground.weeklyMileage;
   const longestRun = snapshot?.currentLongestRun ?? trainingBackground.longestRun;
   const marathonPR = trainingBackground.marathonPR;

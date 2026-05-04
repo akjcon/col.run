@@ -123,7 +123,7 @@ export interface ChatContext {
 export interface AthleteSnapshot {
   updatedAt: number;
 
-  // From TrainingBackground
+  // Resolved: Strava-derived > self-reported from onboarding
   experience: string;
   weeklyMileage: number;
   longestRun: number;
@@ -145,7 +145,6 @@ export interface AthleteSnapshot {
   lifetimeRuns?: number;
   longestRunEver?: number; // all-time longest single run (miles)
   peakWeeklyMileage?: number;
-  experienceLevel?: string;
   ultraExperience?: boolean;
   trailExperience?: boolean;
 
