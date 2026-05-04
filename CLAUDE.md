@@ -55,9 +55,11 @@ col.run/
 │   │   │   └── workoutApi.ts     # Workout tracking
 │   │   ├── hooks.ts              # Custom Redux hooks
 │   │   └── index.ts              # Store configuration
+│   ├── athlete-snapshot.ts        # Builds denormalized athlete snapshot
+│   ├── coach-memory.ts           # Persistent coach notes (CRUD + Firestore)
 │   ├── clerk-firebase.ts         # Clerk-Firebase integration
 │   ├── firestore.ts              # Direct Firestore operations
-│   ├── llm-service.ts            # Anthropic Claude integration
+│   ├── llm-service.ts            # Anthropic Claude integration + tool defs
 │   ├── types.ts                  # TypeScript type definitions
 │   ├── user-context-rtk.tsx      # User context with RTK
 │   └── optimized_book.md         # Training methodology reference
@@ -180,17 +182,33 @@ Protected routes:
 
 ## AI/LLM Integration
 
-Two-tier LLM system in `lib/llm-service.ts`:
+### Chat System (`app/api/chat/route.ts` + `lib/llm-service.ts`)
 
-1. **Full Context** (Claude Sonnet) - Training plan generation, detailed coaching
-   - Includes book content for methodology reference
-   - Higher token limits, lower temperature
+Chat uses Opus with streaming and multi-turn tool use. The system prompt is assembled by `buildChatConfig()`: athlete profile + plan context + coach memory + tool rules + book reference.
 
-2. **Quick Context** (Claude Haiku) - Simple Q&A, brief advice
-   - Faster, cheaper
-   - Basic personalization
+**Tool loop architecture** — two categories of tools:
+- **Server-side (multi-turn)**: `read_athlete_data`, `update_coach_memory` — executed on the server and results returned to the LLM so it continues generating. Handled in the `while (stop_reason === "tool_use")` loop. Add new server-side tools to the `SERVER_TOOLS` set.
+- **Client-side (terminal)**: `propose_plan_changes`, `update_threshold_pace` — sent as NDJSON events to the frontend for user approval. Handled after the loop breaks.
 
-`shouldUseFullContext()` determines which model based on keywords like "training plan", "periodization", "heart rate zones", etc.
+### Coach Memory (`lib/coach-memory.ts`)
+
+Persistent notes the coach saves about each athlete across conversations. Stored at `users/{userId}/coachMemory/notes` (single doc, array of entries, capped at 30). The LLM decides when to save/update/remove notes via the `update_coach_memory` tool. Notes are injected into the system prompt so the coach "remembers" the athlete.
+
+Pure CRUD logic is in `applyMemoryUpdate()`, separated from Firestore I/O for testability.
+
+### Athlete Snapshot (`lib/athlete-snapshot.ts`)
+
+Single denormalized doc at `users/{userId}/athleteSnapshot/current` — the canonical source of athlete data for all AI features (chat, plan generation, workout analysis). Merges data from:
+- `backgrounds` (onboarding self-report)
+- `fitness/profile` (Strava current metrics: CTL, weekly mileage, pace)
+- `fitness/experience` (Strava lifetime: miles, experience level, ultra/trail)
+- `workoutLogs` (recent adherence)
+
+**Merge rule: when sources conflict, objective Strava data overrides self-reported onboarding data.** Resolve at write time — never write duplicate fields that force consumers to pick. Rebuilt on every Strava webhook and manual sync.
+
+### Quick Context (Claude Haiku)
+
+`quickChatResponse()` in `lib/llm-service.ts` — simple Q&A, brief advice. Faster, cheaper, no tool use.
 
 ## Key Patterns
 
@@ -244,11 +262,29 @@ Required in `.env.local`:
 3. **Don't call Firestore directly** - Use RTK Query mutations
 4. **Don't skip `sanitizeForFirestore`** - Prevents undefined value errors
 5. **Don't create new files unnecessarily** - Edit existing files when possible
+6. **Don't write duplicate fields from different sources** - Resolve conflicts in the snapshot builder at write time, not in consumers
+7. **Separate pure logic from I/O** - Extract testable pure functions (like `applyMemoryUpdate`) so Firestore wrappers are thin and tests don't need mocks
 
-## Testing Firebase Connection
+## Debugging User Issues
 
 ```bash
-npm run test-firebase
+# Query any Firestore path (use --json for full content, default truncates to 100 chars)
+npx tsx scripts/query-firestore.ts users                                    # list all users
+npx tsx scripts/query-firestore.ts users/USER_ID/chatHistory --json         # full chat logs
+npx tsx scripts/query-firestore.ts users/USER_ID/athleteSnapshot/current    # snapshot
+npx tsx scripts/query-firestore.ts users/USER_ID/coachMemory/notes          # coach memory
+
+# Re-sync Strava data and rebuild snapshot
+npx tsx scripts/manual-sync.ts USER_ID
+```
+
+## Testing
+
+```bash
+npm run test              # Run all tests
+npm run test:unit         # Unit tests only
+npm run test:evals        # LLM eval tests
+npm run test-firebase     # Test Firebase connection
 ```
 
 ## File Naming Conventions
