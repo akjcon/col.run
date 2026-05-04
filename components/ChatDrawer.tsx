@@ -660,7 +660,7 @@ function ChatUI() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={hoveredPrompt || "Ask about your training..."}
-            className="w-full resize-none rounded-lg border border-neutral-200 p-3 pr-12 text-[16px] focus:border-neutral-300 focus:outline-hidden focus:ring-0"
+            className="w-full resize-none rounded-lg border border-neutral-200 p-3 pr-12 text-[16px] focus:border-neutral-300 focus:outline-hidden focus:ring-0 md:text-sm"
             disabled={isStreaming}
             rows={2}
             autoComplete="off"

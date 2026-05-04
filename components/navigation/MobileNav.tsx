@@ -1,179 +1,118 @@
 "use client";
 
-import { useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Menu, X, MessageCircle, Settings } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  Home,
+  BarChart3,
+  CalendarDays,
+  MessageCircle,
+  User,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { UserButton, useUser, SignInButton } from "@clerk/nextjs";
-import Image from "next/image";
-import { navigationItems } from "./constants";
 import { useChatContext } from "@/lib/chat-context";
+import type { LucideIcon } from "lucide-react";
+
+const SLOTS = 5;
+
+const routeItems = [
+  { icon: Home, label: "Home", href: "/home", slot: 0 },
+  { icon: BarChart3, label: "Overview", href: "/overview", slot: 1 },
+  { icon: CalendarDays, label: "Calendar", href: "/calendar", slot: 3 },
+  { icon: User, label: "Profile", href: "/settings", slot: 4 },
+];
 
 export function MobileNav() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isSignedIn, user } = useUser();
-  const { toggleChat } = useChatContext();
+  const pathname = usePathname();
+  const { toggleChat, isOpen: isChatOpen } = useChatContext();
+  const prefersReducedMotion = useReducedMotion();
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  const activeRoute = routeItems.find((r) => pathname.startsWith(r.href));
+  const thumbSlot = isChatOpen ? -1 : (activeRoute?.slot ?? -1);
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
+  const springTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { type: "spring" as const, duration: 0.4, bounce: 0 };
 
   return (
-    <>
-      <nav className="fixed top-0 left-0 right-0 z-40 w-full border-b border-neutral-200 bg-white backdrop-blur-sm">
-        <div className="container mx-auto flex h-14 items-center px-4">
-          {/* Mobile hamburger menu */}
-          <button
-            onClick={toggleMobileMenu}
-            className="rounded-lg p-2 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-50 active:scale-[0.98]"
-            aria-label="Toggle menu"
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 flex justify-center px-5 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+      aria-label="Main"
+    >
+      <div className="relative flex w-full max-w-md items-center rounded-full bg-white/80 p-1.5 shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
+        {/* Thumb track */}
+        <div className="pointer-events-none absolute inset-1.5">
+          <motion.div
+            className="relative h-full rounded-full bg-neutral-900/[0.08] overflow-hidden before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:border before:border-black/15 before:[mask-image:linear-gradient(to_bottom,black_50%,rgba(0,0,0,0.3))] after:pointer-events-none after:absolute after:inset-[1px] after:rounded-full after:border after:border-white/70 after:[mask-image:linear-gradient(to_bottom,black_20%,transparent)]"
+            style={{ width: `${100 / SLOTS}%` }}
+            animate={{
+              x: `${(thumbSlot >= 0 ? thumbSlot : activeRoute?.slot ?? 0) * 100}%`,
+              opacity: thumbSlot >= 0 ? 1 : 0,
+            }}
+            transition={springTransition}
+          />
+        </div>
+
+        <NavTab href="/home" icon={Home} label="Home" active={thumbSlot === 0} />
+        <NavTab href="/overview" icon={BarChart3} label="Overview" active={thumbSlot === 1} />
+
+        {/* Coach — center accent */}
+        <div className="relative z-10 flex flex-1 items-center justify-center">
+          <motion.button
+            onClick={toggleChat}
+            whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
+            className={cn(
+              "flex h-10 w-10 items-center justify-center rounded-full touch-manipulation",
+              "transition-[background-color,box-shadow] duration-200 ease-out",
+              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-900",
+              isChatOpen
+                ? "bg-[#E98A15] shadow-[0_2px_8px_rgba(233,138,21,0.25)]"
+                : "bg-[#E98A15]/10"
+            )}
+            aria-label={isChatOpen ? "Close coach chat" : "Open coach chat"}
           >
-            <div className="relative">
-              <Menu
-                className={cn(
-                  "h-5 w-5 transition-[transform,opacity] duration-200 ease-out",
-                  isMobileMenuOpen
-                    ? "rotate-90 opacity-0"
-                    : "rotate-0 opacity-100"
-                )}
-              />
-              <X
-                className={cn(
-                  "absolute left-0 top-0 h-5 w-5 transition-[transform,opacity] duration-200 ease-out",
-                  isMobileMenuOpen
-                    ? "rotate-0 opacity-100"
-                    : "-rotate-90 opacity-0"
-                )}
-              />
-            </div>
-          </button>
-
-          {/* Logo */}
-          <Link href={isSignedIn ? "/home" : "/"} className="ml-2 flex items-center">
-            <Image
-              src="/col_logo.svg"
-              alt="col"
-              width={36}
-              height={36}
-              priority
+            <MessageCircle
+              className={cn(
+                "h-[18px] w-[18px] transition-colors duration-200 ease-out",
+                isChatOpen ? "text-white" : "text-[#E98A15]"
+              )}
             />
-          </Link>
-        </div>
-      </nav>
-
-      {/* Mobile menu overlay */}
-      <div
-        className={cn(
-          "fixed inset-0 z-50 bg-black/20 transition-opacity duration-200 ease-out",
-          isMobileMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"
-        )}
-        onClick={closeMobileMenu}
-      />
-
-      {/* Mobile menu drawer */}
-      <div
-        className={cn(
-          "fixed left-0 top-0 z-60 flex h-full w-72 flex-col border-r border-neutral-200 bg-white transition-transform duration-200 ease-out",
-          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
-        {/* Mobile menu header */}
-        <div className="border-b border-neutral-100 bg-neutral-50 h-14 flex items-center px-4 w-full">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
-              <Image src="/col_logo.svg" alt="col" width={32} height={32} />
-              <span className="text-lg font-normal text-neutral-900">
-                col.run
-              </span>
-            </div>
-            <button
-              onClick={closeMobileMenu}
-              className="ml-auto rounded-lg p-2 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-100 active:scale-[0.98]"
-              aria-label="Close menu"
-            >
-              <X className="h-5 w-5 text-neutral-600" />
-            </button>
-          </div>
+          </motion.button>
         </div>
 
-        {/* Mobile menu content */}
-        <div className="flex-1 p-4">
-          {/* Authentication for mobile - only show if not signed in */}
-          {!isSignedIn && (
-            <div className="mb-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
-              <p className="mb-3 text-sm text-neutral-700">
-                Sign in to access your training plan
-              </p>
-              <SignInButton mode="modal">
-                <button className="w-full rounded-lg bg-neutral-900 px-4 py-2 font-medium text-white transition-colors hover:bg-neutral-800">
-                  Sign In
-                </button>
-              </SignInButton>
-            </div>
-          )}
-
-          {/* Navigation links - only show if signed in */}
-          {isSignedIn && (
-            <nav className="space-y-1">
-              {navigationItems.map((item, index) => {
-                const IconComponent = item.icon;
-                return (
-                  <Link
-                    key={index}
-                    href={item.href!}
-                    onClick={closeMobileMenu}
-                    className="flex items-center space-x-3 rounded-lg p-3 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-50 active:scale-[0.98] active:bg-neutral-100"
-                  >
-                    <IconComponent className="h-5 w-5 text-neutral-600" />
-                    <span className="font-medium text-neutral-700">
-                      {item.label}
-                    </span>
-                  </Link>
-                );
-              })}
-              <button
-                onClick={() => {
-                  closeMobileMenu();
-                  toggleChat();
-                }}
-                className="flex w-full items-center space-x-3 rounded-lg p-3 transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-50 active:scale-[0.98] active:bg-neutral-100"
-              >
-                <MessageCircle className="h-5 w-5 text-neutral-600" />
-                <span className="font-medium text-neutral-700">Coach</span>
-              </button>
-            </nav>
-          )}
-        </div>
-
-        {/* User profile section - pinned to bottom */}
-        {isSignedIn && (
-          <div className="border-t border-neutral-100 bg-neutral-50 p-4">
-            <div className="flex items-center space-x-3">
-              <UserButton />
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-neutral-900">
-                  {user?.firstName} {user?.lastName}
-                </p>
-                <p className="text-sm text-neutral-500 truncate">
-                  {user?.emailAddresses[0]?.emailAddress}
-                </p>
-              </div>
-              <Link
-                href="/settings"
-                onClick={closeMobileMenu}
-                aria-label="Settings"
-                className="relative rounded-md p-2.5 text-neutral-400 transition-[background-color,color,transform] duration-150 ease-out hover:bg-neutral-100 hover:text-neutral-600 active:scale-[0.98]"
-              >
-                <Settings className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        )}
+        <NavTab href="/calendar" icon={CalendarDays} label="Calendar" active={thumbSlot === 3} />
+        <NavTab href="/settings" icon={User} label="Profile" active={thumbSlot === 4} />
       </div>
-    </>
+    </nav>
+  );
+}
+
+function NavTab({
+  href,
+  icon: Icon,
+  label,
+  active,
+}: {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "relative z-10 flex flex-1 flex-col items-center gap-0.5 rounded-full py-2.5 touch-manipulation",
+        "text-[10px] font-medium transition-[color,transform] duration-150 ease-out",
+        "active:scale-[0.96]",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-neutral-900",
+        active ? "text-neutral-900" : "text-neutral-400"
+      )}
+    >
+      <Icon className="h-5 w-5" />
+      <span>{label}</span>
+    </Link>
   );
 }

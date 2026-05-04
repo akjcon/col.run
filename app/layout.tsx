@@ -15,6 +15,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: "cover",
 };
 
 // Runs before React hydration to apply persisted UI preferences (sidebar
@@ -36,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className="overflow-x-hidden">
+      <html lang="en" className="overflow-x-hidden" data-side-nav="collapsed">
         <head>
           <script dangerouslySetInnerHTML={{ __html: noFlashScript }} />
         </head>
