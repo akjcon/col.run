@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { UserData, ChatContext, TrainingPlan } from "./types";
+import { UserData, ChatContext, TrainingPlan, CoachMemoryEntry } from "./types";
 import { calculateCurrentWeek } from "./plan-utils";
 import {
   calculateWeekTotalMiles,
@@ -525,6 +525,57 @@ When the athlete wants to update their threshold pace or says their pace zones a
 `;
 
 // =============================================================================
+// Coach Memory Tool — persistent notes about the athlete across sessions
+// =============================================================================
+
+export const COACH_MEMORY_TOOL: Anthropic.Tool = {
+  name: "update_coach_memory",
+  description:
+    "Update your persistent coaching notes about this athlete. These notes carry across conversations so you remember important context. Use 'add' to save new observations, 'update' to correct/refresh an existing note, or 'remove' to delete one that's outdated.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      additions: {
+        type: "array",
+        items: { type: "string" },
+        description: "New notes to add. Keep each note concise (1-2 sentences).",
+      },
+      updates: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            id: { type: "string", description: "ID of the note to update" },
+            content: { type: "string", description: "New content for the note" },
+          },
+          required: ["id", "content"],
+        },
+        description: "Existing notes to update with corrected/refreshed content.",
+      },
+      removals: {
+        type: "array",
+        items: { type: "string" },
+        description: "IDs of notes to remove because they're no longer relevant.",
+      },
+    },
+  },
+};
+
+const COACH_MEMORY_RULES = `
+
+COACH MEMORY:
+You have persistent memory about this athlete. Your notes below carry across conversations — use them to coach with continuity.
+
+Guidelines for using your memory tool:
+- SAVE things that matter for ongoing coaching: athlete preferences, key facts they've shared, agreements you've made, communication style observations, recurring issues.
+- UPDATE notes when information changes (e.g. "rebuilding post-50K" → "back to full training").
+- REMOVE notes that are clearly outdated or no longer relevant.
+- If something the athlete says CONTRADICTS one of your notes, ask them about it before updating. Don't silently overwrite — they may have a reason, or your note may be wrong.
+- DON'T save transient things: single workout feelings, weather complaints, one-off schedule changes.
+- DON'T over-save. A few high-signal notes are better than a wall of text. Aim for quality over quantity.
+- You can update memory at any point in the conversation when you learn something worth remembering.`;
+
+// =============================================================================
 // Firestore Read Tool — lets the LLM query the athlete's data on demand
 // =============================================================================
 
@@ -569,7 +620,8 @@ export const FIRESTORE_READ_TOOL: Anthropic.Tool = {
 export async function buildChatConfig(
   userData: UserData,
   context?: ChatContext | null,
-  activePlan?: TrainingPlan | null
+  activePlan?: TrainingPlan | null,
+  coachMemory?: CoachMemoryEntry[]
 ): Promise<{ systemPrompt: string; tools: Anthropic.Tool[] }> {
   const bookContent = await getBookContent();
   let systemPrompt = generateChatPrompt(userData);
@@ -585,13 +637,23 @@ export async function buildChatConfig(
   }
 
   systemPrompt += THRESHOLD_PACE_RULES;
+  systemPrompt += COACH_MEMORY_RULES;
+
+  if (coachMemory && coachMemory.length > 0) {
+    systemPrompt += "\n\nYour notes about this athlete:";
+    for (const entry of coachMemory) {
+      systemPrompt += `\n- [${entry.id}] ${entry.content}`;
+    }
+  } else {
+    systemPrompt += "\n\nYou have no notes about this athlete yet. This may be your first conversation — pay attention to what's worth remembering.";
+  }
 
   systemPrompt += `\nDATA ACCESS:
 You have a read_athlete_data tool to query the athlete's Firestore data on demand. Use it when you need info not already in this prompt — pace zones, recent workouts, fitness metrics, Strava activities, etc. Don't guess or say you don't have access; just look it up.`;
 
   systemPrompt += `\n\nBOOK REFERENCE:\n${bookContent}`;
 
-  const tools: Anthropic.Tool[] = [THRESHOLD_PACE_TOOL, FIRESTORE_READ_TOOL];
+  const tools: Anthropic.Tool[] = [THRESHOLD_PACE_TOOL, FIRESTORE_READ_TOOL, COACH_MEMORY_TOOL];
   if (activePlan) {
     tools.push(PLAN_MODIFICATION_TOOL);
   }
@@ -603,9 +665,10 @@ export async function streamChatResponse(
   messages: Array<{ role: "user" | "assistant"; content: string }>,
   userData: UserData,
   context?: ChatContext | null,
-  activePlan?: TrainingPlan | null
+  activePlan?: TrainingPlan | null,
+  coachMemory?: CoachMemoryEntry[]
 ) {
-  const { systemPrompt, tools } = await buildChatConfig(userData, context, activePlan);
+  const { systemPrompt, tools } = await buildChatConfig(userData, context, activePlan, coachMemory);
 
   return anthropic.messages.stream({
     model: "claude-opus-4-6",

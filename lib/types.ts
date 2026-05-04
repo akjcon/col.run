@@ -160,3 +160,10 @@ export interface AthleteSnapshot {
   raceDate?: number;
   targetTime?: string;
 }
+
+export interface CoachMemoryEntry {
+  id: string;
+  content: string;
+  createdAt: number;
+  updatedAt: number;
+}

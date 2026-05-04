@@ -6,7 +6,7 @@ import {
 } from "@/lib/llm-service";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { validateWeek, validateDay } from "@/lib/blocks/validation";
-import type { ChatContext, UserData, TrainingPlan, TrainingBackground } from "@/lib/types";
+import type { ChatContext, UserData, TrainingPlan, TrainingBackground, CoachMemoryEntry } from "@/lib/types";
 import type { Week, Day } from "@/lib/blocks/types";
 
 // =============================================================================
@@ -175,6 +175,96 @@ async function saveMessageAdmin(userId: string, message: { role: string; content
   }
 }
 
+// =============================================================================
+// Coach Memory — persistent notes across chat sessions
+// =============================================================================
+
+async function readCoachMemory(userId: string): Promise<CoachMemoryEntry[]> {
+  try {
+    const db = getAdminDb();
+    const doc = await db
+      .collection("users")
+      .doc(userId)
+      .collection("coachMemory")
+      .doc("notes")
+      .get();
+
+    if (!doc.exists) return [];
+    const data = doc.data()!;
+    return (data.entries as CoachMemoryEntry[]) || [];
+  } catch (error) {
+    console.warn("Could not read coach memory:", error);
+    return [];
+  }
+}
+
+interface CoachMemoryUpdate {
+  additions?: string[];
+  updates?: { id: string; content: string }[];
+  removals?: string[];
+}
+
+async function executeCoachMemoryUpdate(
+  userId: string,
+  input: CoachMemoryUpdate
+): Promise<string> {
+  try {
+    const db = getAdminDb();
+    const docRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("coachMemory")
+      .doc("notes");
+
+    const doc = await docRef.get();
+    const entries: CoachMemoryEntry[] = doc.exists
+      ? (doc.data()!.entries as CoachMemoryEntry[]) || []
+      : [];
+
+    const now = Date.now();
+
+    // Process removals
+    if (input.removals?.length) {
+      const removeSet = new Set(input.removals);
+      const before = entries.length;
+      const filtered = entries.filter((e) => !removeSet.has(e.id));
+      entries.length = 0;
+      entries.push(...filtered);
+      console.log(`Coach memory: removed ${before - entries.length} notes`);
+    }
+
+    // Process updates
+    if (input.updates?.length) {
+      for (const update of input.updates) {
+        const entry = entries.find((e) => e.id === update.id);
+        if (entry) {
+          entry.content = update.content;
+          entry.updatedAt = now;
+        }
+      }
+    }
+
+    // Process additions (cap at 30 notes)
+    if (input.additions?.length) {
+      for (const content of input.additions) {
+        if (entries.length >= 30) break;
+        entries.push({
+          id: `m_${now}_${Math.random().toString(36).slice(2, 8)}`,
+          content,
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+    }
+
+    await docRef.set({ entries, updatedAt: now });
+    return JSON.stringify({ success: true, totalNotes: entries.length });
+  } catch (error) {
+    console.error("Failed to update coach memory:", error);
+    return JSON.stringify({ error: String(error) });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const {
@@ -249,28 +339,33 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Read athlete snapshot for enriched coaching context
+    // Read athlete snapshot and coach memory in parallel
+    let coachMemory: CoachMemoryEntry[] = [];
     try {
       const adminDb = getAdminDb();
-      const snapshotDoc = await adminDb
-        .collection("users")
-        .doc(userId)
-        .collection("athleteSnapshot")
-        .doc("current")
-        .get();
+      const [snapshotDoc, memory] = await Promise.all([
+        adminDb
+          .collection("users")
+          .doc(userId)
+          .collection("athleteSnapshot")
+          .doc("current")
+          .get(),
+        readCoachMemory(userId),
+      ]);
 
       if (snapshotDoc.exists) {
         const snap = snapshotDoc.data()!;
         (userData as unknown as Record<string, unknown>).athleteSnapshot = snap;
       }
+      coachMemory = memory;
     } catch (err) {
-      console.warn("Could not read athlete snapshot for chat:", err);
+      console.warn("Could not read athlete snapshot/memory for chat:", err);
     }
 
     const activePlan = userData.activePlan || null;
 
     // Stream the response with NDJSON events
-    const stream = await streamChatResponse(messages, userData, context, activePlan);
+    const stream = await streamChatResponse(messages, userData, context, activePlan, coachMemory);
     const encoder = new TextEncoder();
     let fullText = "";
 
@@ -296,6 +391,8 @@ export async function POST(req: NextRequest) {
                   sendEvent({ type: "status", data: "Updating pace zones..." });
                 } else if (name === "read_athlete_data") {
                   sendEvent({ type: "status", data: "Looking up your data..." });
+                } else if (name === "update_coach_memory") {
+                  sendEvent({ type: "status", data: "Updating notes..." });
                 }
               }
             });
@@ -311,24 +408,34 @@ export async function POST(req: NextRequest) {
           // Wait for the full message to resolve (accumulates tool_use blocks)
           let finalMessage = await stream.finalMessage();
 
-          // Handle read_athlete_data tool calls (multi-turn loop)
-          // These need to return data to the LLM so it can continue generating
+          // Handle server-side tool calls (multi-turn loop)
+          // read_athlete_data and update_coach_memory execute and return results
+          // to the LLM so it can continue generating
+          const SERVER_TOOLS = new Set(["read_athlete_data", "update_coach_memory"]);
           while (finalMessage.stop_reason === "tool_use") {
-            const readToolCalls = finalMessage.content.filter(
+            const serverToolCalls = finalMessage.content.filter(
               (b): b is Anthropic.Messages.ToolUseBlock =>
-                b.type === "tool_use" && b.name === "read_athlete_data"
+                b.type === "tool_use" && SERVER_TOOLS.has(b.name)
             );
 
-            // If no read_athlete_data calls, break to handle other tools below
-            if (readToolCalls.length === 0) break;
+            // If no server-side tool calls, break to handle client tools below
+            if (serverToolCalls.length === 0) break;
 
-            // Execute all read_athlete_data calls
+            // Execute all server-side tool calls
             const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
-            for (const call of readToolCalls) {
-              const result = await executeFirestoreRead(
-                userId,
-                call.input as FirestoreReadInput
-              );
+            for (const call of serverToolCalls) {
+              let result: string;
+              if (call.name === "read_athlete_data") {
+                result = await executeFirestoreRead(
+                  userId,
+                  call.input as FirestoreReadInput
+                );
+              } else {
+                result = await executeCoachMemoryUpdate(
+                  userId,
+                  call.input as CoachMemoryUpdate
+                );
+              }
               toolResults.push({
                 type: "tool_result",
                 tool_use_id: call.id,
@@ -336,10 +443,10 @@ export async function POST(req: NextRequest) {
               });
             }
 
-            // Also include tool results for any non-read tools (return empty to satisfy API)
+            // Also include tool results for any non-server tools (return empty to satisfy API)
             const otherToolCalls = finalMessage.content.filter(
               (b): b is Anthropic.Messages.ToolUseBlock =>
-                b.type === "tool_use" && b.name !== "read_athlete_data"
+                b.type === "tool_use" && !SERVER_TOOLS.has(b.name)
             );
             for (const call of otherToolCalls) {
               toolResults.push({
@@ -351,7 +458,7 @@ export async function POST(req: NextRequest) {
 
             // Continue the conversation with tool results
             const anthropicClient = new Anthropic();
-            const chatConfig = await buildChatConfig(userData, context, activePlan);
+            const chatConfig = await buildChatConfig(userData, context, activePlan, coachMemory);
             const continuationStream = anthropicClient.messages.stream({
               model: "claude-opus-4-6",
               max_tokens: 16000,
