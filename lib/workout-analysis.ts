@@ -161,7 +161,7 @@ Good examples (notice: short, natural phrasing, no stats):
 
   try {
     const response = await getClient().messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-haiku-4-5",
       max_tokens: 4096,
       temperature: 0.5,
       messages: [{ role: "user", content: prompt }],
@@ -261,7 +261,7 @@ Rules for coachingNote (CRITICAL — follow exactly):
 
   try {
     const response = await getClient().messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-haiku-4-5",
       max_tokens: 4096,
       temperature: 0.5,
       messages: [{ role: "user", content: prompt }],

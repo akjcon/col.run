@@ -20,7 +20,7 @@ export class ReviewerAgent extends BaseAgent<ReviewerInput, ReviewerOutput> {
   constructor() {
     super({
       name: "Reviewer",
-      model: "claude-haiku-4-5-20251001",
+      model: "claude-haiku-4-5",
       maxTokens: 4000,
       temperature: 0.2,
     });

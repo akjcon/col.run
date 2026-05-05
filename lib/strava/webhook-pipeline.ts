@@ -193,8 +193,22 @@ export async function processActivityWebhook(
     // Proceed without snapshot
   }
 
+  // Pre-filter: skip LLM analysis for activities that clearly aren't real workouts
+  const hasDistance = activity.distance != null && activity.distance >= 0.5;
+  const plannedMiles = isMatched ? calculateDayTotalMiles(matchedDay!) : 0;
+  const distanceRatio = hasDistance && plannedMiles > 0 ? activity.distance / plannedMiles : 0;
+  // Skip matched analysis if no distance or wildly off (< 20% of planned)
+  const skipMatchedAnalysis = isMatched && (!hasDistance || distanceRatio < 0.2);
+  // Skip unplanned analysis if no meaningful distance or not a run
+  const RUN_TYPES = new Set(["Run", "TrailRun", "VirtualRun"]);
+  const skipUnplannedAnalysis = !isMatched && (!hasDistance || !RUN_TYPES.has(activity.type));
+
+  if (skipMatchedAnalysis || skipUnplannedAnalysis) {
+    console.log(`Skipping LLM analysis for activity ${activity.stravaId} (distance: ${activity.distance ?? 0}mi, planned: ${plannedMiles}mi)`);
+  }
+
   try {
-    if (isMatched) {
+    if (isMatched && !skipMatchedAnalysis) {
       analysis = await analyzeMatchedWorkout(
         activity,
         matchedDay!,
@@ -206,7 +220,7 @@ export async function processActivityWebhook(
       const matchedAnalysis = analysis as MatchedAnalysis;
       workoutLog.adherence = matchedAnalysis.adherence;
       workoutLog.coachingNote = matchedAnalysis.coachingNote;
-    } else {
+    } else if (!isMatched && !skipUnplannedAnalysis) {
       // Find today's planned day for context
       let todayPlannedDay: Day | null = null;
       let todayWeek: Week | null = null;

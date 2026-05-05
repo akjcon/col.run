@@ -24,10 +24,16 @@ interface MatchResult {
  * 2. If day has workouts, check distance within ±30% of planned
  * 3. Return matched day or null
  */
+// Activity types from Strava that count as running
+const RUN_TYPES = new Set(["Run", "TrailRun", "VirtualRun"]);
+
 export function matchActivityToDay(
   activity: Activity,
   plan: TrainingPlan
 ): MatchResult | null {
+  // Only match runs — walks, hikes, rides, etc. are never the planned workout
+  if (!RUN_TYPES.has(activity.type)) return null;
+
   const weeksWithDates = getWeeksWithDates(
     plan.startDate,
     plan.generatedAt,

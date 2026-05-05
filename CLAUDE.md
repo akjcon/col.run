@@ -7,7 +7,7 @@
 ## Important Notes
 
 - **No existing users**: This project has no production users yet. Don't worry about backwards compatibility, data migrations, or deprecation paths — just make the change directly.
-- **Commit early and often**: Push frequently with descriptive commit messages. Don't batch large changes into a single commit — break work into logical, incremental commits.
+- **Never commit or push without explicit approval**: Do not run git commit or git push unless the user explicitly asks (e.g. "/cp", "commit this", "push it"). Wait for the green light.
 - **LLM debugging mindset**: When an LLM produces bad output, assume WE are doing something wrong — conflicting prompts, misleading context, bad input data — not that the LLM is ignoring or misunderstanding us. Check for contradictions between the prompt, feasibility analysis, and other inputs before blaming the model. The LLM follows what it's given; if the output is bad, the input is bad.
 
 ## Tech Stack
