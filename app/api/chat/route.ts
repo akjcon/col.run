@@ -371,7 +371,7 @@ export async function POST(req: NextRequest) {
             const anthropicClient = new Anthropic();
             const chatConfig = await buildChatConfig(userData, context, activePlan, coachMemory);
             const continuationStream = anthropicClient.messages.stream({
-              model: "claude-sonnet-4-6",
+              model: "claude-opus-4-6",
               max_tokens: 16000,
               temperature: 0.6,
               system: chatConfig.systemPrompt,

@@ -6,7 +6,7 @@
  * 2. Distance match (±30% of planned miles)
  */
 
-import type { Activity } from "./types";
+import { RUN_TYPES, type Activity } from "./types";
 import type { TrainingPlan } from "@/lib/types";
 import type { Week, Day } from "@/lib/blocks/types";
 import { getWeeksWithDates, toNoonUTC } from "@/lib/workout-utils";
@@ -24,9 +24,6 @@ interface MatchResult {
  * 2. If day has workouts, check distance within ±30% of planned
  * 3. Return matched day or null
  */
-// Activity types from Strava that count as running
-const RUN_TYPES = new Set(["Run", "TrailRun", "VirtualRun"]);
-
 export function matchActivityToDay(
   activity: Activity,
   plan: TrainingPlan

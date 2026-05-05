@@ -15,7 +15,7 @@ import {
   analyzeUnplannedWorkout,
 } from "@/lib/workout-analysis";
 import type { MatchedAnalysis, UnplannedAnalysis } from "@/lib/workout-analysis";
-import type { Activity } from "@/lib/strava/types";
+import { RUN_TYPES, type Activity } from "@/lib/strava/types";
 import type { WorkoutLog, TrainingPlan, AthleteSnapshot } from "@/lib/types";
 import type { Week, Day } from "@/lib/blocks/types";
 import { getDayTitle } from "@/lib/workout-display";
@@ -200,7 +200,6 @@ export async function processActivityWebhook(
   // Skip matched analysis if no distance or wildly off (< 20% of planned)
   const skipMatchedAnalysis = isMatched && (!hasDistance || distanceRatio < 0.2);
   // Skip unplanned analysis if no meaningful distance or not a run
-  const RUN_TYPES = new Set(["Run", "TrailRun", "VirtualRun"]);
   const skipUnplannedAnalysis = !isMatched && (!hasDistance || !RUN_TYPES.has(activity.type));
 
   if (skipMatchedAnalysis || skipUnplannedAnalysis) {

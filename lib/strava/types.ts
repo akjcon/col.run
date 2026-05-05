@@ -96,6 +96,9 @@ export interface Activity {
   tss?: number; // Training Stress Score
 }
 
+/** Strava activity types that count as running */
+export const RUN_TYPES = new Set(["Run", "TrailRun", "VirtualRun"]);
+
 // Fitness metrics (current state - last 12 weeks)
 export interface FitnessProfile {
   userId: string;
