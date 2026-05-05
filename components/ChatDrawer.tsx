@@ -1,12 +1,11 @@
 "use client";
 
 import { Drawer } from "vaul";
-import { Loader2, Send, X } from "lucide-react";
+import { AlertCircle, Loader2, RotateCcw, Send, X } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useChatContext, type ChatMessage, type PlanModificationData, type PaceZoneUpdateData } from "@/lib/chat-context";
 import { useUser } from "@/lib/user-context-rtk";
-import { toast } from "sonner";
 import type { ChatContext } from "@/lib/types";
 import { PlanChangeCard } from "./PlanChangeCard";
 import { PaceZoneUpdateCard } from "./PaceZoneUpdateCard";
@@ -449,10 +448,11 @@ function ChatUI() {
               if (event.type === "text") {
                 setMessages((prev) => {
                   const last = prev[prev.length - 1];
-                  // Clear status when real text arrives
+                  // If text resumes after a tool call, ensure separation
+                  const separator = last.status && last.content ? "\n\n" : "";
                   return [
                     ...prev.slice(0, -1),
-                    { ...last, content: last.content + event.data, status: undefined },
+                    { ...last, content: last.content + separator + event.data, status: undefined },
                   ];
                 });
               } else if (event.type === "status") {
@@ -529,16 +529,14 @@ function ChatUI() {
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Something went wrong";
-        toast.error(errorMessage);
         setMessages((prev) => {
           const last = prev[prev.length - 1];
           return [
             ...prev.slice(0, -1),
             {
               ...last,
-              content:
-                last.content ||
-                "Sorry, I encountered an error. Please try again.",
+              status: undefined,
+              error: errorMessage,
             },
           ];
         });
@@ -570,6 +568,28 @@ function ChatUI() {
     setInput(prompt);
     inputRef.current?.focus();
   };
+
+  // Retry: remove the failed assistant + user pair, then resend
+  const pendingRetryRef = useRef<string | null>(null);
+
+  const handleRetry = useCallback((failedMsgId: string) => {
+    setMessages((prev) => {
+      const idx = prev.findIndex((m) => m.id === failedMsgId);
+      if (idx <= 0) return prev;
+      const prevMsg = prev[idx - 1];
+      if (prevMsg?.role !== "user") return prev;
+      pendingRetryRef.current = prevMsg.content;
+      return prev.slice(0, idx - 1);
+    });
+  }, [setMessages]);
+
+  useEffect(() => {
+    if (pendingRetryRef.current && !isStreaming) {
+      const content = pendingRetryRef.current;
+      pendingRetryRef.current = null;
+      sendMessage(content);
+    }
+  }, [isStreaming, sendMessage]);
 
   const suggestedPrompts = getSuggestedPrompts(context);
   const showSuggestions = messages.length <= 1 && !isStreaming;
@@ -615,12 +635,27 @@ function ChatUI() {
                   <Loader2 className="h-3 w-3 animate-spin" />
                   {message.status}
                 </div>
-              ) : (
+              ) : !message.error ? (
                 <div className="flex items-center gap-1 py-1">
                   <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:0ms]" />
                   <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:150ms]" />
                   <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-neutral-400 [animation-delay:300ms]" />
                 </div>
+              ) : null}
+              {message.error && (
+                <>
+                  <div className={cn("flex items-center gap-2 text-xs text-red-500", message.content && "mt-2")}>
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    <span>{message.error}</span>
+                  </div>
+                  <button
+                    onClick={() => handleRetry(message.id)}
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition-colors duration-150 ease-out hover:bg-neutral-50 active:scale-[0.98]"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Retry
+                  </button>
+                </>
               )}
               {message.planModification && (
                 <PlanChangeCard
