@@ -426,9 +426,13 @@ function ChatUI() {
         const reader = response.body!.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
-
         while (true) {
-          const { done, value } = await reader.read();
+          // Timeout if no data received for 90s (server tool loop may be hung)
+          const timeout = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("Response timed out — please try again.")), 90_000)
+          );
+          const read = reader.read();
+          const { done, value } = await Promise.race([read, timeout]);
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
@@ -540,6 +544,15 @@ function ChatUI() {
         });
       } finally {
         setIsStreaming(false);
+        // Clear any lingering status (e.g. "Updating notes..." when the LLM
+        // called a server tool but produced no text afterward)
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.status) {
+            return [...prev.slice(0, -1), { ...last, status: undefined }];
+          }
+          return prev;
+        });
       }
     },
     [messages, isStreaming, userId, context, setMessages, setIsStreaming]
@@ -549,6 +562,7 @@ function ChatUI() {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage(input);
+      inputRef.current?.focus();
     }
   };
 
@@ -634,7 +648,7 @@ function ChatUI() {
 
       {/* Suggested Prompts */}
       {showSuggestions && (
-        <div className="border-t border-neutral-200">
+        <div className="shrink-0 border-t border-neutral-200">
           <div className="flex gap-2 overflow-x-auto p-3 pb-2">
             {suggestedPrompts.map((sp) => (
               <button
@@ -652,7 +666,7 @@ function ChatUI() {
       )}
 
       {/* Input */}
-      <div className="border-t border-neutral-200 p-3">
+      <div className="shrink-0 border-t border-neutral-200 px-3 pt-2 pb-1">
         <div className="relative">
           <textarea
             ref={inputRef}
@@ -661,7 +675,6 @@ function ChatUI() {
             onKeyDown={handleKeyDown}
             placeholder={hoveredPrompt || "Ask about your training..."}
             className="w-full resize-none rounded-lg border border-neutral-200 p-3 pr-12 text-[16px] focus:border-neutral-300 focus:outline-hidden focus:ring-0 md:text-sm"
-            disabled={isStreaming}
             rows={2}
             autoComplete="off"
             autoCorrect="off"
@@ -669,7 +682,11 @@ function ChatUI() {
             spellCheck={false}
           />
           <button
-            onClick={() => sendMessage(input)}
+            onPointerDown={(e) => e.preventDefault()}
+            onClick={() => {
+              sendMessage(input);
+              inputRef.current?.focus();
+            }}
             disabled={!input.trim() || isStreaming}
             aria-label="Send message"
             className="absolute bottom-3 right-2 flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white transition-[background-color,transform] duration-150 ease-out hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
@@ -694,7 +711,7 @@ function ChatUI() {
 export function MobileChatDrawer() {
   const { isOpen, closeChat } = useChatContext();
   const [isDesktop, setIsDesktop] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 768px)");
@@ -704,26 +721,39 @@ export function MobileChatDrawer() {
     return () => mql.removeEventListener("change", handler);
   }, []);
 
-  // Track iOS keyboard via visualViewport so the input stays visible
+  // Track keyboard height via Visual Viewport. When the keyboard is up,
+  // shrink the drawer and push it above the keyboard.
   useEffect(() => {
-    const viewport = window.visualViewport;
-    if (!viewport) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
 
-    const handleResize = () => {
-      const kbh = window.innerHeight - viewport.height - viewport.offsetTop;
-      setKeyboardHeight(kbh > 150 ? kbh : 0);
+    const sync = () => {
+      const kb = window.innerHeight - vv.height;
+      setKeyboardOffset(kb > 150 ? kb : 0);
     };
 
-    viewport.addEventListener("resize", handleResize);
-    viewport.addEventListener("scroll", handleResize);
+    vv.addEventListener("resize", sync);
+    vv.addEventListener("scroll", sync);
     return () => {
-      viewport.removeEventListener("resize", handleResize);
-      viewport.removeEventListener("scroll", handleResize);
+      vv.removeEventListener("resize", sync);
+      vv.removeEventListener("scroll", sync);
     };
   }, []);
 
   // Don't open Vaul on desktop — DesktopChatPanel handles it
   const shouldOpen = isOpen && !isDesktop;
+
+  // iOS scrolls the underlying page when focusing inputs inside fixed/transformed
+  // elements (keyboard pushes viewport). Pin scroll to 0 while the drawer is open
+  // so touch targets stay aligned and the page doesn't shift behind the overlay.
+  useEffect(() => {
+    if (!shouldOpen) return;
+    const pin = () => {
+      if (window.scrollY !== 0) window.scrollTo(0, 0);
+    };
+    window.addEventListener("scroll", pin);
+    return () => window.removeEventListener("scroll", pin);
+  }, [shouldOpen]);
 
   return (
     <Drawer.Root
@@ -736,22 +766,22 @@ export function MobileChatDrawer() {
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/40" />
         <Drawer.Content
-          className="fixed bottom-0 left-0 right-0 z-50 mt-24 flex h-[85vh] flex-col rounded-t-[10px] border-t border-neutral-200 bg-white"
-          style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : undefined}
+          className="fixed left-0 right-0 z-50 flex flex-col rounded-t-[10px] border-t border-neutral-200 bg-white"
+          style={{
+            bottom: keyboardOffset || 0,
+            height: keyboardOffset ? window.innerHeight - keyboardOffset : "85dvh",
+          }}
         >
           {/* Handle */}
-          <div className="flex justify-center p-2">
+          <div className="flex shrink-0 justify-center p-2">
             <div className="h-1 w-12 rounded-full bg-neutral-300" />
           </div>
 
           {/* Header */}
-          <div className="border-b border-neutral-200 px-4 pb-3">
-            <Drawer.Title className="text-base font-medium text-neutral-900">
-              Coach
+          <div className="shrink-0 border-b border-neutral-200 px-4 pb-3">
+            <Drawer.Title className="text-sm font-medium text-neutral-900">
+              Coach <span className="font-normal text-neutral-400">&ndash; Ask about your workouts, plan, or training</span>
             </Drawer.Title>
-            <p className="text-xs text-neutral-500">
-              Ask about your workouts, plan, or training
-            </p>
           </div>
 
           <ChatUI />

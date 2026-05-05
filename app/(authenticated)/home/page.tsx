@@ -131,7 +131,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="pt-2 pb-24">
+      <div className="pb-24 md:pt-2">
         {/* Top row */}
         <div className="grid grid-cols-1">
           {/* Coaching Note (dismissable, above today's workout) */}

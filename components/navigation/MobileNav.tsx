@@ -44,7 +44,7 @@ export function MobileNav() {
         {/* Thumb track */}
         <div className="pointer-events-none absolute inset-1.5">
           <motion.div
-            className="relative h-full rounded-full bg-neutral-900/[0.08] overflow-hidden before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:border before:border-black/15 before:[mask-image:linear-gradient(to_bottom,black_50%,rgba(0,0,0,0.3))] after:pointer-events-none after:absolute after:inset-[1px] after:rounded-full after:border after:border-white/70 after:[mask-image:linear-gradient(to_bottom,black_20%,transparent)]"
+            className="relative h-full rounded-full bg-neutral-900/[0.08] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden before:pointer-events-none before:absolute before:inset-0 before:rounded-full before:border before:border-black/15 before:[mask-image:linear-gradient(to_bottom,black_50%,rgba(0,0,0,0.3))] after:pointer-events-none after:absolute after:inset-[1px] after:rounded-full after:border after:border-white/70 after:[mask-image:linear-gradient(to_bottom,black_20%,transparent)]"
             style={{ width: `${100 / SLOTS}%` }}
             animate={{
               x: `${(thumbSlot >= 0 ? thumbSlot : activeRoute?.slot ?? 0) * 100}%`,
