@@ -572,7 +572,8 @@ Guidelines for using your memory tool:
 - REMOVE notes that are clearly outdated or no longer relevant.
 - If something the athlete says CONTRADICTS one of your notes, ask them about it before updating. Don't silently overwrite — they may have a reason, or your note may be wrong.
 - DON'T save transient things: single workout feelings, weather complaints, one-off schedule changes.
-- DON'T over-save. A few high-signal notes are better than a wall of text. Aim for quality over quantity.
+- DON'T save data that's already in the athlete snapshot or plan — memory is for things you can ONLY learn from conversation.
+- MAXIMUM 3 additions per tool call. Be selective — save only the most important new insight from this conversation. You can always save more in future conversations.
 - You can update memory at any point in the conversation when you learn something worth remembering.`;
 
 // =============================================================================
@@ -617,41 +618,63 @@ export const FIRESTORE_READ_TOOL: Anthropic.Tool = {
  * Build the full chat config (system prompt + tools) so the chat route
  * can reuse it for tool-use continuation turns.
  */
+type CachedTextBlock = {
+  type: "text";
+  text: string;
+  cache_control?: { type: "ephemeral" };
+};
+
 export async function buildChatConfig(
   userData: UserData,
   context?: ChatContext | null,
   activePlan?: TrainingPlan | null,
   coachMemory?: CoachMemoryEntry[]
-): Promise<{ systemPrompt: string; tools: Anthropic.Tool[] }> {
+): Promise<{ systemPrompt: CachedTextBlock[]; tools: Anthropic.Tool[] }> {
   const bookContent = await getBookContent();
-  let systemPrompt = generateChatPrompt(userData);
+  let dynamicPrompt = generateChatPrompt(userData);
 
   if (context) {
-    systemPrompt += buildContextPrompt(context);
+    dynamicPrompt += buildContextPrompt(context);
   }
 
   if (activePlan) {
     const currentWeek = calculateCurrentWeek(activePlan.startDate, activePlan.totalWeeks);
-    systemPrompt += "\n\n" + buildPlanContext(activePlan, currentWeek);
-    systemPrompt += PLAN_MODIFICATION_RULES;
+    dynamicPrompt += "\n\n" + buildPlanContext(activePlan, currentWeek);
+    dynamicPrompt += PLAN_MODIFICATION_RULES;
   }
 
-  systemPrompt += THRESHOLD_PACE_RULES;
-  systemPrompt += COACH_MEMORY_RULES;
+  dynamicPrompt += THRESHOLD_PACE_RULES;
+  dynamicPrompt += COACH_MEMORY_RULES;
 
   if (coachMemory && coachMemory.length > 0) {
-    systemPrompt += "\n\nYour notes about this athlete:";
+    dynamicPrompt += "\n\nYour notes about this athlete:";
     for (const entry of coachMemory) {
-      systemPrompt += `\n- [${entry.id}] ${entry.content}`;
+      dynamicPrompt += `\n- [${entry.id}] ${entry.content}`;
     }
   } else {
-    systemPrompt += "\n\nYou have no notes about this athlete yet. This may be your first conversation — pay attention to what's worth remembering.";
+    dynamicPrompt += "\n\nYou have no notes about this athlete yet. This may be your first conversation — pay attention to what's worth remembering.";
   }
 
-  systemPrompt += `\nDATA ACCESS:
+  dynamicPrompt += `\nDATA ACCESS:
 You have a read_athlete_data tool to query the athlete's Firestore data on demand. Use it when you need info not already in this prompt — pace zones, recent workouts, fitness metrics, Strava activities, etc. Don't guess or say you don't have access; just look it up.`;
 
-  systemPrompt += `\n\nBOOK REFERENCE:\n${bookContent}`;
+  // Two cache breakpoints:
+  // 1. Book reference — stable across ALL users, largest block (~150K tokens).
+  //    Shared cache means every user benefits from prior cache writes.
+  // 2. Full dynamic prompt — stable within a conversation (profile + plan + memory).
+  //    Tool loop iterations and follow-up messages hit this cache.
+  const systemPrompt: CachedTextBlock[] = [
+    {
+      type: "text",
+      text: `BOOK REFERENCE:\n${bookContent}`,
+      cache_control: { type: "ephemeral" },
+    },
+    {
+      type: "text",
+      text: dynamicPrompt,
+      cache_control: { type: "ephemeral" },
+    },
+  ];
 
   const tools: Anthropic.Tool[] = [THRESHOLD_PACE_TOOL, FIRESTORE_READ_TOOL, COACH_MEMORY_TOOL];
   if (activePlan) {
@@ -671,7 +694,7 @@ export async function streamChatResponse(
   const { systemPrompt, tools } = await buildChatConfig(userData, context, activePlan, coachMemory);
 
   return anthropic.messages.stream({
-    model: "claude-opus-4-6",
+    model: "claude-sonnet-4-6",
     max_tokens: 16000,
     temperature: 0.6,
     system: systemPrompt,

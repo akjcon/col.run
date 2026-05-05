@@ -83,7 +83,7 @@ export class PlanGeneratorAgent extends BaseAgent<PlanGeneratorInput, PlanGenera
   constructor() {
     super({
       name: "PlanGenerator",
-      model: "claude-opus-4-20250514",
+      model: "claude-opus-4-6",
       maxTokens: 16000,
       temperature: 0.3,
     });
