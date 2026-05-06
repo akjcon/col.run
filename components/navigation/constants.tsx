@@ -21,14 +21,14 @@ export const navigationItems: NavItem[] = [
     icon: Home,
   },
   {
-    href: "/overview",
-    label: "Overview",
-    icon: BarChart3,
-  },
-  {
     href: "/calendar",
     label: "Calendar",
     icon: CalendarDays,
+  },
+  {
+    href: "/overview",
+    label: "Overview",
+    icon: BarChart3,
   },
 ];
 

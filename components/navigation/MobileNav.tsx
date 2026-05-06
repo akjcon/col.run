@@ -18,8 +18,8 @@ const SLOTS = 5;
 
 const routeItems = [
   { icon: Home, label: "Home", href: "/home", slot: 0 },
-  { icon: BarChart3, label: "Overview", href: "/overview", slot: 1 },
-  { icon: CalendarDays, label: "Calendar", href: "/calendar", slot: 3 },
+  { icon: CalendarDays, label: "Calendar", href: "/calendar", slot: 1 },
+  { icon: BarChart3, label: "Overview", href: "/overview", slot: 3 },
   { icon: User, label: "Profile", href: "/settings", slot: 4 },
 ];
 
@@ -55,7 +55,7 @@ export function MobileNav() {
         </div>
 
         <NavTab href="/home" icon={Home} label="Home" active={thumbSlot === 0} />
-        <NavTab href="/overview" icon={BarChart3} label="Overview" active={thumbSlot === 1} />
+        <NavTab href="/calendar" icon={CalendarDays} label="Calendar" active={thumbSlot === 1} />
 
         {/* Coach — center accent */}
         <div className="relative z-10 flex flex-1 items-center justify-center">
@@ -81,7 +81,7 @@ export function MobileNav() {
           </motion.button>
         </div>
 
-        <NavTab href="/calendar" icon={CalendarDays} label="Calendar" active={thumbSlot === 3} />
+        <NavTab href="/overview" icon={BarChart3} label="Overview" active={thumbSlot === 3} />
         <NavTab href="/settings" icon={User} label="Profile" active={thumbSlot === 4} />
       </div>
     </nav>
