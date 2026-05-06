@@ -15,6 +15,7 @@ interface CalendarGridProps {
   completedDates?: Set<number>;
   raceDate?: number;
   logsByDate?: Map<number, WorkoutLog>;
+  thresholdPace?: number;
 }
 
 const DAY_HEADERS_FULL = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -26,6 +27,7 @@ export function CalendarGrid({
   completedDates,
   raceDate,
   logsByDate,
+  thresholdPace,
 }: CalendarGridProps) {
   const currentWeekRef = useRef<HTMLDivElement>(null);
   const mobileCurrentWeekRef = useRef<HTMLDivElement>(null);
@@ -77,42 +79,53 @@ export function CalendarGrid({
   return (
     <>
       {/* ── Mobile: Accordion ──────────────────────────────────────── */}
-      <div className="space-y-2 px-1 md:hidden">
-        {phaseGroups.map((group, groupIdx) => (
-          <div key={groupIdx}>
-            {group.phase && (
-              <div className="mb-1 mt-4 flex items-center gap-2 px-1">
-                <h3 className="text-xs font-semibold text-neutral-700">
-                  {group.phase.name}
-                </h3>
-                <span className="text-[10px] text-neutral-400">
-                  Weeks {group.phase.startWeek}-{group.phase.endWeek}
-                </span>
-                <div className="h-px flex-1 bg-neutral-200" />
-              </div>
-            )}
+      <div className="space-y-2.5 px-1 md:hidden">
+        {phaseGroups.map((group, groupIdx) => {
+          const weekRange =
+            group.phase &&
+            (group.phase.startWeek === group.phase.endWeek
+              ? `Week ${group.phase.startWeek}`
+              : `Weeks ${group.phase.startWeek}–${group.phase.endWeek}`);
 
-            {group.weeks.map((week) => {
-              const isCurrent = week.weekNumber === currentWeek;
-              return (
-                <div
-                  key={week.weekNumber}
-                  ref={isCurrent ? mobileCurrentWeekRef : undefined}
-                >
-                  <MobileWeekAccordion
-                    week={week}
-                    isCurrentWeek={isCurrent}
-                    todayDate={todayDate}
-                    completedDates={completedDates}
-                    phaseName={weekPhaseMap.get(week.weekNumber)}
-                    raceDateMidnight={raceDateMidnight}
-                    logsByDate={logsByDate}
-                  />
+          return (
+            <div key={groupIdx}>
+              {group.phase && (
+                <div className="mb-2 mt-5 flex items-baseline gap-2.5 px-1">
+                  <h3 className="text-base font-semibold tracking-tight text-neutral-900">
+                    {group.phase.name}
+                  </h3>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+                    {weekRange}
+                  </span>
+                  <div className="h-px flex-1 self-center bg-neutral-200" />
                 </div>
-              );
-            })}
-          </div>
-        ))}
+              )}
+
+              <div className="space-y-2">
+                {group.weeks.map((week) => {
+                  const isCurrent = week.weekNumber === currentWeek;
+                  return (
+                    <div
+                      key={week.weekNumber}
+                      ref={isCurrent ? mobileCurrentWeekRef : undefined}
+                    >
+                      <MobileWeekAccordion
+                        week={week}
+                        isCurrentWeek={isCurrent}
+                        todayDate={todayDate}
+                        completedDates={completedDates}
+                        phaseName={weekPhaseMap.get(week.weekNumber)}
+                        raceDateMidnight={raceDateMidnight}
+                        logsByDate={logsByDate}
+                        thresholdPace={thresholdPace}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* ── Desktop: Grid ──────────────────────────────────────────── */}

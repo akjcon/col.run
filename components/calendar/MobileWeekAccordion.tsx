@@ -15,8 +15,9 @@ import {
   getDayTitle,
   getDayEffortLevel,
   effortToColor,
+  formatBlockWithPace,
 } from "@/lib/workout-display";
-import { Mountain, Zap, Timer, Check, ChevronDown, Flag } from "lucide-react";
+import { Mountain, Zap, Timer, Check, CheckCircle2, ChevronDown, Flag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { easing } from "@/lib/animation";
 import { toNoonUTC } from "@/lib/workout-utils";
@@ -24,6 +25,9 @@ import { toNoonUTC } from "@/lib/workout-utils";
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const BAR_TRACK_HEIGHT = 32;
+const BAR_MIN_HEIGHT = 5;
+const REST_NUB_HEIGHT = 4;
 
 function formatDuration(minutes: number): string {
   if (minutes <= 0) return "";
@@ -43,6 +47,142 @@ function getWorkoutTypeIcon(day: Day) {
   return null;
 }
 
+// ── Volume Bar (collapsed week summary) ──────────────────────────────────────
+
+type DayBarState =
+  | { kind: "rest" }
+  | { kind: "race"; miles: number }
+  | { kind: "completed"; miles: number; color: string; adherence?: WorkoutLog["adherence"] }
+  | { kind: "skipped"; miles: number; color: string }
+  | { kind: "planned"; miles: number; color: string };
+
+function dayBarState(args: {
+  day: Day;
+  miles: number;
+  isPast: boolean;
+  isCompleted: boolean;
+  isRaceDay: boolean;
+  adherence?: WorkoutLog["adherence"];
+}): DayBarState {
+  const { day, miles, isPast, isCompleted, isRaceDay, adherence } = args;
+  if (isRaceDay) return { kind: "race", miles };
+  if (isRestDay(day) || miles <= 0) return { kind: "rest" };
+  const color = effortToColor(getDayEffortLevel(day));
+  if (isCompleted) return { kind: "completed", miles, color, adherence };
+  if (isPast) return { kind: "skipped", miles, color };
+  return { kind: "planned", miles, color };
+}
+
+function VolumeBar({
+  state,
+  maxMiles,
+}: {
+  state: DayBarState;
+  maxMiles: number;
+}) {
+  if (state.kind === "rest") {
+    return (
+      <div
+        className="flex w-1.5 items-end justify-center"
+        style={{ height: BAR_TRACK_HEIGHT }}
+      >
+        <div
+          className="w-1.5 rounded-full bg-neutral-200"
+          style={{ height: REST_NUB_HEIGHT }}
+        />
+      </div>
+    );
+  }
+
+  const ratio = maxMiles > 0 ? state.miles / maxMiles : 0;
+  const height = Math.max(
+    BAR_MIN_HEIGHT,
+    Math.min(BAR_TRACK_HEIGHT, ratio * BAR_TRACK_HEIGHT)
+  );
+
+  let background: string;
+  let opacity = 1;
+  if (state.kind === "race") {
+    background = "#E98A15"; // brand
+  } else if (state.kind === "completed") {
+    if (state.adherence === "over") background = "#F59E0B"; // amber-500
+    else if (state.adherence === "under") background = "#EF4444"; // red-500
+    else background = state.color;
+  } else if (state.kind === "skipped") {
+    background = "#D4D4D4"; // neutral-300
+  } else {
+    // planned (future or today-pending) — soft but still alive
+    background = state.color;
+    opacity = 0.55;
+  }
+
+  return (
+    <div
+      className="flex w-1.5 items-end justify-center"
+      style={{ height: BAR_TRACK_HEIGHT }}
+    >
+      <div
+        className="w-1.5 rounded-full"
+        style={{ height, backgroundColor: background, opacity }}
+      />
+    </div>
+  );
+}
+
+// ── Workout Detail (inline expansion of a single day) ───────────────────────
+
+function WorkoutDetail({
+  day,
+  thresholdPace,
+  coachingNote,
+}: {
+  day: Day;
+  thresholdPace?: number;
+  coachingNote?: string;
+}) {
+  const blocks = day.workouts.flatMap((w) =>
+    w.blocks.filter((b) => !isRestBlock(b))
+  );
+  if (blocks.length === 0) return null;
+
+  const blockNotes = blocks
+    .map((b) => b.notes)
+    .filter((n): n is string => !!n);
+
+  return (
+    <div className="ml-[52px] mr-3 mt-1 rounded-lg bg-neutral-50 px-3 py-3">
+      <ul className="space-y-2">
+        {blocks.map((block, i) => (
+          <li key={i} className="flex items-start gap-2.5">
+            <div
+              className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+              style={{ backgroundColor: effortToColor(block.effortLevel) }}
+            />
+            <p className="text-[13px] leading-snug text-neutral-700">
+              {formatBlockWithPace(block, thresholdPace)}
+            </p>
+          </li>
+        ))}
+      </ul>
+      {blockNotes.length > 0 && (
+        <p className="mt-3 border-t border-neutral-200 pt-2 text-xs leading-relaxed text-neutral-500">
+          {blockNotes.join(" ")}
+        </p>
+      )}
+      {coachingNote && (
+        <div className="mt-3 border-t border-neutral-200 pt-2.5">
+          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+            Coach&apos;s Note
+          </p>
+          <p className="text-xs leading-relaxed text-neutral-600">
+            {coachingNote}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Day Row (expanded view) ─────────────────────────────────────────────────
 
 const ADHERENCE_COLORS_MOBILE = {
@@ -60,8 +200,11 @@ function MobileDayRow({
   isCompleted,
   isRaceDay,
   reducedMotion,
-  coachingNote,
   adherence,
+  coachingNote,
+  isDetailOpen,
+  onToggleDetail,
+  thresholdPace,
 }: {
   day: Day;
   index: number;
@@ -70,16 +213,20 @@ function MobileDayRow({
   isCompleted: boolean;
   isRaceDay: boolean;
   reducedMotion: boolean;
-  coachingNote?: string;
   adherence?: WorkoutLog["adherence"];
+  coachingNote?: string;
+  isDetailOpen: boolean;
+  onToggleDetail: () => void;
+  thresholdPace?: number;
 }) {
   const rest = isRestDay(day);
-  const miles = calculateDayTotalMiles(day);
-  const minutes = calculateDayTotal(day);
+  const miles = calculateDayTotalMiles(day, thresholdPace);
+  const minutes = calculateDayTotal(day, thresholdPace);
   const title = getDayTitle(day);
   const effortLevel = getDayEffortLevel(day);
   const color = effortToColor(effortLevel);
   const Icon = rest ? null : getWorkoutTypeIcon(day);
+  const canExpand = !rest && !isRaceDay && day.workouts.length > 0;
 
   const dateNum = day.date ? new Date(day.date).getDate() : undefined;
 
@@ -118,22 +265,19 @@ function MobileDayRow({
     );
   }
 
-  const content = (
+  const rowInner = (
     <div
-      className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 ${
-        isToday
-          ? "ring-2 ring-neutral-900 bg-white"
-          : rest
-            ? "bg-neutral-50/80"
-            : "bg-white"
-      } ${isPast && !isToday ? "opacity-50" : ""}`}
-      style={
-        !isToday
-          ? { boxShadow: rest ? "none" : "0 0 0 1px rgba(0,0,0,0.06)" }
-          : undefined
-      }
+      className={cn(
+        "relative flex items-center gap-3 rounded-lg px-3 py-2.5",
+        isToday ? "bg-orange-50" : rest ? "bg-neutral-50/80" : "bg-white",
+        isPast && !isToday && !isCompleted && "opacity-55",
+        isDetailOpen && "rounded-b-none"
+      )}
+      style={{
+        boxShadow: rest || isToday ? "none" : "0 0 0 1px rgba(0,0,0,0.06)",
+      }}
     >
-      {/* Color strip */}
+      {/* Color strip — effort color */}
       {!rest && (
         <div
           className="absolute left-0 top-0 h-full w-[3px] rounded-l-lg"
@@ -141,13 +285,11 @@ function MobileDayRow({
         />
       )}
 
-      {/* Day label + date — keep font weight consistent across states so the
-          column width doesn't shift when the active day changes. */}
       <div className="w-10 shrink-0 text-center">
         <p
           className={cn(
             "text-[10px] font-semibold uppercase tracking-wide",
-            isToday ? "text-neutral-900" : "text-neutral-400"
+            isToday ? "text-brand" : "text-neutral-400"
           )}
         >
           {DAY_LABELS[index]}
@@ -155,14 +297,13 @@ function MobileDayRow({
         <p
           className={cn(
             "text-sm font-semibold tabular-nums",
-            isToday ? "text-neutral-900" : "text-neutral-600"
+            isToday ? "text-brand" : "text-neutral-600"
           )}
         >
           {dateNum}
         </p>
       </div>
 
-      {/* Workout info */}
       <div className="min-w-0 flex-1">
         {rest ? (
           <p className="text-sm text-neutral-400">Rest</p>
@@ -177,30 +318,69 @@ function MobileDayRow({
             {miles > 0 && (
               <p className="text-xs tabular-nums text-neutral-400">
                 {Math.round(miles * 10) / 10}mi
-                {minutes > 0 && ` \u00B7 ${formatDuration(minutes)}`}
+                {minutes > 0 && ` · ${formatDuration(minutes)}`}
               </p>
             )}
           </>
         )}
       </div>
 
-      {/* Completion check */}
-      {isCompleted && (
-        <Check className={`h-4 w-4 shrink-0 ${adherence ? ADHERENCE_COLORS_MOBILE[adherence] : "text-green-500"}`} />
-      )}
+      {isCompleted ? (
+        <Check
+          className={cn(
+            "h-4 w-4 shrink-0",
+            adherence ? ADHERENCE_COLORS_MOBILE[adherence] : "text-green-500"
+          )}
+        />
+      ) : canExpand ? (
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-neutral-400 transition-transform duration-200 ease-out",
+            isDetailOpen && "rotate-180"
+          )}
+        />
+      ) : null}
     </div>
   );
 
+  const row = canExpand ? (
+    <button
+      type="button"
+      onClick={onToggleDetail}
+      className="block w-full touch-manipulation text-left"
+      aria-expanded={isDetailOpen}
+    >
+      {rowInner}
+    </button>
+  ) : (
+    rowInner
+  );
+
+  const detail = canExpand ? (
+    reducedMotion ? (
+      isDetailOpen && <WorkoutDetail day={day} thresholdPace={thresholdPace} coachingNote={coachingNote} />
+    ) : (
+      <AnimatePresence initial={false}>
+        {isDetailOpen && (
+          <motion.div
+            key="detail"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: easing.outQuart }}
+            style={{ overflow: "hidden" }}
+          >
+            <WorkoutDetail day={day} thresholdPace={thresholdPace} coachingNote={coachingNote} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    )
+  ) : null;
+
   const wrappedContent = (
     <>
-      {content}
-      {coachingNote && isCompleted && (
-        <div className="ml-[52px] mr-3 -mt-1 mb-1 rounded-lg bg-neutral-50 px-3 py-2">
-          <p className="text-xs leading-relaxed text-neutral-500">
-            {coachingNote}
-          </p>
-        </div>
-      )}
+      {row}
+      {detail}
     </>
   );
 
@@ -227,6 +407,7 @@ interface MobileWeekAccordionProps {
   phaseName?: string;
   raceDateMidnight?: number;
   logsByDate?: Map<number, WorkoutLog>;
+  thresholdPace?: number;
 }
 
 export function MobileWeekAccordion({
@@ -236,106 +417,155 @@ export function MobileWeekAccordion({
   completedDates,
   raceDateMidnight,
   logsByDate,
+  thresholdPace,
 }: MobileWeekAccordionProps) {
   const [expanded, setExpanded] = useState(isCurrentWeek);
+  const [expandedDayIndex, setExpandedDayIndex] = useState<number | null>(null);
   const shouldReduceMotion = useReducedMotion();
 
-  // Exclude race day from week mileage total
-  const weekMiles = week.days.reduce((sum, day) => {
-    if (raceDateMidnight !== undefined && day.date !== undefined) {
-      if (toNoonUTC(day.date) === raceDateMidnight) return sum;
-    }
-    return sum + calculateDayTotalMiles(day);
-  }, 0);
-
-  // A week is past if its last day is before today
-  const lastDay = week.days[week.days.length - 1];
-  const isPastWeek = lastDay?.date
-    ? toNoonUTC(lastDay.date) < todayDate
-    : false;
-
-  const dayRows = week.days.map((day, i) => {
+  // Per-day computation reused by both the bar chart and the row list
+  const dayMeta = week.days.map((day, i) => {
     const dayMidnight = day.date ? toNoonUTC(day.date) : null;
     const isToday = dayMidnight === todayDate;
     const isPast = dayMidnight !== null && dayMidnight < todayDate;
     const isCompleted = dayMidnight !== null && !!completedDates?.has(dayMidnight);
-    const isRaceDay = raceDateMidnight !== undefined && dayMidnight === raceDateMidnight;
+    const isRaceDay =
+      raceDateMidnight !== undefined && dayMidnight === raceDateMidnight;
     const log = dayMidnight !== null ? logsByDate?.get(dayMidnight) : undefined;
-
-    return (
-      <MobileDayRow
-        key={i}
-        day={day}
-        index={i}
-        isToday={isToday}
-        isPast={isPast}
-        isCompleted={isCompleted}
-        isRaceDay={isRaceDay}
-        reducedMotion={!!shouldReduceMotion}
-        coachingNote={log?.coachingNote}
-        adherence={log?.adherence}
-      />
-    );
+    const miles = isRaceDay ? 0 : calculateDayTotalMiles(day, thresholdPace);
+    return {
+      day,
+      index: i,
+      isToday,
+      isPast,
+      isCompleted,
+      isRaceDay,
+      log,
+      miles,
+    };
   });
 
+  // Week totals — exclude race day from planned mileage
+  const plannedMiles = dayMeta.reduce(
+    (sum, d) => (d.isRaceDay ? sum : sum + d.miles),
+    0
+  );
+  const completedMiles = dayMeta.reduce(
+    (sum, d) => (d.isCompleted && !d.isRaceDay ? sum + d.miles : sum),
+    0
+  );
+  const hasAnyCompletion = dayMeta.some((d) => d.isCompleted);
+  const percentDone =
+    plannedMiles > 0
+      ? Math.min(100, Math.round((completedMiles / plannedMiles) * 100))
+      : 0;
+  const showPercent = hasAnyCompletion && plannedMiles > 0;
+
+  // Bar chart needs the max miles in the week to normalize heights
+  const maxMiles = dayMeta.reduce(
+    (m, d) => (d.miles > m ? d.miles : m),
+    0
+  );
+
+  // A week is "complete" when every non-rest, non-race day has a log
+  const plannedDayCount = dayMeta.filter(
+    (d) => !d.isRaceDay && !isRestDay(d.day)
+  ).length;
+  const completedDayCount = dayMeta.filter(
+    (d) => d.isCompleted && !d.isRaceDay && !isRestDay(d.day)
+  ).length;
+  const weekIsComplete =
+    plannedDayCount > 0 && completedDayCount === plannedDayCount;
+
+  const dayRows = dayMeta.map((d) => (
+    <MobileDayRow
+      key={d.index}
+      day={d.day}
+      index={d.index}
+      isToday={d.isToday}
+      isPast={d.isPast}
+      isCompleted={d.isCompleted}
+      isRaceDay={d.isRaceDay}
+      reducedMotion={!!shouldReduceMotion}
+      adherence={d.log?.adherence}
+      coachingNote={d.log?.coachingNote}
+      isDetailOpen={expandedDayIndex === d.index}
+      onToggleDetail={() =>
+        setExpandedDayIndex((prev) => (prev === d.index ? null : d.index))
+      }
+      thresholdPace={thresholdPace}
+    />
+  ));
+
   return (
-    <div className={isPastWeek && !isCurrentWeek ? "opacity-50" : ""}>
+    <div>
       {/* Week header */}
       <button
         onClick={() => setExpanded((v) => !v)}
         className={cn(
-          "flex w-full touch-manipulation items-center gap-3 rounded-xl px-3.5 py-3 text-left",
-          "transition-[background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98]",
+          "relative flex w-full touch-manipulation items-center gap-3 rounded-2xl px-4 py-3.5 text-left",
+          "transition-[background-color,box-shadow] duration-150 ease-out",
           isCurrentWeek
-            ? "bg-neutral-100 shadow-sm"
-            : "bg-neutral-50/80 shadow-[0_0_0_1px_rgba(0,0,0,0.04)]"
+            ? "bg-orange-50 shadow-[0_2px_8px_rgba(233,138,21,0.14),0_0_0_1px_rgba(233,138,21,0.22)]"
+            : "bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.06)]"
         )}
         aria-expanded={expanded}
       >
-        {/* Week number — font weight stays constant so width doesn't shift */}
         <span
           className={cn(
-            "text-sm font-semibold tabular-nums",
-            isCurrentWeek ? "text-neutral-900" : "text-neutral-500"
+            "text-base font-semibold tabular-nums",
+            isCurrentWeek ? "text-brand" : "text-neutral-700"
           )}
         >
           W{week.weekNumber}
         </span>
 
-        {/* 7 dots — one per day, colored by zone */}
-        <div className="flex gap-1.5">
-          {week.days.map((day, i) => {
-            const rest = isRestDay(day);
-            const color = rest ? "#E5E5E5" : effortToColor(getDayEffortLevel(day));
-            const dayMidnight = day.date ? toNoonUTC(day.date) : null;
-            const completed = dayMidnight !== null && completedDates?.has(dayMidnight);
-            const dayLog = dayMidnight !== null ? logsByDate?.get(dayMidnight) : undefined;
-            const dotColor = dayLog?.adherence === "over"
-              ? "bg-amber-500"
-              : dayLog?.adherence === "under"
-                ? "bg-red-500"
-                : "bg-green-500";
-
-            return (
-              <div key={i} className="relative">
-                <div
-                  className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: color }}
-                />
-                {completed && (
-                  <div className={`absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full ${dotColor}`} />
-                )}
-              </div>
-            );
-          })}
+        {/* 7 bars — one per day, height = volume */}
+        <div className="flex shrink-0 items-end gap-1">
+          {dayMeta.map((d) => (
+            <VolumeBar
+              key={d.index}
+              state={dayBarState({
+                day: d.day,
+                miles: d.miles,
+                isPast: d.isPast,
+                isCompleted: d.isCompleted,
+                isRaceDay: d.isRaceDay,
+                adherence: d.log?.adherence,
+              })}
+              maxMiles={maxMiles}
+            />
+          ))}
         </div>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        <span className="shrink-0 text-xs tabular-nums text-neutral-400">
-          {weekMiles > 0 ? `${Math.round(weekMiles * 10) / 10}mi` : ""}
-        </span>
+        {/* Mileage + status */}
+        <div className="shrink-0 text-right">
+          <div className="text-lg font-bold leading-none tracking-tight tabular-nums text-neutral-900">
+            {plannedMiles > 0
+              ? `${Math.round(plannedMiles * 10) / 10}`
+              : "—"}
+            <span className="ml-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              mi
+            </span>
+          </div>
+          {showPercent && (
+            <div
+              className={cn(
+                "mt-1 flex items-center justify-end gap-1 text-[10px] font-semibold uppercase tracking-[0.1em]",
+                weekIsComplete ? "text-green-600" : "text-neutral-500"
+              )}
+            >
+              {weekIsComplete && (
+                <CheckCircle2 className="h-3 w-3 fill-green-500 text-white" />
+              )}
+              <span>
+                {weekIsComplete ? "Complete" : `${percentDone}% Done`}
+              </span>
+            </div>
+          )}
+        </div>
 
         <ChevronDown
           className={cn(
@@ -348,9 +578,7 @@ export function MobileWeekAccordion({
       {/* Expanded day list */}
       {shouldReduceMotion ? (
         expanded && (
-          <div className="mt-1.5 space-y-1 px-0.5 pb-1">
-            {dayRows}
-          </div>
+          <div className="mt-1.5 space-y-1 px-0.5 pb-1">{dayRows}</div>
         )
       ) : (
         <AnimatePresence initial={false}>
@@ -369,9 +597,7 @@ export function MobileWeekAccordion({
               transition={{ duration: 0.25, ease: easing.outQuart }}
               style={{ overflow: "hidden" }}
             >
-              <div className="space-y-1 px-0.5 pb-1 pt-1.5">
-                {dayRows}
-              </div>
+              <div className="space-y-1 px-0.5 pb-1 pt-1.5">{dayRows}</div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -379,3 +605,4 @@ export function MobileWeekAccordion({
     </div>
   );
 }
+

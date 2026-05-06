@@ -2,20 +2,31 @@
 
 import { useMemo } from "react";
 import { useUser } from "@/lib/user-context-rtk";
+import { useClerkFirebase } from "@/lib/clerk-firebase";
 import { calculateCurrentWeek } from "@/lib/plan-utils";
 import { getWeeksWithDates, toNoonUTC } from "@/lib/workout-utils";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { CalendarGrid } from "@/components/calendar/CalendarGrid";
-import { useGetWorkoutLogsQuery } from "@/lib/store/api/trainingApi";
+import {
+  useGetWorkoutLogsQuery,
+  useGetAthleteSnapshotQuery,
+} from "@/lib/store/api/trainingApi";
 import type { WorkoutLog } from "@/lib/types";
 
 export default function CalendarPage() {
   const { userData, isLoading, userId } = useUser();
+  const { isFirebaseReady } = useClerkFirebase();
 
   const { data: workoutLogs } = useGetWorkoutLogsQuery(
     { userId: userId || "" },
     { skip: !userId }
   );
+
+  const { data: snapshot } = useGetAthleteSnapshotQuery(userId || "", {
+    skip: !userId || !isFirebaseReady,
+  });
+  const thresholdPace =
+    snapshot?.thresholdPace ?? snapshot?.estimatedThresholdPace;
 
   const { completedDates, logsByDate } = useMemo(() => {
     if (!workoutLogs) return { completedDates: undefined, logsByDate: undefined };
@@ -81,6 +92,7 @@ export default function CalendarPage() {
           completedDates={completedDates}
           raceDate={activePlan.raceDate}
           logsByDate={logsByDate}
+          thresholdPace={thresholdPace}
         />
       </div>
     </div>
