@@ -85,16 +85,14 @@ function snap(overrides: Partial<AthleteSnapshot> = {}): AthleteSnapshot {
 // Quality assertion helpers (deterministic — no LLM judge)
 // ---------------------------------------------------------------------------
 
+// Truly hollow filler — vague affect with no substance. Note: brief affirmation
+// closers like "Nice work!", "Good job!", "Great job!", "Well done!" are now
+// allowed (and encouraged) when adherence is on_target / affectsPlan is false.
 const HOLLOW_PHRASES = [
-  "great job",
   "awesome effort",
   "fantastic",
   "love the consistency",
-  "keep it up",
-  "well done",
-  "nice work",
   "amazing",
-  "excellent job",
   "you crushed",
 ];
 

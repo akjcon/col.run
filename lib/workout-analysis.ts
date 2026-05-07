@@ -144,19 +144,21 @@ Rules for adherence:
 
 Rules for coachingNote (CRITICAL — follow exactly):
 - MUST be 1-2 sentences, under 280 characters total. This is a hard limit.
-- Lead with acknowledgment of what went right, then pivot to what to adjust (if anything)
+- Lead with substantive acknowledgment of what went right, then pivot to what to adjust (if anything)
 - Do NOT repeat stats the athlete can already see (distance, pace, HR numbers). Talk about what it means.
-- Do NOT use hollow praise: "great job", "awesome", "fantastic", "well done", "nice work", "love the consistency"
+- When adherence is "on_target" (workout went well), END with a brief congratulatory sign-off like "Nice work!", "Good job!", "Great job!", or "Well done!". The substance comes first; the affirmation is the closer.
+- When adherence is "over" or "under", do NOT add a congratulatory sign-off — keep the note constructive and direct.
+- Do NOT use vague hollow praise as a substitute for substance: "fantastic", "amazing", "you crushed it", "love the consistency", "awesome effort". The substantive sentence must say something specific about why the workout matters.
 - Avoid em dashes (—). Use them sparingly at most; prefer commas or periods.
 - Do NOT start sentences with "But", "However", or "That said". Connect ideas naturally or just start a new thought.
 - Vary your openers. Avoid leaning on the same word repeatedly (e.g. don't start every note with "Solid").
 - If something was off, name it plainly and offer a suggestion, not a lecture
-- If it went well, say something specific about why it matters for their training
 
-Good examples (notice: short, natural phrasing, no stats):
-- "Right where you want to be on an easy day. This kind of discipline builds the base for everything harder."
+Good examples (notice: substance first, then affirmation only when on-target):
+- "Right where you want to be on an easy day. This kind of discipline builds the base for everything harder. Nice work!"
+- "Your pace sits squarely in Z2 and the distance is solid. This consistency at the aerobic base is exactly what builds the engine for harder efforts later in the block. Good job!"
 - "Effort crept above what was prescribed, so try cueing off feel rather than chasing a pace next time."
-- "All that climbing earned the slower pace. Real mountain work that flat long runs can't replicate."
+- "All that climbing earned the slower pace. Real mountain work that flat long runs can't replicate. Great job!"
 - "Came up short on distance today. If something felt off, flag it; otherwise just aim for the full volume next time."`;
 
   try {
@@ -254,7 +256,9 @@ Rules for affectsPlan:
 Rules for coachingNote (CRITICAL — follow exactly):
 - MUST be 1-2 sentences, under 280 characters total
 - Acknowledge the activity first, then note any concerns
-- Do NOT use hollow praise: "great job", "awesome", "fantastic", "well done", "nice work"
+- When affectsPlan is false (the activity was harmless or appropriate), END with a brief congratulatory sign-off like "Nice work!", "Good job!", "Great job!", or "Well done!". Substance first, then the affirmation.
+- When affectsPlan is true (the activity may compromise the plan), do NOT add a congratulatory sign-off — keep the note constructive and direct.
+- Do NOT use vague hollow praise as a substitute for substance: "fantastic", "amazing", "you crushed it", "awesome effort". The substantive sentence must say something specific.
 - Avoid em dashes (—). Use them sparingly at most; prefer commas or periods.
 - Do NOT start sentences with "But", "However", or "That said"
 - Do NOT repeat stats the athlete can already see`;
