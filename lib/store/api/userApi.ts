@@ -18,6 +18,7 @@ import {
   TrainingPlan,
   ChatMessage,
 } from "@/lib/types";
+import { getDeployEnv } from "@/lib/events";
 import {
   baseApi,
   sanitizeForFirestore,
@@ -197,11 +198,8 @@ export const userApi = baseApi.injectEndpoints({
             createdAt: Date.now(),
             completedOnboarding: false,
             // Tag the deploy environment so dev/preview/prod users can be
-            // told apart from a single Firestore. Vercel sets VERCEL_ENV;
-            // local `next dev` falls through to "development".
-            env:
-              process.env.NEXT_PUBLIC_VERCEL_ENV ||
-              (process.env.NODE_ENV === "development" ? "development" : "unknown"),
+            // told apart from a single Firestore.
+            env: getDeployEnv(),
           });
 
           await setDoc(userRef, sanitizedData);

@@ -9,6 +9,8 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import OnboardingGuard from "@/components/OnboardingGuard";
 import { ChatProvider } from "@/lib/chat-context";
 import { MobileChatDrawer, DesktopChatPanel } from "@/components/ChatDrawer";
+import { EventTracker } from "@/lib/event-tracker";
+import { useClerkFirebase } from "@/lib/clerk-firebase";
 
 export default function AuthenticatedLayout({
   children,
@@ -16,6 +18,7 @@ export default function AuthenticatedLayout({
   children: React.ReactNode;
 }) {
   const { isSignedIn, isLoaded } = useUser();
+  const { userId: effectiveUserId } = useClerkFirebase();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -31,30 +34,11 @@ export default function AuthenticatedLayout({
   const content = isOnboarding ? children : <OnboardingGuard>{children}</OnboardingGuard>;
 
   return (
-    <ChatProvider>
-      {/* Mobile content */}
-      <div className="md:hidden min-h-screen">
-        <main className="container mx-auto px-4 pt-4 pb-24">
-          {!isLoaded ? (
-            <div className="flex items-center justify-center min-h-[50vh]">
-              <LoadingSpinner variant="inline" />
-            </div>
-          ) : isSignedIn === false ? (
-            <div className="flex items-center justify-center min-h-[50vh]">
-              <LoadingSpinner variant="inline" />
-            </div>
-          ) : (
-            content
-          )}
-        </main>
-        <MobileNav />
-      </div>
-
-      {/* Desktop layout with sidebar */}
-      <div className="hidden md:flex h-screen overflow-hidden">
-        <SideNav />
-        <div className="flex-1 overflow-auto">
-          <main className="container mx-auto px-4 py-6">
+    <EventTracker userId={effectiveUserId ?? null}>
+      <ChatProvider>
+        {/* Mobile content */}
+        <div className="md:hidden min-h-screen">
+          <main className="container mx-auto px-4 pt-4 pb-24">
             {!isLoaded ? (
               <div className="flex items-center justify-center min-h-[50vh]">
                 <LoadingSpinner variant="inline" />
@@ -67,12 +51,33 @@ export default function AuthenticatedLayout({
               content
             )}
           </main>
+          <MobileNav />
         </div>
-        <DesktopChatPanel />
-      </div>
 
-      {/* Mobile chat drawer (Vaul overlay) */}
-      <MobileChatDrawer />
-    </ChatProvider>
+        {/* Desktop layout with sidebar */}
+        <div className="hidden md:flex h-screen overflow-hidden">
+          <SideNav />
+          <div className="flex-1 overflow-auto">
+            <main className="container mx-auto px-4 py-6">
+              {!isLoaded ? (
+                <div className="flex items-center justify-center min-h-[50vh]">
+                  <LoadingSpinner variant="inline" />
+                </div>
+              ) : isSignedIn === false ? (
+                <div className="flex items-center justify-center min-h-[50vh]">
+                  <LoadingSpinner variant="inline" />
+                </div>
+              ) : (
+                content
+              )}
+            </main>
+          </div>
+          <DesktopChatPanel />
+        </div>
+
+        {/* Mobile chat drawer (Vaul overlay) */}
+        <MobileChatDrawer />
+      </ChatProvider>
+    </EventTracker>
   );
 }

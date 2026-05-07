@@ -27,6 +27,7 @@ import { CalendarIcon, Check } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { easing } from "@/lib/animation";
+import { useTrackEvent } from "@/lib/event-tracker";
 
 // =============================================================================
 // Types
@@ -1034,6 +1035,7 @@ function FitnessStep({
 export default function OnboardingPage() {
   const { user } = useClerkUser();
   const { userId, userData, isLoading: userLoading } = useUser();
+  const trackEvent = useTrackEvent();
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
 
@@ -1226,6 +1228,11 @@ export default function OnboardingPage() {
         updates: { completedOnboarding: true },
       }).unwrap();
 
+      trackEvent("plan_generated", {
+        raceDistance: goalData?.raceDistance,
+        stravaConnected: fitnessData.stravaConnected ?? false,
+      });
+
       router.push("/home");
     } catch (err) {
       console.error("Error completing onboarding:", err);
@@ -1244,6 +1251,7 @@ export default function OnboardingPage() {
     saveTrainingBackground,
     updateUserProfile,
     router,
+    trackEvent,
   ]);
 
   if (!user) {

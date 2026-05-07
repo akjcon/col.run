@@ -6,6 +6,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { useChatContext, type ChatMessage, type PlanModificationData, type PaceZoneUpdateData } from "@/lib/chat-context";
 import { useUser } from "@/lib/user-context-rtk";
+import { useTrackEvent } from "@/lib/event-tracker";
 import type { ChatContext } from "@/lib/types";
 import { PlanChangeCard } from "./PlanChangeCard";
 import { PaceZoneUpdateCard } from "./PaceZoneUpdateCard";
@@ -305,6 +306,7 @@ function ChatUI() {
     setIsStreaming,
   } = useChatContext();
   const { userId } = useUser();
+  const trackEvent = useTrackEvent();
 
   const [input, setInput] = useState("");
   const [hoveredPrompt, setHoveredPrompt] = useState("");
@@ -378,6 +380,10 @@ function ChatUI() {
       setMessages([...updatedMessages, assistantMsg]);
       setInput("");
       setIsStreaming(true);
+      trackEvent("chat_message_sent", {
+        trigger: context?.trigger,
+        length: trimmed.length,
+      });
 
       try {
         const response = await fetch("/api/chat", {
@@ -553,7 +559,7 @@ function ChatUI() {
         });
       }
     },
-    [messages, isStreaming, userId, context, setMessages, setIsStreaming]
+    [messages, isStreaming, userId, context, setMessages, setIsStreaming, trackEvent]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -15,6 +15,7 @@ import {
 } from "@/lib/store/api";
 import { useState, useEffect } from "react";
 import { useClerkFirebase } from "@/lib/clerk-firebase";
+import { useTrackEvent } from "@/lib/event-tracker";
 import { calculateCurrentWeek } from "@/lib/plan-utils";
 import { getTodaysDay, getWeeksWithDates } from "@/lib/workout-utils";
 import { getNowMs } from "@/lib/time";
@@ -28,6 +29,7 @@ import {
 export default function HomePage() {
   const { userData, isLoading } = useUser();
   const { userId: clerkUserId, isFirebaseReady } = useClerkFirebase();
+  const trackEvent = useTrackEvent();
 
   const [isWorkoutDone, setIsWorkoutDone] = useState(false);
 
@@ -111,6 +113,11 @@ export default function HomePage() {
       }).unwrap();
 
       setIsWorkoutDone(true);
+      trackEvent("workout_completed", {
+        weekNumber: currentWeek,
+        rating,
+        title: getDayTitle(todaysDay),
+      });
     } catch (error) {
       console.error("Failed to save workout log:", error);
       throw error;
