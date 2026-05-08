@@ -34,9 +34,12 @@ col.run/
 │   │   ├── phase/                # Current training phase
 │   │   ├── strength/             # Strength workouts
 │   │   └── layout.tsx            # Authenticated layout with nav
+│   ├── admin/                    # Admin-only pages (analytics, chat reading)
 │   ├── api/                      # API routes
+│   │   ├── admin/                # Admin-only endpoints (analytics, chats)
 │   │   ├── auth/                 # Firebase token endpoint
 │   │   ├── chat/                 # Chat API with LLM
+│   │   ├── events/               # Analytics event ingestion
 │   │   └── generate-plan/        # Training plan generation
 │   ├── sign-in/                  # Clerk sign-in page
 │   ├── sign-up/                  # Clerk sign-up page
@@ -60,6 +63,10 @@ col.run/
 │   ├── clerk-firebase.ts         # Clerk-Firebase integration
 │   ├── firestore.ts              # Direct Firestore operations
 │   ├── llm-service.ts            # Anthropic Claude integration + tool defs
+│   ├── admin-auth.ts             # Shared admin allowlist + verifyAdmin
+│   ├── events.ts                 # Analytics event types + getDeployEnv()
+│   ├── events-server.ts          # Admin-SDK helper to write events from server
+│   ├── event-tracker.tsx         # Client-side EventTracker provider + hook
 │   ├── types.ts                  # TypeScript type definitions
 │   ├── user-context-rtk.tsx      # User context with RTK
 │   └── optimized_book.md         # Training methodology reference
@@ -178,7 +185,9 @@ Use the defined color palette (see `.cursor/rules/color-rules.mdc`):
 4. `UserProvider` wraps app with Redux store and user context
 
 Protected routes:
-- `/home`, `/overview`, `/chat`, `/phase`, `/strength`, `/onboarding`
+- `/home`, `/overview`, `/chat`, `/phase`, `/strength`, `/onboarding`, `/settings`, `/admin`
+
+Admin-only routes (`/admin/*`) are gated by `app/admin/layout.tsx` (server component) which calls `verifyAdmin()` and redirects non-admins to `/home`. Admin allowlist is in `lib/admin-auth.ts` (`ADMIN_EMAILS`).
 
 ## AI/LLM Integration
 
@@ -188,7 +197,7 @@ Chat uses Opus with streaming and multi-turn tool use. The system prompt is asse
 
 **Tool loop architecture** — two categories of tools:
 - **Server-side (multi-turn)**: `read_athlete_data`, `update_coach_memory` — executed on the server and results returned to the LLM so it continues generating. Handled in the `while (stop_reason === "tool_use")` loop. Add new server-side tools to the `SERVER_TOOLS` set.
-- **Client-side (terminal)**: `propose_plan_changes`, `update_threshold_pace` — sent as NDJSON events to the frontend for user approval. Handled after the loop breaks.
+- **Client-side (terminal)**: `propose_plan_changes`, `update_threshold_pace` — sent as NDJSON events to the frontend for user approval. Handled after the loop breaks. Each proposal also fires a server-side analytics event (`plan_change_proposed` / `pace_zone_update_proposed`) via `recordServerEvent` so acceptance rate can be measured.
 
 ### Coach Memory (`lib/coach-memory.ts`)
 
@@ -209,6 +218,46 @@ Single denormalized doc at `users/{userId}/athleteSnapshot/current` — the cano
 ### Quick Context (Claude Haiku)
 
 `quickChatResponse()` in `lib/llm-service.ts` — simple Q&A, brief advice. Faster, cheaper, no tool use.
+
+## Admin & Analytics
+
+### Admin Auth (`lib/admin-auth.ts`)
+
+- `ADMIN_EMAILS` is a full-email allowlist (exact match, lowercased). Add new admins here.
+- `verifyAdmin()` reads the Clerk session and returns the userId if the user's primary email is in the allowlist, else null. Use it in admin API routes.
+- `isAdminClerkUserId(userId)` checks any clerk userId without requiring it to be the current session — used in `/api/events` for impersonation detection.
+- `app/admin/layout.tsx` is a server component that runs `verifyAdmin()` and redirects non-admins to `/home`. The middleware also includes `/admin(.*)` so unauthed users hit Clerk first.
+
+### Event Tracking (`lib/events.ts`, `lib/event-tracker.tsx`, `lib/events-server.ts`)
+
+Events live in the top-level `userEvents` Firestore collection. Schema:
+
+```
+{ userId, eventType, isImpersonating, metadata?, timestamp, env, realUserId }
+```
+
+`EVENT_TYPES` is the canonical list — adding a new type means updating that union, the analytics dashboard's `EVENT_LABELS` map, and (if it should appear in the per-user table) the column rendering.
+
+**Client-side tracking**: `EventTracker` provider wraps the authenticated layout. Components call `useTrackEvent()(type, metadata)`. The tracker buffers events, debounces by 1.5s, ships via `fetch`, and flushes via `sendBeacon` on `pagehide`/unmount. Client never sets `isImpersonating` — server derives it.
+
+**Server-side tracking**: Use `recordServerEvent({ userId, realUserId, eventType, metadata })` from `lib/events-server.ts`. Pass the Clerk session userId (`auth()`) as `realUserId`; the helper sets `isImpersonating` when it differs from `userId`. Used in `app/api/chat/route.ts` to fire `plan_change_proposed` / `pace_zone_update_proposed` from the LLM tool loop.
+
+**Impersonation handling**: Impersonation lives in client-side localStorage via `clerk-firebase.ts`. The `/api/events` endpoint compares the body `userId` to the Clerk session userId — mismatch means impersonation, and only admin sessions are allowed to mismatch. The dashboard filters out events where `isImpersonating: true` OR the user's email is in `ADMIN_EMAILS`.
+
+### Admin Pages
+
+- `/admin/analytics` (`app/admin/analytics/page.tsx`) — DAU/WAU/MAU, daily activity bar chart, event-type breakdown, per-user table. Backed by `/api/admin/analytics` which aggregates server-side over a `?days=N` window (default 30, max 365). Single-field range query on `userEvents.timestamp` — no composite index needed.
+- `/admin/chats` (`app/admin/chats/page.tsx`) — list of users with recent chat activity, sorted by most recent message. Click a row to read the full thread. Backed by `/api/admin/chats` (collectionGroup query, bounded scan of 500 most recent messages) and `/api/admin/chats/[userId]` (most recent 500 messages, returned in chronological order).
+
+### Firestore Indexes
+
+The collection-group query on `chatHistory.timestamp` requires a single-field exemption with `COLLECTION_GROUP` query scope. Defined in `firestore.indexes.json` as a `fieldOverrides` entry. Deploy with:
+
+```bash
+firebase deploy --only firestore:indexes
+```
+
+If you add a new collection-group query, add the matching exemption to `firestore.indexes.json` and deploy — without it, the query fails with `FAILED_PRECONDITION` and a clickable index-creation URL.
 
 ## Key Patterns
 
