@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { EVENT_TYPES, type EventType } from "@/lib/events";
@@ -95,6 +96,12 @@ export default function AnalyticsPage() {
         <div>
           <p className="text-sm text-neutral-500">col.run admin</p>
           <h1 className="text-2xl font-semibold text-neutral-900">Analytics</h1>
+          <Link
+            href="/admin/chats"
+            className="text-sm text-neutral-500 hover:text-neutral-900"
+          >
+            Read user chats →
+          </Link>
         </div>
         <div className="flex gap-1 rounded-md border border-neutral-200 p-1 bg-white">
           {RANGE_OPTIONS.map((r) => (
