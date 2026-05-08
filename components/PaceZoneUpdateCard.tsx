@@ -7,6 +7,7 @@ import { useAppDispatch } from "@/lib/store/hooks";
 import { baseApi } from "@/lib/store/api/baseApi";
 import type { PaceZoneUpdateData } from "@/lib/chat-context";
 import { toast } from "sonner";
+import { useTrackEvent } from "@/lib/event-tracker";
 import {
   calculatePaceZones,
   formatPace,
@@ -29,6 +30,7 @@ export function PaceZoneUpdateCard({
 }: PaceZoneUpdateCardProps) {
   const { userId } = useUser();
   const dispatch = useAppDispatch();
+  const trackEvent = useTrackEvent();
   const [isApplying, setIsApplying] = useState(false);
 
   const newZones = calculatePaceZones(data.newThresholdPace);
@@ -41,6 +43,10 @@ export function PaceZoneUpdateCard({
 
     setIsApplying(true);
     onStatusChange("applying");
+    trackEvent("pace_zone_update_accepted", {
+      newThresholdPace: data.newThresholdPace,
+      currentThresholdPace: data.currentThresholdPace,
+    });
 
     try {
       const response = await fetch("/api/plan/threshold-pace", {
@@ -72,6 +78,10 @@ export function PaceZoneUpdateCard({
 
   const handleDismiss = () => {
     onStatusChange("error", "Update dismissed");
+    trackEvent("pace_zone_update_declined", {
+      newThresholdPace: data.newThresholdPace,
+      currentThresholdPace: data.currentThresholdPace,
+    });
   };
 
   return (

@@ -3,6 +3,12 @@ export const EVENT_TYPES = [
   "chat_message_sent",
   "workout_completed",
   "plan_generated",
+  "plan_change_proposed",
+  "plan_change_accepted",
+  "plan_change_declined",
+  "pace_zone_update_proposed",
+  "pace_zone_update_accepted",
+  "pace_zone_update_declined",
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];

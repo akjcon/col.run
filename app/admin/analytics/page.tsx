@@ -51,6 +51,12 @@ const EVENT_LABELS: Record<EventType, string> = {
   chat_message_sent: "Chat messages",
   workout_completed: "Workouts logged",
   plan_generated: "Plans generated",
+  plan_change_proposed: "Plan changes proposed",
+  plan_change_accepted: "Plan changes accepted",
+  plan_change_declined: "Plan changes declined",
+  pace_zone_update_proposed: "Pace updates proposed",
+  pace_zone_update_accepted: "Pace updates accepted",
+  pace_zone_update_declined: "Pace updates declined",
 };
 
 export default function AnalyticsPage() {
@@ -227,6 +233,12 @@ export default function AnalyticsPage() {
                       <th className="py-2 px-3 font-medium text-right">
                         Plans
                       </th>
+                      <th className="py-2 px-3 font-medium text-right">
+                        Changes
+                      </th>
+                      <th className="py-2 px-3 font-medium text-right">
+                        Pace
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -269,6 +281,22 @@ export default function AnalyticsPage() {
                         </td>
                         <td className="py-2 px-3 text-right tabular-nums text-neutral-600">
                           {u.byType.plan_generated.toLocaleString()}
+                        </td>
+                        <td className="py-2 px-3 text-right tabular-nums text-neutral-600 whitespace-nowrap">
+                          <span className="text-emerald-700">
+                            {u.byType.plan_change_accepted.toLocaleString()}✓
+                          </span>{" "}
+                          <span className="text-neutral-400">
+                            {u.byType.plan_change_declined.toLocaleString()}✗
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-right tabular-nums text-neutral-600 whitespace-nowrap">
+                          <span className="text-emerald-700">
+                            {u.byType.pace_zone_update_accepted.toLocaleString()}✓
+                          </span>{" "}
+                          <span className="text-neutral-400">
+                            {u.byType.pace_zone_update_declined.toLocaleString()}✗
+                          </span>
                         </td>
                       </tr>
                     ))}

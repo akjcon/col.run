@@ -36,11 +36,14 @@ export async function GET() {
         .get(),
     ]);
   } catch (err) {
-    // Surface the underlying error to the (admin-only) caller — Firestore
-    // returns a clickable index-creation URL on FAILED_PRECONDITION.
+    // Surface the underlying error to the (admin-only) caller. Firestore
+    // gRPC errors stash the human-readable description (including the
+    // index-creation URL on FAILED_PRECONDITION) in `details`, not `message`.
     console.error("Admin chats query failed:", err);
-    const message = err instanceof Error ? err.message : String(err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    const e = err as { message?: string; details?: string; code?: number };
+    const parts = [e.message, e.details].filter(Boolean);
+    const error = parts.length > 0 ? parts.join("\n\n") : String(err);
+    return NextResponse.json({ error, code: e.code }, { status: 500 });
   }
 
   const profiles = new Map<string, { email: string; name: string }>();

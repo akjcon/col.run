@@ -7,6 +7,7 @@ import { useAppDispatch } from "@/lib/store/hooks";
 import { baseApi } from "@/lib/store/api/baseApi";
 import type { PlanModificationData } from "@/lib/chat-context";
 import { toast } from "sonner";
+import { useTrackEvent } from "@/lib/event-tracker";
 import {
   calculateWeekTotalMiles,
   calculateDayTotalMiles,
@@ -134,6 +135,7 @@ export function PlanChangeCard({
 }: PlanChangeCardProps) {
   const { userData, userId } = useUser();
   const dispatch = useAppDispatch();
+  const trackEvent = useTrackEvent();
   const [isApplying, setIsApplying] = useState(false);
 
   const activePlan = userData?.activePlan;
@@ -143,6 +145,10 @@ export function PlanChangeCard({
 
     setIsApplying(true);
     onStatusChange("applying");
+    trackEvent("plan_change_accepted", {
+      changeCount: modification.changes.length,
+      types: modification.changes.map((c) => c.type),
+    });
 
     try {
       const response = await fetch("/api/plan/modify", {
@@ -176,6 +182,10 @@ export function PlanChangeCard({
 
   const handleDismiss = () => {
     onStatusChange("error", undefined, "Changes dismissed");
+    trackEvent("plan_change_declined", {
+      changeCount: modification.changes.length,
+      types: modification.changes.map((c) => c.type),
+    });
   };
 
   // Find current weeks/days for comparison

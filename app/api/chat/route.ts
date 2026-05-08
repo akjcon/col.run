@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { auth } from "@clerk/nextjs/server";
 import {
   streamChatResponse,
   buildChatConfig,
@@ -9,6 +10,7 @@ import { validateWeek, validateDay } from "@/lib/blocks/validation";
 import type { ChatContext, UserData, TrainingPlan, TrainingBackground, CoachMemoryEntry } from "@/lib/types";
 import type { Week, Day } from "@/lib/blocks/types";
 import { readCoachMemory, executeCoachMemoryUpdate, type CoachMemoryUpdate } from "@/lib/coach-memory";
+import { recordServerEvent } from "@/lib/events-server";
 
 // =============================================================================
 // Firestore Read Tool Executor
@@ -178,6 +180,10 @@ async function saveMessageAdmin(userId: string, message: { role: string; content
 
 export async function POST(req: NextRequest) {
   try {
+    // Capture the real Clerk session userId so server-side analytics events
+    // can flag impersonation when the body userId differs.
+    const { userId: clerkUserId } = await auth();
+
     const {
       messages,
       userId,
@@ -415,6 +421,15 @@ export async function POST(req: NextRequest) {
                       : {}),
                   },
                 });
+                void recordServerEvent({
+                  userId,
+                  realUserId: clerkUserId,
+                  eventType: "plan_change_proposed",
+                  metadata: {
+                    changeCount: validated.changes.length,
+                    types: validated.changes.map((c) => c.type),
+                  },
+                });
               } else if (validated.validationErrors.length > 0) {
                 // All changes failed validation — tell the user
                 sendEvent({
@@ -454,6 +469,15 @@ export async function POST(req: NextRequest) {
                   newThresholdPace: pace,
                   currentThresholdPace,
                   status: "proposed",
+                },
+              });
+              void recordServerEvent({
+                userId,
+                realUserId: clerkUserId,
+                eventType: "pace_zone_update_proposed",
+                metadata: {
+                  newThresholdPace: pace,
+                  currentThresholdPace,
                 },
               });
             }
