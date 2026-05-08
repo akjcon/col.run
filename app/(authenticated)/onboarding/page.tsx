@@ -593,9 +593,9 @@ function GoalStep({
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2, ease: easeOutQuad }}
-                    className="-mx-1.5 overflow-hidden"
+                    className="-mx-1 overflow-hidden"
                   >
-                    <div className="space-y-1.5 px-1.5 py-1.5">
+                    <div className="space-y-1.5 px-1 py-1">
                       <Label
                         htmlFor="custom-distance-input"
                         className="text-[13px] text-neutral-500"
@@ -693,15 +693,13 @@ function FitnessStep({
   data,
   onChange,
   onBack,
-  onSubmit,
-  isSubmitting,
+  onNext,
   goalData,
 }: {
   data: FitnessData;
   onChange: (data: FitnessData) => void;
   onBack: () => void;
-  onSubmit: () => void;
-  isSubmitting: boolean;
+  onNext: () => void;
   goalData: GoalData;
 }) {
   const [connectingStrava, setConnectingStrava] = useState(false);
@@ -754,7 +752,7 @@ function FitnessStep({
         </p>
       </div>
 
-      <div className="flex-1 space-y-4 overflow-y-auto min-h-0 p-0.5 -m-0.5">
+      <div className="flex-1 space-y-4 overflow-y-auto min-h-0 p-1 -m-1">
         {/* Strava Option */}
         <div
           onClick={() => onChange({ ...data, source: "strava" })}
@@ -863,7 +861,11 @@ function FitnessStep({
           </div>
         </button>
 
-        {/* Manual Entry Form */}
+        {/* Manual Entry Form. Wrapper needs `overflow-hidden` for the height
+            animation, but that clips the inputs' focus rings. Negative-x
+            margin on the wrapper + matching x/y padding on the inner content
+            gives the rings room without disturbing layout — see CLAUDE.md
+            "Common Pitfalls > Animated containers and focus rings". */}
         <AnimatePresence>
           {data.source === "manual" && (
             <motion.div
@@ -871,9 +873,9 @@ function FitnessStep({
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2, ease: easeOutQuad }}
-              className="overflow-hidden"
+              className="-mx-1 overflow-hidden"
             >
-              <div className="space-y-3 pt-1">
+              <div className="space-y-3 px-1 py-1">
                 <div className="space-y-1.5">
                   <Label className="text-[13px] text-neutral-500">
                     Experience
@@ -1016,8 +1018,78 @@ function FitnessStep({
           Back
         </Button>
         <Button
+          onClick={onNext}
+          disabled={!canSubmit}
+          className="flex-1 h-12 rounded-xl bg-neutral-900 text-[15px] font-medium text-white hover:bg-neutral-800"
+          style={{ touchAction: "manipulation" }}
+        >
+          Continue
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Step 3: Special Notes (free text for the coach)
+// =============================================================================
+
+function NotesStep({
+  value,
+  onChange,
+  onBack,
+  onSubmit,
+  isSubmitting,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onBack: () => void;
+  onSubmit: () => void;
+  isSubmitting: boolean;
+}) {
+  return (
+    <div className="flex flex-1 min-h-0 flex-col">
+      <div className="mb-6">
+        <h1
+          className="text-[26px] font-semibold tracking-tight text-neutral-900"
+          style={{ textWrap: "balance" }}
+        >
+          Anything else your coach should know?
+        </h1>
+        <p className="mt-1.5 text-[15px] text-neutral-500">
+          Injuries, life context, training history, or anything that would
+          change how a coach builds your plan.{" "}
+          <span className="italic text-neutral-400">(optional)</span>
+        </p>
+      </div>
+
+      <div>
+        <Textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="e.g. Sore right achilles, easing back into volume. Can't run Wednesdays (kid pickup). First time training for a 50k, coming from road marathons."
+          className="h-[240px] resize-none rounded-xl border-neutral-200 text-[15px] leading-relaxed"
+          style={{ touchAction: "manipulation" }}
+        />
+        <p className="mt-2 text-[12px] text-neutral-400">
+          Your coach will keep this in mind across every conversation.
+        </p>
+      </div>
+
+      <div className="shrink-0 flex gap-3 pt-4 mt-auto">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onBack}
+          disabled={isSubmitting}
+          className="h-12 rounded-xl px-5 text-[15px] font-medium"
+          style={{ touchAction: "manipulation" }}
+        >
+          Back
+        </Button>
+        <Button
           onClick={onSubmit}
-          disabled={!canSubmit || isSubmitting}
+          disabled={isSubmitting}
           className="flex-1 h-12 rounded-xl bg-neutral-900 text-[15px] font-medium text-white hover:bg-neutral-800"
           style={{ touchAction: "manipulation" }}
         >
@@ -1051,6 +1123,7 @@ export default function OnboardingPage() {
   const [fitnessData, setFitnessData] = useState<FitnessData>({
     source: "strava",
   });
+  const [notes, setNotes] = useState("");
 
   const [saveTrainingBackground] = useSaveTrainingBackgroundMutation();
   const [updateUserProfile] = useUpdateUserProfileMutation();
@@ -1112,11 +1185,13 @@ export default function OnboardingPage() {
             (fitnessData.thresholdPaceSeconds ?? 0) / 60
           : undefined;
 
+      const trimmedNotes = notes.trim();
       const trainingBackground = {
         experience: fitnessData.experience || "intermediate",
         weeklyMileage: fitnessData.weeklyMileage || 0,
         longestRun: fitnessData.longestRun || 0,
         ...(thresholdPace != null && { thresholdPace }),
+        ...(trimmedNotes && { specialNotes: trimmedNotes }),
         goals:
           goalData.type === "race"
             ? {
@@ -1248,6 +1323,7 @@ export default function OnboardingPage() {
     userId,
     goalData,
     fitnessData,
+    notes,
     saveTrainingBackground,
     updateUserProfile,
     router,
@@ -1280,12 +1356,12 @@ export default function OnboardingPage() {
       <div className="mx-auto flex w-full max-w-xl flex-1 min-h-0 flex-col px-6 pt-10 pb-8">
         {/* Progress */}
         <div className="mb-8 flex items-center justify-between">
-          <StepIndicator current={step} total={2} />
+          <StepIndicator current={step} total={3} />
           <span
             className="text-[13px] text-neutral-300"
             style={{ fontVariantNumeric: "tabular-nums" }}
           >
-            {step} of 2
+            {step} of 3
           </span>
         </div>
 
@@ -1317,9 +1393,24 @@ export default function OnboardingPage() {
                   data={fitnessData}
                   onChange={setFitnessData}
                   onBack={() => setStep(1)}
+                  onNext={() => setStep(3)}
+                  goalData={goalData}
+                />
+              </motion.div>
+            )}
+            {step === 3 && (
+              <motion.div
+                key="step-3"
+                className="flex-1 flex flex-col min-h-0"
+                {...stepVariants}
+                transition={{ duration: 0.2, ease: easeOutQuad }}
+              >
+                <NotesStep
+                  value={notes}
+                  onChange={setNotes}
+                  onBack={() => setStep(2)}
                   onSubmit={handleSubmit}
                   isSubmitting={isSubmitting}
-                  goalData={goalData}
                 />
               </motion.div>
             )}

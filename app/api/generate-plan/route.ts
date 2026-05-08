@@ -3,6 +3,7 @@ import { TrainingBackground } from "@/lib/types";
 import { PlanGenerationPipeline } from "@/lib/agents/pipeline";
 import { getAdminDb } from "@/lib/firebase-admin";
 import type { PlanGenerationInput, AthleteProfile, RaceGoal } from "@/lib/agents/types";
+import { seedCoachMemoriesFromOnboarding } from "@/lib/coach-memory-seed";
 
 export const maxDuration = 300; // 5 min for Vercel (V2 pipeline takes ~60-120s)
 
@@ -213,6 +214,21 @@ export async function POST(req: NextRequest) {
             });
         } catch (logErr) {
           console.warn("Failed to save pipeline log:", logErr);
+        }
+
+        // Seed coach memory from the user's free-text notes + recent activity
+        // titles. Best-effort — the plan is already saved, so a failure here
+        // shouldn't surface to the user.
+        try {
+          const seed = await seedCoachMemoriesFromOnboarding(
+            userId,
+            trainingBackground.specialNotes
+          );
+          console.log(
+            `Coach memory seeded for ${userId}: ${seed.written} written, skipped=${seed.skipped}${seed.reason ? ` (${seed.reason})` : ""}`
+          );
+        } catch (seedErr) {
+          console.warn("Failed to seed coach memory:", seedErr);
         }
 
         send({

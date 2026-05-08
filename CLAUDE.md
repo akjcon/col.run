@@ -313,6 +313,26 @@ Required in `.env.local`:
 5. **Don't create new files unnecessarily** - Edit existing files when possible
 6. **Don't write duplicate fields from different sources** - Resolve conflicts in the snapshot builder at write time, not in consumers
 7. **Separate pure logic from I/O** - Extract testable pure functions (like `applyMemoryUpdate`) so Firestore wrappers are thin and tests don't need mocks
+8. **Animated containers and focus rings** - When a `motion.div` uses `overflow-hidden` for a height/width animation, it will clip the focus rings of any inputs inside. Same goes for scroll containers (`overflow-y-auto` implicitly clips x too). Fix: add negative margin on the wrapper and matching padding on its inner content — the wrapper's box extends outward to give rings room without disturbing layout. Use **`-m-1` / `p-1`** (4px, matches the default `ring-offset-2 ring-2` extent), and **propagate the same buffer up every clipping ancestor** — if the outer scroll container is at `-m-0.5 / p-0.5` (2px) and the inner animated wrapper is at `-mx-1 / px-1` (4px), the 2px difference still gets clipped by the outer. Match them.
+
+   ```tsx
+   {/* Outer scroll container */}
+   <div className="overflow-y-auto p-1 -m-1">
+     {/* Animated wrapper inside */}
+     <motion.div
+       initial={{ opacity: 0, height: 0 }}
+       animate={{ opacity: 1, height: "auto" }}
+       exit={{ opacity: 0, height: 0 }}
+       className="-mx-1 overflow-hidden"
+     >
+       <div className="space-y-3 px-1 py-1">
+         <Input ... />
+       </div>
+     </motion.div>
+   </div>
+   ```
+
+   See `app/(authenticated)/onboarding/page.tsx` for both patterns in use.
 
 ## Debugging User Issues
 
