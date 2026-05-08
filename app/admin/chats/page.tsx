@@ -29,7 +29,10 @@ export default function AdminChatsPage() {
     const controller = new AbortController();
     fetch("/api/admin/chats", { signal: controller.signal })
       .then(async (res) => {
-        if (!res.ok) throw new Error(`Failed (${res.status})`);
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || `Failed (${res.status})`);
+        }
         return res.json();
       })
       .then((d) => {
@@ -67,7 +70,7 @@ export default function AdminChatsPage() {
       )}
 
       {error && !loading && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-800 text-sm">
+        <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-800 text-sm whitespace-pre-wrap break-all">
           {error}
         </div>
       )}

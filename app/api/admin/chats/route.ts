@@ -22,16 +22,26 @@ export async function GET() {
 
   const db = getAdminDb();
 
-  // Bounded scan: a chatty user with 500 recent messages can crowd out other
-  // users from the list — acceptable trade-off for keeping this cheap.
-  const [usersSnap, msgSnap] = await Promise.all([
-    db.collection("users").select("email", "name").get(),
-    db
-      .collectionGroup("chatHistory")
-      .orderBy("timestamp", "desc")
-      .limit(RECENT_MESSAGES_SCAN)
-      .get(),
-  ]);
+  let usersSnap;
+  let msgSnap;
+  try {
+    // Bounded scan: a chatty user with 500 recent messages can crowd out
+    // other users from the list — acceptable trade-off for keeping this cheap.
+    [usersSnap, msgSnap] = await Promise.all([
+      db.collection("users").select("email", "name").get(),
+      db
+        .collectionGroup("chatHistory")
+        .orderBy("timestamp", "desc")
+        .limit(RECENT_MESSAGES_SCAN)
+        .get(),
+    ]);
+  } catch (err) {
+    // Surface the underlying error to the (admin-only) caller — Firestore
+    // returns a clickable index-creation URL on FAILED_PRECONDITION.
+    console.error("Admin chats query failed:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 
   const profiles = new Map<string, { email: string; name: string }>();
   for (const doc of usersSnap.docs) {
