@@ -93,20 +93,32 @@ Examples:
         console.log(formatData(data));
       }
     } else {
-      // Query a collection
+      // Query a collection. Always fetch the true total count first so we
+      // can warn when --limit is silently truncating results. (Past pain:
+      // an "activities collection only has entries through Mar 3" finding
+      // turned out to be a 20-doc default cap, not real data.)
       const colRef = db.collection(path);
-      const snapshot = await colRef.limit(limit).get();
+      const countSnap = await colRef.count().get();
+      const totalCount = countSnap.data().count;
 
-      if (snapshot.empty) {
+      if (totalCount === 0) {
         console.log(`No documents in collection: ${path}`);
         process.exit(0);
+      }
+
+      const snapshot = await colRef.limit(limit).get();
+
+      if (totalCount > snapshot.size) {
+        console.warn(
+          `⚠️  Showing ${snapshot.size} of ${totalCount} docs in ${path}. Pass --limit ${totalCount} to see all.`
+        );
       }
 
       if (jsonOutput) {
         const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         console.log(JSON.stringify(docs, null, 2));
       } else {
-        console.log(`\n📁 Collection: ${path} (${snapshot.size} documents)\n`);
+        console.log(`\n📁 Collection: ${path} (${snapshot.size} of ${totalCount} documents shown)\n`);
         for (const doc of snapshot.docs) {
           console.log(`--- ${doc.id} ---`);
           console.log(formatData(doc.data()));
