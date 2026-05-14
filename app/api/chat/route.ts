@@ -7,7 +7,7 @@ import {
 } from "@/lib/llm-service";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { validateWeek, validateDay } from "@/lib/blocks/validation";
-import type { ChatContext, UserData, TrainingPlan, TrainingBackground, CoachMemoryEntry } from "@/lib/types";
+import type { ChatContext, UserData, TrainingPlan, TrainingBackground, CoachMemoryEntry, ChatToolCall, ProposedPlanChange } from "@/lib/types";
 import type { Week, Day } from "@/lib/blocks/types";
 import { readCoachMemory, executeCoachMemoryUpdate, type CoachMemoryUpdate } from "@/lib/coach-memory";
 import { recordServerEvent } from "@/lib/events-server";
@@ -23,14 +23,69 @@ interface FirestoreReadInput {
   orderDirection?: "asc" | "desc";
 }
 
+// Allowlist of paths the LLM may query through read_athlete_data. Anything
+// not on this list is rejected — prevents the model from pulling Strava
+// tokens, Clerk metadata, or anything else that ends up persisted into
+// chatHistory via toolCallLog.
+const READ_ATHLETE_DATA_ALLOWLIST = new Set<string>([
+  "athleteSnapshot/current",
+  "fitness/profile",
+  "fitness/experience",
+  "workoutLogs",
+  "activities",
+  "backgrounds",
+]);
+
+// Defense in depth: even on allowlisted paths, strip token-shaped fields
+// before they end up in tool results (and downstream in chatHistory).
+const TOKEN_FIELD_NAMES = new Set([
+  "accessToken",
+  "access_token",
+  "refreshToken",
+  "refresh_token",
+  "expiresAt",
+  "expires_at",
+  "apiKey",
+  "api_key",
+  "secret",
+]);
+
+function redactSensitive<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map(redactSensitive) as unknown as T;
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = TOKEN_FIELD_NAMES.has(k) ? "[redacted]" : redactSensitive(v);
+    }
+    return out as T;
+  }
+  return value;
+}
+
 async function executeFirestoreRead(
   userId: string,
   input: FirestoreReadInput
 ): Promise<string> {
   try {
+    // Reject anything not on the allowlist. Collection reads pass just the
+    // collection name (e.g. "workoutLogs"); doc reads pass "col/docId" (we
+    // match on the literal known doc paths).
+    const path = input.path?.trim() ?? "";
+    const pathParts = path.split("/");
+    const collectionName = pathParts[0];
+    const isAllowed =
+      READ_ATHLETE_DATA_ALLOWLIST.has(path) ||
+      (pathParts.length === 1 && READ_ATHLETE_DATA_ALLOWLIST.has(collectionName));
+    if (!isAllowed) {
+      return JSON.stringify({
+        error: `Path "${path}" is not accessible via read_athlete_data. Allowed: ${Array.from(READ_ATHLETE_DATA_ALLOWLIST).join(", ")}`,
+      });
+    }
+
     const db = getAdminDb();
     const userRef = db.collection("users").doc(userId);
-    const pathParts = input.path.split("/");
 
     // Single document read (e.g. "athleteSnapshot/current", "fitness/profile")
     if (pathParts.length === 2) {
@@ -39,11 +94,10 @@ async function executeFirestoreRead(
         .doc(pathParts[1])
         .get();
       if (!docSnap.exists) return JSON.stringify({ exists: false });
-      return JSON.stringify(docSnap.data());
+      return JSON.stringify(redactSensitive(docSnap.data()));
     }
 
     // Collection read (e.g. "workoutLogs", "activities")
-    const collectionName = pathParts[0];
     let q: FirebaseFirestore.Query = userRef.collection(collectionName);
 
     if (input.orderBy) {
@@ -53,7 +107,7 @@ async function executeFirestoreRead(
     q = q.limit(input.limit || 10);
 
     const snap = await q.get();
-    const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const docs = snap.docs.map((d) => redactSensitive({ id: d.id, ...d.data() }));
     return JSON.stringify(docs);
   } catch (error) {
     return JSON.stringify({ error: String(error) });
@@ -67,18 +121,21 @@ interface ChatMessage {
   content: string;
 }
 
-interface ProposedChange {
-  type: "replace_week" | "replace_day";
-  weekNumber: number;
+// Raw shape coming back from the LLM tool call — fields are optional until
+// validation; the validator promotes good ones into ProposedPlanChange.
+interface RawProposedChange {
+  type?: "replace_week" | "replace_day" | "append_weeks";
+  weekNumber?: number;
   dayOfWeek?: string;
   week?: Week;
   day?: Day;
-  summary: string;
+  weeks?: Week[];
+  summary?: string;
 }
 
 interface ToolInput {
   reasoning: string;
-  changes: ProposedChange[];
+  changes: RawProposedChange[];
 }
 
 interface ThresholdPaceToolInput {
@@ -88,33 +145,105 @@ interface ThresholdPaceToolInput {
 
 interface ValidationResult {
   reasoning: string;
-  changes: ProposedChange[];
+  changes: ProposedPlanChange[];
   validationErrors: string[];
 }
 
-function validateProposedChanges(input: ToolInput): ValidationResult {
-  const validChanges: ProposedChange[] = [];
+// Validate raw LLM tool output and promote it to ProposedPlanChange. For
+// append_weeks the server stamps an authoritative weekNumber (= the first
+// new week's number, derived from a running count starting at the plan's
+// totalWeeks) so the client UI doesn't render "New Week 0" when the LLM
+// omits it. An unknown / malformed change always lands in validationErrors
+// instead of silently dropping.
+function validateProposedChanges(
+  input: ToolInput,
+  activePlan: TrainingPlan | null
+): ValidationResult {
+  const validChanges: ProposedPlanChange[] = [];
   const validationErrors: string[] = [];
+  let runningWeekCount = activePlan?.totalWeeks ?? 0;
 
   for (const change of input.changes) {
-    if (change.type === "replace_week" && change.week) {
+    const summary = change.summary ?? "";
+
+    if (change.type === "replace_week") {
+      if (!change.week || typeof change.weekNumber !== "number") {
+        validationErrors.push(
+          `replace_week missing required fields (weekNumber, week)`
+        );
+        continue;
+      }
       const result = validateWeek(change.week);
-      if (result.valid) {
-        validChanges.push(change);
-      } else {
+      if (!result.valid) {
         const msg = `Week ${change.weekNumber}: ${result.errors.join(", ")}`;
         console.warn(`Invalid week change:`, msg);
         validationErrors.push(msg);
+        continue;
       }
-    } else if (change.type === "replace_day" && change.day) {
+      validChanges.push({
+        type: "replace_week",
+        weekNumber: change.weekNumber,
+        week: change.week,
+        summary,
+      });
+    } else if (change.type === "replace_day") {
+      if (
+        !change.day ||
+        typeof change.weekNumber !== "number" ||
+        !change.dayOfWeek
+      ) {
+        validationErrors.push(
+          `replace_day missing required fields (weekNumber, dayOfWeek, day)`
+        );
+        continue;
+      }
       const result = validateDay(change.day);
-      if (result.valid) {
-        validChanges.push(change);
-      } else {
+      if (!result.valid) {
         const msg = `${change.dayOfWeek} (Week ${change.weekNumber}): ${result.errors.join(", ")}`;
         console.warn(`Invalid day change:`, msg);
         validationErrors.push(msg);
+        continue;
       }
+      validChanges.push({
+        type: "replace_day",
+        weekNumber: change.weekNumber,
+        dayOfWeek: change.dayOfWeek,
+        day: change.day,
+        summary,
+      });
+    } else if (change.type === "append_weeks") {
+      if (!Array.isArray(change.weeks) || change.weeks.length === 0) {
+        validationErrors.push(
+          `append_weeks requires a non-empty 'weeks' array`
+        );
+        continue;
+      }
+      // All-or-nothing per-change validation so the LLM gets a clear
+      // signal instead of a partial append.
+      const errors: string[] = [];
+      change.weeks.forEach((week, i) => {
+        const result = validateWeek(week);
+        if (!result.valid) {
+          errors.push(`New week #${i + 1}: ${result.errors.join(", ")}`);
+        }
+      });
+      if (errors.length > 0) {
+        console.warn(`Invalid append_weeks change:`, errors.join("; "));
+        validationErrors.push(...errors);
+        continue;
+      }
+      const firstNew = runningWeekCount + 1;
+      validChanges.push({
+        type: "append_weeks",
+        weekNumber: firstNew,
+        weeks: change.weeks,
+        summary,
+      });
+      runningWeekCount += change.weeks.length;
+    } else {
+      validationErrors.push(
+        `Unknown change type: ${JSON.stringify(change.type)}`
+      );
     }
   }
 
@@ -161,21 +290,71 @@ async function getServerUserData(userId: string): Promise<UserData | null> {
   }
 }
 
-// Save chat message using Admin SDK
-async function saveMessageAdmin(userId: string, message: { role: string; content: string }) {
-  try {
-    const adminDb = getAdminDb();
-    await adminDb
-      .collection("users")
-      .doc(userId)
-      .collection("chatHistory")
-      .add({
-        ...message,
-        timestamp: new Date(),
-      });
-  } catch (error) {
-    console.error("Failed to save chat message:", error);
+// Save chat message using Admin SDK. Throws on failure — callers decide
+// how to react. Swallowing here historically produced silent gaps in
+// chatHistory (response shown to user, never persisted, lost on reload).
+const MAX_SAVE_ATTEMPTS = 2;
+const SAVE_RETRY_DELAY_MS = 200; // targets transient Firestore commit blips
+
+async function saveMessageAdmin(
+  userId: string,
+  message: { role: string; content: string; toolCalls?: ChatToolCall[] }
+): Promise<void> {
+  const adminDb = getAdminDb();
+  const doc: Record<string, unknown> = {
+    role: message.role,
+    content: message.content,
+    timestamp: new Date(),
+  };
+  if (message.toolCalls && message.toolCalls.length > 0) {
+    doc.toolCalls = message.toolCalls;
   }
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < MAX_SAVE_ATTEMPTS; attempt++) {
+    try {
+      await adminDb
+        .collection("users")
+        .doc(userId)
+        .collection("chatHistory")
+        .add(doc);
+      return;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < MAX_SAVE_ATTEMPTS - 1) {
+        await new Promise((r) => setTimeout(r, SAVE_RETRY_DELAY_MS));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+// Caps for tool-call audit fields stored on the assistant chatHistory doc.
+// Firestore allows 1MB per doc; we leave a wide margin so a runaway tool
+// loop can't render a chat session unsavable.
+const TOOL_RESULT_MAX_CHARS = 2000;
+const TOOL_INPUT_MAX_CHARS = 4000;
+const MAX_TOOL_CALL_LOG_ENTRIES = 30;
+
+function truncateResult(result: string): string {
+  if (result.length <= TOOL_RESULT_MAX_CHARS) return result;
+  return result.slice(0, TOOL_RESULT_MAX_CHARS) + `…[truncated, total ${result.length} chars]`;
+}
+
+// `input` is `unknown` and can be a large object (e.g. a propose_plan_changes
+// payload with 7 days × 10 blocks per week × N weeks). Serialize and cap.
+function truncateInput(input: unknown): unknown {
+  let serialized: string;
+  try {
+    serialized = JSON.stringify(input);
+  } catch {
+    return "[unserializable]";
+  }
+  if (serialized.length <= TOOL_INPUT_MAX_CHARS) return input;
+  return {
+    truncated: true,
+    totalChars: serialized.length,
+    preview: serialized.slice(0, TOOL_INPUT_MAX_CHARS),
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -210,11 +389,63 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Get user data via Admin SDK (server-side)
-    const userData = await getServerUserData(userId);
+    // Helper for the three chat_error event call sites (user save, assistant
+    // save, stream error). Centralizing keeps `realUserId` and structure
+    // consistent and makes future call sites a one-liner.
+    const recordChatError = (
+      stage: string,
+      extra: Record<string, unknown> = {}
+    ) => {
+      void recordServerEvent({
+        userId,
+        realUserId: clerkUserId,
+        eventType: "chat_error",
+        metadata: { stage, ...extra },
+      });
+    };
+
+    // Sanitize an error for storage in event metadata. Captures the type
+    // and the first line of the message; keeps stack frames, Firestore
+    // paths, and Anthropic prompt fragments out of the analytics doc.
+    const summarizeError = (err: unknown): { name: string; message: string } => {
+      if (err instanceof Error) {
+        return {
+          name: err.name,
+          message: err.message.split("\n")[0].slice(0, 200),
+        };
+      }
+      return { name: "Unknown", message: String(err).slice(0, 200) };
+    };
+
+    // Kick off the user-message save and the user-data read in parallel.
+    // The user save is durability insurance (so the question survives a
+    // downstream failure); nothing in the LLM path reads from it, so
+    // there's no reason to block time-to-first-token on it. Both promises
+    // are awaited as one Promise.allSettled so we can react to either
+    // failure independently.
+    const [userSaveResult, userData] = await Promise.all([
+      saveMessageAdmin(userId, {
+        role: "user",
+        content: lastMessage.content,
+      }).then(
+        () => ({ ok: true as const }),
+        (err: unknown) => ({ ok: false as const, err })
+      ),
+      getServerUserData(userId),
+    ]);
+
+    if (!userSaveResult.ok) {
+      console.error("Failed to save user chat message:", userSaveResult.err);
+      recordChatError("user_message_save", { error: summarizeError(userSaveResult.err) });
+      // Continue — the LLM can still respond; client retains the message
+      // in memory so the conversation isn't immediately broken.
+    }
 
     if (!userData) {
-      // Fallback: minimal user data so streaming still works
+      // Fallback: minimal user data so streaming still works. Mirrors the
+      // main path's save flow — without this, a user whose profile read
+      // failed would see an assistant response that never persists,
+      // exactly the bug the main path was rewritten to avoid.
       const fallbackData: UserData = {
         profile: { id: userId, email: "", name: "User", createdAt: Date.now(), completedOnboarding: false },
         chatHistory: [],
@@ -222,18 +453,66 @@ export async function POST(req: NextRequest) {
 
       const stream = await streamChatResponse(messages, fallbackData, context, null);
       const encoder = new TextEncoder();
+      let fallbackFullText = "";
       const readableStream = new ReadableStream({
         async start(controller) {
           try {
             stream.on("text", (text) => {
+              fallbackFullText += text;
               controller.enqueue(encoder.encode(JSON.stringify({ type: "text", data: text }) + "\n"));
             });
             await stream.finalMessage();
+
+            // Save assistant message before closing the stream.
+            try {
+              await saveMessageAdmin(userId, {
+                role: "assistant",
+                content: fallbackFullText,
+              });
+            } catch (saveErr) {
+              recordChatError("assistant_message_save_fallback", {
+                error: summarizeError(saveErr),
+                contentLength: fallbackFullText.length,
+              });
+              controller.enqueue(
+                encoder.encode(
+                  JSON.stringify({
+                    type: "save_error",
+                    data: {
+                      message:
+                        "Your response was generated but couldn't be saved. It may not appear if you refresh.",
+                    },
+                  }) + "\n"
+                )
+              );
+            }
+
             controller.close();
           } catch (err) {
             console.error("Stream error:", err);
             const errMsg = err instanceof Error ? err.message : "Unknown error";
             const isRateLimit = errMsg.includes("rate_limit") || errMsg.includes("429") || errMsg.includes("too many requests");
+
+            // Save partial content so a stream-mid-response failure doesn't
+            // wipe everything the user already saw.
+            if (fallbackFullText.length > 0) {
+              try {
+                await saveMessageAdmin(userId, {
+                  role: "assistant",
+                  content: `${fallbackFullText}\n\n[Response was interrupted by an error]`,
+                });
+              } catch (saveErr) {
+                recordChatError("partial_save_after_stream_error_fallback", {
+                  error: summarizeError(saveErr),
+                });
+              }
+            }
+            recordChatError("stream_error_fallback", {
+              error: summarizeError(err),
+              code: isRateLimit ? "RATE_LIMITED" : "STREAM_ERROR",
+              hadPartialContent: fallbackFullText.length > 0,
+            });
+
             try {
               controller.enqueue(encoder.encode(JSON.stringify({
                 type: "error",
@@ -285,6 +564,12 @@ export async function POST(req: NextRequest) {
     const stream = await streamChatResponse(messages, userData, context, activePlan, coachMemory);
     const encoder = new TextEncoder();
     let fullText = "";
+
+    // Audit log of every tool the LLM invoked during this turn, including
+    // tool inputs and (for server-executed tools) truncated results. Saved
+    // alongside the assistant message so /admin/chats can show what the
+    // coach actually did vs. what it claimed.
+    const toolCallLog: ChatToolCall[] = [];
 
     const readableStream = new ReadableStream({
       async start(controller) {
@@ -358,6 +643,13 @@ export async function POST(req: NextRequest) {
                 tool_use_id: call.id,
                 content: result,
               });
+              if (toolCallLog.length < MAX_TOOL_CALL_LOG_ENTRIES) {
+                toolCallLog.push({
+                  name: call.name,
+                  input: truncateInput(call.input),
+                  result: truncateResult(result),
+                });
+              }
             }
 
             // Also include tool results for any non-server tools (return empty to satisfy API)
@@ -408,8 +700,14 @@ export async function POST(req: NextRequest) {
           );
 
           for (const toolBlock of toolBlocks) {
+            if (toolCallLog.length < MAX_TOOL_CALL_LOG_ENTRIES) {
+              toolCallLog.push({
+                name: toolBlock.name,
+                input: truncateInput(toolBlock.input),
+              });
+            }
             if (toolBlock.name === "propose_plan_changes") {
-              const validated = validateProposedChanges(toolBlock.input as ToolInput);
+              const validated = validateProposedChanges(toolBlock.input as ToolInput, activePlan);
               if (validated.changes.length > 0) {
                 sendEvent({
                   type: "plan_modification",
@@ -483,49 +781,97 @@ export async function POST(req: NextRequest) {
             }
           }
 
-          controller.close();
-
-          // Save messages in the background
-          try {
-            await saveMessageAdmin(userId, {
-              role: "user",
-              content: lastMessage.content,
-            });
-
-            // Build tool call summaries for saved message
-            const toolSummaries: string[] = [];
-            for (const tb of toolBlocks) {
-              if (tb.name === "propose_plan_changes") {
-                const input = tb.input as ToolInput;
-                const changeSummary = input.changes
-                  .map(
-                    (c) =>
-                      `${c.type === "replace_week" ? `Week ${c.weekNumber}` : `${c.dayOfWeek} (Week ${c.weekNumber})`}: ${c.summary}`
-                  )
-                  .join("; ");
-                toolSummaries.push(`[Proposed changes: ${changeSummary}]`);
-              } else if (tb.name === "update_threshold_pace") {
-                const input = tb.input as ThresholdPaceToolInput;
-                toolSummaries.push(`[Proposed threshold pace update: ${input.newThresholdPace.toFixed(2)} min/mi]`);
-              }
+          // Build the tool-call summary suffix that gets appended to the
+          // saved assistant content so /admin/chats can read proposals
+          // inline with the text.
+          const toolSummaries: string[] = [];
+          for (const tb of toolBlocks) {
+            if (tb.name === "propose_plan_changes") {
+              const input = tb.input as ToolInput;
+              const changeSummary = input.changes
+                .map((c) => {
+                  if (c.type === "replace_day") {
+                    return `${c.dayOfWeek} (Week ${c.weekNumber}): ${c.summary}`;
+                  }
+                  if (c.type === "append_weeks") {
+                    const count = c.weeks?.length ?? 0;
+                    return `Append ${count} week${count === 1 ? "" : "s"}: ${c.summary}`;
+                  }
+                  return `Week ${c.weekNumber}: ${c.summary}`;
+                })
+                .join("; ");
+              toolSummaries.push(`[Proposed changes: ${changeSummary}]`);
+            } else if (tb.name === "update_threshold_pace") {
+              const input = tb.input as ThresholdPaceToolInput;
+              toolSummaries.push(`[Proposed threshold pace update: ${input.newThresholdPace.toFixed(2)} min/mi]`);
             }
+          }
 
-            const savedContent = toolSummaries.length > 0
-              ? `${fullText}\n\n${toolSummaries.join("\n")}`
-              : fullText;
+          const savedContent = toolSummaries.length > 0
+            ? `${fullText}\n\n${toolSummaries.join("\n")}`
+            : fullText;
 
+          // Save the assistant message BEFORE closing the stream. Closing
+          // first hides save failures from both client and analytics; doing
+          // it here means we can react if persistence drops.
+          try {
             await saveMessageAdmin(userId, {
               role: "assistant",
               content: savedContent,
+              toolCalls: toolCallLog,
             });
           } catch (saveError) {
-            console.error("Failed to save chat messages:", saveError);
+            console.error("Failed to save assistant message:", saveError);
+            recordChatError("assistant_message_save", {
+              error: summarizeError(saveError),
+              contentLength: savedContent.length,
+              toolCallCount: toolCallLog.length,
+            });
+            sendEvent({
+              type: "save_error",
+              data: {
+                message:
+                  "Your response was generated but couldn't be saved. It may not appear if you refresh.",
+              },
+            });
           }
+
+          controller.close();
         } catch (err) {
           console.error("Stream error:", err);
           const errMsg = err instanceof Error ? err.message : "Unknown error";
           const isRateLimit = errMsg.includes("rate_limit") || errMsg.includes("429") || errMsg.includes("too many requests");
           const isOverloaded = errMsg.includes("overloaded") || errMsg.includes("529");
+
+          // Persist whatever partial response we managed to stream, so the
+          // user doesn't lose what they already saw on reload. Mark it as
+          // interrupted so admins/users can tell.
+          let partialSaveFailed = false;
+          if (fullText.length > 0) {
+            try {
+              await saveMessageAdmin(userId, {
+                role: "assistant",
+                content: `${fullText}\n\n[Response was interrupted by an error]`,
+                toolCalls: toolCallLog,
+              });
+            } catch (saveErr) {
+              partialSaveFailed = true;
+              console.error("Failed to save partial assistant message after stream error:", saveErr);
+              recordChatError("partial_save_after_stream_error", {
+                error: summarizeError(saveErr),
+                partialContentLength: fullText.length,
+              });
+            }
+          }
+
+          recordChatError("stream_error", {
+            error: summarizeError(err),
+            code: isRateLimit ? "RATE_LIMITED" : isOverloaded ? "OVERLOADED" : "STREAM_ERROR",
+            hadPartialContent: fullText.length > 0,
+            partialContentLength: fullText.length,
+            partialSaveFailed,
+          });
+
           try {
             sendEvent({
               type: "error",

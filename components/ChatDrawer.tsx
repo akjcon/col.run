@@ -4,12 +4,53 @@ import { Drawer } from "vaul";
 import { AlertCircle, Loader2, RotateCcw, Send, X } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import { useChatContext, type ChatMessage, type PlanModificationData, type PaceZoneUpdateData } from "@/lib/chat-context";
+import {
+  useChatContext,
+  interpretAffirmativeIntent,
+  type ChatMessage,
+  type PlanModificationData,
+  type PaceZoneUpdateData,
+} from "@/lib/chat-context";
 import { useUser } from "@/lib/user-context-rtk";
 import { useTrackEvent } from "@/lib/event-tracker";
+import { useAppDispatch } from "@/lib/store/hooks";
+import { baseApi } from "@/lib/store/api/baseApi";
+import { toast } from "sonner";
 import type { ChatContext } from "@/lib/types";
 import { PlanChangeCard } from "./PlanChangeCard";
 import { PaceZoneUpdateCard } from "./PaceZoneUpdateCard";
+
+// ---------------------------------------------------------------------------
+// Proposal supersession
+// ---------------------------------------------------------------------------
+// Only one proposal (plan change OR pace update) can be live at a time. When
+// a new one arrives mid-conversation, mark every prior still-`proposed`
+// proposal as superseded so the UI flips the old card out of its action
+// state and the affirmative-intent intercept can't target it.
+function supersedePendingProposals(m: ChatMessage): ChatMessage {
+  let updated = m;
+  if (m.planModification?.status === "proposed") {
+    updated = {
+      ...updated,
+      planModification: {
+        ...m.planModification,
+        status: "error",
+        error: "Superseded by a newer proposal",
+      },
+    };
+  }
+  if (m.paceZoneUpdate?.status === "proposed") {
+    updated = {
+      ...updated,
+      paceZoneUpdate: {
+        ...m.paceZoneUpdate,
+        status: "error",
+        error: "Superseded by a newer proposal",
+      },
+    };
+  }
+  return updated;
+}
 
 // ---------------------------------------------------------------------------
 // Suggested prompts by trigger
@@ -305,8 +346,9 @@ function ChatUI() {
     isStreaming,
     setIsStreaming,
   } = useChatContext();
-  const { userId } = useUser();
+  const { userId, userData } = useUser();
   const trackEvent = useTrackEvent();
+  const dispatch = useAppDispatch();
 
   const [input, setInput] = useState("");
   const [hoveredPrompt, setHoveredPrompt] = useState("");
@@ -359,10 +401,159 @@ function ChatUI() {
     [setMessages]
   );
 
+  // ---------------------------------------------------------------------------
+  // Apply / dismiss handlers for proposals. Lifted here from the cards so a
+  // user typing "yes" in the composer can hit the exact same code path as a
+  // button click. The cards delegate to these via onApply / onDismiss.
+  // ---------------------------------------------------------------------------
+
+  const applyPlanModification = useCallback(
+    async (msgId: string) => {
+      const activePlan = userData?.activePlan;
+      const msg = messages.find((m) => m.id === msgId);
+      if (!activePlan || !userId || !msg?.planModification) return;
+      if (msg.planModification.status !== "proposed") return;
+
+      const mod = msg.planModification;
+      updateModificationStatus(msgId, "applying");
+      trackEvent("plan_change_accepted", {
+        changeCount: mod.changes.length,
+        types: mod.changes.map((c) => c.type),
+      });
+
+      try {
+        const response = await fetch("/api/plan/modify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            planId: activePlan.id,
+            changes: mod.changes,
+          }),
+        });
+        const result = await response.json();
+        if (result.success) {
+          updateModificationStatus(msgId, "applied", result.evaluation);
+          dispatch(baseApi.util.invalidateTags(["TrainingPlan"]));
+          toast.success("Plan changes applied");
+        } else {
+          const errorMsg = result.error || "Changes rejected";
+          updateModificationStatus(msgId, "error", result.evaluation, errorMsg);
+          toast.error(errorMsg);
+        }
+      } catch {
+        updateModificationStatus(msgId, "error", undefined, "Failed to apply changes");
+        toast.error("Failed to apply plan changes. Please try again.");
+      }
+    },
+    [messages, userData, userId, dispatch, trackEvent, updateModificationStatus]
+  );
+
+  const dismissPlanModification = useCallback(
+    (msgId: string) => {
+      const msg = messages.find((m) => m.id === msgId);
+      if (!msg?.planModification) return;
+      if (msg.planModification.status !== "proposed") return;
+      const mod = msg.planModification;
+      updateModificationStatus(msgId, "error", undefined, "Changes dismissed");
+      trackEvent("plan_change_declined", {
+        changeCount: mod.changes.length,
+        types: mod.changes.map((c) => c.type),
+      });
+    },
+    [messages, trackEvent, updateModificationStatus]
+  );
+
+  const applyPaceZoneUpdate = useCallback(
+    async (msgId: string) => {
+      const msg = messages.find((m) => m.id === msgId);
+      if (!userId || !msg?.paceZoneUpdate) return;
+      if (msg.paceZoneUpdate.status !== "proposed") return;
+
+      const pz = msg.paceZoneUpdate;
+      updatePaceZoneStatus(msgId, "applying");
+      trackEvent("pace_zone_update_accepted", {
+        newThresholdPace: pz.newThresholdPace,
+        currentThresholdPace: pz.currentThresholdPace,
+      });
+
+      try {
+        const response = await fetch("/api/plan/threshold-pace", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            thresholdPace: pz.newThresholdPace,
+          }),
+        });
+        if (!response.ok) throw new Error("Failed to update threshold pace");
+        updatePaceZoneStatus(msgId, "applied");
+        toast.success("Pace zones updated");
+        dispatch(
+          baseApi.util.invalidateTags(["AthleteSnapshot", "TrainingBackground"])
+        );
+      } catch {
+        updatePaceZoneStatus(msgId, "error", "Failed to update threshold pace");
+        toast.error("Failed to update pace zones. Please try again.");
+      }
+    },
+    [messages, userId, dispatch, trackEvent, updatePaceZoneStatus]
+  );
+
+  const dismissPaceZoneUpdate = useCallback(
+    (msgId: string) => {
+      const msg = messages.find((m) => m.id === msgId);
+      if (!msg?.paceZoneUpdate) return;
+      if (msg.paceZoneUpdate.status !== "proposed") return;
+      const pz = msg.paceZoneUpdate;
+      updatePaceZoneStatus(msgId, "error", "Update dismissed");
+      trackEvent("pace_zone_update_declined", {
+        newThresholdPace: pz.newThresholdPace,
+        currentThresholdPace: pz.currentThresholdPace,
+      });
+    },
+    [messages, trackEvent, updatePaceZoneStatus]
+  );
+
   const sendMessage = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed || isStreaming) return;
+
+      // If the IMMEDIATELY preceding assistant message has a proposal
+      // awaiting a decision and the user typed a stand-alone yes / no,
+      // treat it as the button click. Only the last message counts —
+      // an intervening text response from the coach (or any other
+      // message) disqualifies the intercept so the affirmative is
+      // unambiguously about the current proposal.
+      const intent = interpretAffirmativeIntent(trimmed);
+      if (intent) {
+        const last = messages[messages.length - 1];
+        const pending =
+          last &&
+          last.role === "assistant" &&
+          ((last.planModification && last.planModification.status === "proposed") ||
+            (last.paceZoneUpdate && last.paceZoneUpdate.status === "proposed"))
+            ? last
+            : null;
+        if (pending) {
+          const userMsg: ChatMessage = {
+            id: Date.now().toString(),
+            role: "user",
+            content: trimmed,
+          };
+          setMessages([...messages, userMsg]);
+          setInput("");
+          if (intent === "apply") {
+            if (pending.planModification) void applyPlanModification(pending.id);
+            else if (pending.paceZoneUpdate) void applyPaceZoneUpdate(pending.id);
+          } else {
+            if (pending.planModification) dismissPlanModification(pending.id);
+            else if (pending.paceZoneUpdate) dismissPaceZoneUpdate(pending.id);
+          }
+          return;
+        }
+      }
 
       const userMsg: ChatMessage = {
         id: Date.now().toString(),
@@ -398,11 +589,16 @@ function ChatUI() {
                 if (m.role === "assistant" && m.planModification) {
                   const mod = m.planModification;
                   const changeSummaries = mod.changes
-                    .map((c) =>
-                      c.type === "replace_week"
-                        ? `Week ${c.weekNumber} - ${c.summary}`
-                        : `${c.dayOfWeek} (Week ${c.weekNumber}) - ${c.summary}`
-                    )
+                    .map((c) => {
+                      if (c.type === "replace_day") {
+                        return `${c.dayOfWeek} (Week ${c.weekNumber}) - ${c.summary}`;
+                      }
+                      if (c.type === "append_weeks") {
+                        const count = c.weeks?.length ?? 0;
+                        return `Append ${count} week${count === 1 ? "" : "s"} - ${c.summary}`;
+                      }
+                      return `Week ${c.weekNumber} - ${c.summary}`;
+                    })
                     .join(", ");
                   const statusLabel = mod.status === "applied" ? "APPLIED" : mod.status === "error" ? "REJECTED" : "PROPOSED";
                   content += `\n\n[Proposed plan changes: ${changeSummaries}. Status: ${statusLabel}]`;
@@ -474,7 +670,7 @@ function ChatUI() {
                 setMessages((prev) => {
                   const last = prev[prev.length - 1];
                   return [
-                    ...prev.slice(0, -1),
+                    ...prev.slice(0, -1).map(supersedePendingProposals),
                     {
                       ...last,
                       status: undefined,
@@ -507,13 +703,27 @@ function ChatUI() {
                 setMessages((prev) => {
                   const last = prev[prev.length - 1];
                   return [
-                    ...prev.slice(0, -1),
+                    ...prev.slice(0, -1).map(supersedePendingProposals),
                     {
                       ...last,
                       status: undefined,
                       content: last.content || "Here's my proposed pace zone update:",
                       paceZoneUpdate: mod,
                     },
+                  ];
+                });
+              } else if (event.type === "save_error") {
+                // Response generated successfully but Firestore save failed.
+                // Surface as a soft inline notice — don't throw or interrupt.
+                const warning =
+                  event.data?.message ||
+                  "This response couldn't be saved. It may disappear on refresh.";
+                setMessages((prev) => {
+                  const last = prev[prev.length - 1];
+                  if (!last) return prev;
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...last, saveWarning: warning },
                   ];
                 });
               } else if (event.type === "error") {
@@ -559,7 +769,19 @@ function ChatUI() {
         });
       }
     },
-    [messages, isStreaming, userId, context, setMessages, setIsStreaming, trackEvent]
+    [
+      messages,
+      isStreaming,
+      userId,
+      context,
+      setMessages,
+      setIsStreaming,
+      trackEvent,
+      applyPlanModification,
+      dismissPlanModification,
+      applyPaceZoneUpdate,
+      dismissPaceZoneUpdate,
+    ]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -667,19 +889,27 @@ function ChatUI() {
                 <PlanChangeCard
                   modification={message.planModification}
                   messageId={message.id}
-                  onStatusChange={(status, evaluation, error) =>
-                    updateModificationStatus(message.id, status, evaluation, error)
-                  }
+                  onApply={() => applyPlanModification(message.id)}
+                  onDismiss={() => dismissPlanModification(message.id)}
                 />
               )}
               {message.paceZoneUpdate && (
                 <PaceZoneUpdateCard
                   data={message.paceZoneUpdate}
                   messageId={message.id}
-                  onStatusChange={(status, error) =>
-                    updatePaceZoneStatus(message.id, status, error)
-                  }
+                  onApply={() => applyPaceZoneUpdate(message.id)}
+                  onDismiss={() => dismissPaceZoneUpdate(message.id)}
                 />
+              )}
+              {/* Save warnings sit at the bottom of the message bubble so
+                  the user reads them as a per-turn footer — the warning
+                  covers the whole turn (text + any proposal card), not
+                  just the leading text. */}
+              {message.saveWarning && !message.error && (
+                <div className={cn("flex items-center gap-2 text-xs text-amber-600", "mt-2")}>
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  <span>{message.saveWarning}</span>
+                </div>
               )}
             </div>
           </div>

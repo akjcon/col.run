@@ -363,7 +363,7 @@ const WEEK_SCHEMA = {
 const PLAN_MODIFICATION_TOOL: Anthropic.Tool = {
   name: "propose_plan_changes",
   description:
-    "Propose modifications to the athlete's training plan. Use when athlete requests changes to their training. Supports replacing entire weeks or individual days. Always provide a text explanation before calling this tool.",
+    "Propose modifications to the athlete's training plan. Use when athlete requests changes to their training. Supports replacing entire weeks, replacing individual days, or appending one or more new weeks to the end of the plan. Always provide a text explanation before calling this tool.",
   input_schema: {
     type: "object" as const,
     properties: {
@@ -376,8 +376,17 @@ const PLAN_MODIFICATION_TOOL: Anthropic.Tool = {
         items: {
           type: "object",
           properties: {
-            type: { type: "string", enum: ["replace_week", "replace_day"] },
-            weekNumber: { type: "number", description: "1-based week number" },
+            type: {
+              type: "string",
+              enum: ["replace_week", "replace_day", "append_weeks"],
+              description:
+                "replace_week/replace_day modify weeks within the existing plan; append_weeks adds one or more new weeks at the end (use the 'weeks' array, each becomes a new week after totalWeeks)",
+            },
+            weekNumber: {
+              type: "number",
+              description:
+                "1-based week number. Required for replace_week and replace_day. For append_weeks, this is the weekNumber of the FIRST new week (should equal totalWeeks+1); subsequent weeks in the 'weeks' array are auto-numbered.",
+            },
             dayOfWeek: {
               type: "string",
               description: "Required for replace_day",
@@ -386,8 +395,13 @@ const PLAN_MODIFICATION_TOOL: Anthropic.Tool = {
             summary: { type: "string", description: "One-line description of what changed" },
             week: WEEK_SCHEMA,
             day: DAY_SCHEMA,
+            weeks: {
+              type: "array",
+              items: WEEK_SCHEMA,
+              description: "Array of new weeks to append, in order. Only used for append_weeks.",
+            },
           },
-          required: ["type", "weekNumber", "summary"],
+          required: ["type", "summary"],
         },
       },
     },
@@ -501,6 +515,7 @@ When the athlete asks you to change their training plan, use the propose_plan_ch
 - For interval blocks, use the repeat field (e.g., 6x5min at z4 with 2min rest at z1).
 - For small changes (swap a workout, adjust one day) → use replace_day.
 - For broader changes (reduce volume for multiple weeks, restructure a week) → use replace_week.
+- To extend the plan past its current end (e.g., race week falls after totalWeeks, athlete wants more training time, peaking later) → use append_weeks. Set weekNumber to totalWeeks+1 and pass the new weeks (one or more) in the 'weeks' array; they'll be added in order. Do NOT use replace_week for weeks beyond totalWeeks; it will fail validation. Build appended weeks following the same phase/safety rules as the rest of the plan.
 - If the request is just a question about the plan, respond with text only — do not call the tool.
 - ALWAYS provide a text explanation before calling the tool.
 - Each day must have exactly the structure: { dayOfWeek, workouts: [{ blocks: [...] }] }
@@ -656,7 +671,14 @@ export async function buildChatConfig(
   }
 
   dynamicPrompt += `\nDATA ACCESS:
-You have a read_athlete_data tool to query the athlete's Firestore data on demand. Use it when you need info not already in this prompt — pace zones, recent workouts, fitness metrics, Strava activities, etc. Don't guess or say you don't have access; just look it up.`;
+You have a read_athlete_data tool to query the athlete's Firestore data on demand. Use it when you need info not already in this prompt — pace zones, recent workouts, fitness metrics, Strava activities, etc. Don't guess or say you don't have access; just look it up.
+
+GROUND TRUTH RULE — read carefully:
+When a tool returns an empty array, {"exists": false}, an error, or otherwise no data, you MUST say so plainly. Examples of correct responses: "I don't see any recent runs logged," "Your activity log is empty for this week," "No data on that yet — have you connected Strava?"
+
+NEVER invent specifics that weren't in the tool result. This includes activity names, distances, dates, times, paces, heart rates, elevation, or any other concrete data point. If you didn't see it in a tool result or the system prompt, you don't know it. A confident answer with fabricated numbers destroys trust and is worse than admitting the data isn't there.
+
+If the data you need isn't available, tell the athlete what's missing and either ask them or suggest how to surface it (e.g. "your last Strava sync looks stale — try refreshing").`;
 
   // Two cache breakpoints:
   // 1. Book reference — stable across ALL users, largest block (~150K tokens).

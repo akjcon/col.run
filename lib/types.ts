@@ -34,7 +34,7 @@ export interface TrainingBackground {
 
 // V2 Training Plan — uses block-based structure from lib/blocks/types.ts
 // Hierarchy: TrainingPlan → Week → Day → Workout → Block[]
-import type { Week } from "@/lib/blocks/types";
+import type { Week, Day } from "@/lib/blocks/types";
 import type { PhaseTarget } from "@/lib/agents/types";
 
 export interface TrainingPlan {
@@ -51,11 +51,18 @@ export interface TrainingPlan {
   previousPlanId?: string; // set when impersonating a review plan
 }
 
+export interface ChatToolCall {
+  name: string; // "read_athlete_data" | "update_coach_memory" | "propose_plan_changes" | "update_threshold_pace"
+  input: unknown;
+  result?: string; // truncated tool result for server-side tools; omitted for client-side proposals
+}
+
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  toolCalls?: ChatToolCall[]; // populated on assistant messages when the coach invoked any tools
 }
 
 export interface UserData {
@@ -167,3 +174,34 @@ export interface CoachMemoryEntry {
   createdAt: number;
   updatedAt: number;
 }
+
+// =============================================================================
+// Plan Modification — single source of truth for proposed plan changes.
+// Used end-to-end: LLM tool output → chat route validation → NDJSON event →
+// PlanChangeCard → /api/plan/modify. Discriminated by `type` so the compiler
+// enforces that replace_week carries a Week, append_weeks carries Week[], etc.
+// =============================================================================
+export type ProposedPlanChange =
+  | {
+      type: "replace_week";
+      weekNumber: number;
+      week: Week;
+      summary: string;
+    }
+  | {
+      type: "replace_day";
+      weekNumber: number;
+      dayOfWeek: string;
+      day: Day;
+      summary: string;
+    }
+  | {
+      // `weekNumber` here is the number of the FIRST appended week
+      // (server-stamped before emitting to the client, so the UI can label
+      // "New Week N, N+1, ..." correctly). The server is authoritative —
+      // it always re-derives from current plan length at apply time.
+      type: "append_weeks";
+      weekNumber: number;
+      weeks: Week[];
+      summary: string;
+    };

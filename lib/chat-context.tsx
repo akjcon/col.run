@@ -9,19 +9,11 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type { ChatContext } from "@/lib/types";
-import type { Week, Day } from "@/lib/blocks/types";
+import type { ChatContext, ProposedPlanChange } from "@/lib/types";
 
 export interface PlanModificationData {
   reasoning: string;
-  changes: Array<{
-    type: "replace_week" | "replace_day";
-    weekNumber: number;
-    dayOfWeek?: string;
-    week?: Week;
-    day?: Day;
-    summary: string;
-  }>;
+  changes: ProposedPlanChange[];
   status: "proposed" | "applying" | "applied" | "error";
   evaluation?: { structural: number; safety: number; methodology: number; overall: number };
   error?: string;
@@ -42,8 +34,92 @@ export interface ChatMessage {
   content: string;
   status?: string;
   error?: string;
+  // Non-fatal save failure — response is shown in real-time but didn't
+  // persist to chatHistory. Distinct from `error` (which marks the whole
+  // message as failed). Surfaces as a small inline notice.
+  saveWarning?: string;
   planModification?: PlanModificationData;
   paceZoneUpdate?: PaceZoneUpdateData;
+}
+
+// ---------------------------------------------------------------------------
+// Affirmative-intent matcher
+// ---------------------------------------------------------------------------
+// When a proposal card is on screen and the user types a short pure
+// affirmative (or refusal) instead of clicking the button, treat it as
+// the click. Keep matching strict: only short, content-free replies. If
+// the user adds qualifications ("yes but also..."), fall through to the
+// LLM so we don't accidentally apply something they wanted to amend.
+
+const AFFIRMATIVE_PATTERNS = [
+  "yes",
+  "yes please",
+  "yeah",
+  "yep",
+  "yup",
+  "yas",
+  "sure",
+  "ok",
+  "okay",
+  "k",
+  "do it",
+  "go for it",
+  "go ahead",
+  "lets do it",
+  "let's do it",
+  "sounds good",
+  "looks good",
+  "great",
+  "perfect",
+  "apply",
+  "apply it",
+  "approve",
+  "approved",
+  "confirm",
+  "confirmed",
+  "👍",
+  "✅",
+];
+
+const NEGATIVE_PATTERNS = [
+  "no",
+  "nope",
+  "nah",
+  "decline",
+  "reject",
+  "dismiss",
+  "cancel",
+  "skip",
+  "skip it",
+  "keep current",
+  "leave it",
+  "never mind",
+  "nevermind",
+  "no thanks",
+  "no thank you",
+  "❌",
+  "👎",
+];
+
+const AFFIRMATIVE_SET = new Set(AFFIRMATIVE_PATTERNS);
+const NEGATIVE_SET = new Set(NEGATIVE_PATTERNS);
+
+/**
+ * Inspect a user message to decide whether it's a stand-alone yes/no
+ * reply to a pending proposal. Returns "apply" / "decline" / null. Only
+ * matches short, pure replies — any extra qualification (commas, "but",
+ * "and") falls through to the LLM.
+ */
+export function interpretAffirmativeIntent(
+  text: string
+): "apply" | "decline" | null {
+  const trimmed = text.trim().toLowerCase();
+  if (!trimmed || trimmed.length > 20) return null;
+  // Strip a trailing punctuation char so "yes!" / "yes." still match.
+  const cleaned = trimmed.replace(/[!.?\s]+$/g, "");
+  if (AFFIRMATIVE_SET.has(cleaned)) return "apply";
+  if (NEGATIVE_SET.has(cleaned)) return "decline";
+  return null;
 }
 
 function getWelcomeMessage(ctx: ChatContext | null): string {

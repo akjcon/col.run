@@ -9,6 +9,7 @@ export const EVENT_TYPES = [
   "pace_zone_update_proposed",
   "pace_zone_update_accepted",
   "pace_zone_update_declined",
+  "chat_error",
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];

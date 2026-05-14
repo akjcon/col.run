@@ -57,6 +57,7 @@ const EVENT_LABELS: Record<EventType, string> = {
   pace_zone_update_proposed: "Pace updates proposed",
   pace_zone_update_accepted: "Pace updates accepted",
   pace_zone_update_declined: "Pace updates declined",
+  chat_error: "Chat errors",
 };
 
 export default function AnalyticsPage() {
@@ -239,6 +240,9 @@ export default function AnalyticsPage() {
                       <th className="py-2 px-3 font-medium text-right">
                         Pace
                       </th>
+                      <th className="py-2 px-3 font-medium text-right">
+                        Errors
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -297,6 +301,15 @@ export default function AnalyticsPage() {
                           <span className="text-neutral-400">
                             {u.byType.pace_zone_update_declined.toLocaleString()}✗
                           </span>
+                        </td>
+                        <td className="py-2 px-3 text-right tabular-nums whitespace-nowrap">
+                          {u.byType.chat_error > 0 ? (
+                            <span className="text-red-600 font-medium">
+                              {u.byType.chat_error.toLocaleString()}
+                            </span>
+                          ) : (
+                            <span className="text-neutral-400">0</span>
+                          )}
                         </td>
                       </tr>
                     ))}

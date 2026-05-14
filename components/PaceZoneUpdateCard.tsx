@@ -1,13 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Check, X, Loader2, Gauge } from "lucide-react";
-import { useUser } from "@/lib/user-context-rtk";
-import { useAppDispatch } from "@/lib/store/hooks";
-import { baseApi } from "@/lib/store/api/baseApi";
 import type { PaceZoneUpdateData } from "@/lib/chat-context";
-import { toast } from "sonner";
-import { useTrackEvent } from "@/lib/event-tracker";
 import {
   calculatePaceZones,
   formatPace,
@@ -21,68 +15,21 @@ const ZONE_ORDER: EffortLevel[] = ["z1", "z2", "z3", "z4", "z5"];
 interface PaceZoneUpdateCardProps {
   data: PaceZoneUpdateData;
   messageId?: string;
-  onStatusChange: (status: PaceZoneUpdateData["status"], error?: string) => void;
+  onApply: () => void;
+  onDismiss: () => void;
 }
 
 export function PaceZoneUpdateCard({
   data,
-  onStatusChange,
+  onApply,
+  onDismiss,
 }: PaceZoneUpdateCardProps) {
-  const { userId } = useUser();
-  const dispatch = useAppDispatch();
-  const trackEvent = useTrackEvent();
-  const [isApplying, setIsApplying] = useState(false);
+  const isApplying = data.status === "applying";
 
   const newZones = calculatePaceZones(data.newThresholdPace);
   const currentZones = data.currentThresholdPace
     ? calculatePaceZones(data.currentThresholdPace)
     : null;
-
-  const handleApply = async () => {
-    if (!userId) return;
-
-    setIsApplying(true);
-    onStatusChange("applying");
-    trackEvent("pace_zone_update_accepted", {
-      newThresholdPace: data.newThresholdPace,
-      currentThresholdPace: data.currentThresholdPace,
-    });
-
-    try {
-      const response = await fetch("/api/plan/threshold-pace", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          thresholdPace: data.newThresholdPace,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update threshold pace");
-      }
-
-      onStatusChange("applied");
-      toast.success("Pace zones updated");
-      // Invalidate snapshot + training background caches
-      dispatch(
-        baseApi.util.invalidateTags(["AthleteSnapshot", "TrainingBackground"])
-      );
-    } catch {
-      onStatusChange("error", "Failed to update threshold pace");
-      toast.error("Failed to update pace zones. Please try again.");
-    } finally {
-      setIsApplying(false);
-    }
-  };
-
-  const handleDismiss = () => {
-    onStatusChange("error", "Update dismissed");
-    trackEvent("pace_zone_update_declined", {
-      newThresholdPace: data.newThresholdPace,
-      currentThresholdPace: data.currentThresholdPace,
-    });
-  };
 
   return (
     <div className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50">
@@ -161,7 +108,7 @@ export function PaceZoneUpdateCard({
       {data.status === "proposed" && (
         <div className="flex gap-2 border-t border-neutral-200 px-3 py-2">
           <button
-            onClick={handleApply}
+            onClick={onApply}
             disabled={isApplying}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-[#E98A15] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#d47d13] disabled:opacity-50"
           >
@@ -173,7 +120,7 @@ export function PaceZoneUpdateCard({
             Update Pace Zones
           </button>
           <button
-            onClick={handleDismiss}
+            onClick={onDismiss}
             disabled={isApplying}
             className="flex items-center justify-center gap-1.5 rounded-md border border-neutral-200 px-3 py-1.5 text-xs text-neutral-600 transition-colors hover:bg-neutral-100"
           >

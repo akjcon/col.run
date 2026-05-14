@@ -1,13 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { Wand2, Check, X, Loader2 } from "lucide-react";
 import { useUser } from "@/lib/user-context-rtk";
-import { useAppDispatch } from "@/lib/store/hooks";
-import { baseApi } from "@/lib/store/api/baseApi";
 import type { PlanModificationData } from "@/lib/chat-context";
-import { toast } from "sonner";
-import { useTrackEvent } from "@/lib/event-tracker";
 import {
   calculateWeekTotalMiles,
   calculateDayTotalMiles,
@@ -18,11 +13,8 @@ import type { Day, Week } from "@/lib/blocks/types";
 interface PlanChangeCardProps {
   modification: PlanModificationData;
   messageId?: string;
-  onStatusChange: (
-    status: PlanModificationData["status"],
-    evaluation?: PlanModificationData["evaluation"],
-    error?: string
-  ) => void;
+  onApply: () => void;
+  onDismiss: () => void;
 }
 
 function formatDayBrief(day: Day): string {
@@ -47,37 +39,41 @@ function formatDayBrief(day: Day): string {
   return `${label} ${miles.toFixed(1)}mi`;
 }
 
-function WeekChangeSummary({
-  change,
-  currentWeek,
+function SingleWeekDisplay({
+  week,
+  label,
+  oldMiles,
+  summary,
 }: {
-  change: PlanModificationData["changes"][0];
-  currentWeek?: Week;
+  week: Week;
+  label: string;
+  oldMiles: number | null;
+  summary?: string;
 }) {
-  if (change.type !== "replace_week" || !change.week) return null;
-
-  const newMiles = calculateWeekTotalMiles(change.week);
-  const oldMiles = currentWeek ? calculateWeekTotalMiles(currentWeek) : null;
-  const delta =
-    oldMiles !== null ? ((newMiles - oldMiles) / oldMiles) * 100 : null;
+  const newMiles = calculateWeekTotalMiles(week);
+  const delta = oldMiles !== null ? ((newMiles - oldMiles) / oldMiles) * 100 : null;
 
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between">
         <span className="text-xs font-medium text-neutral-800">
-          Week {change.weekNumber} — {change.week.phase}
+          {label} — {week.phase}
         </span>
-        {oldMiles !== null && delta !== null && (
+        {oldMiles !== null && delta !== null ? (
           <span className="text-[10px] text-neutral-500">
             {oldMiles.toFixed(0)}mi → {newMiles.toFixed(0)}mi (
             {delta >= 0 ? "+" : ""}
             {delta.toFixed(0)}%)
           </span>
+        ) : (
+          <span className="text-[10px] text-neutral-500">
+            {newMiles.toFixed(0)}mi (added)
+          </span>
         )}
       </div>
-      <p className="text-[11px] text-neutral-500">{change.summary}</p>
+      {summary && <p className="text-[11px] text-neutral-500">{summary}</p>}
       <div className="grid grid-cols-7 gap-0.5">
-        {change.week.days.map((day) => (
+        {week.days.map((day) => (
           <div key={day.dayOfWeek} className="text-center">
             <div className="text-[9px] text-neutral-400">
               {day.dayOfWeek.slice(0, 3)}
@@ -90,6 +86,46 @@ function WeekChangeSummary({
       </div>
     </div>
   );
+}
+
+function WeekChangeSummary({
+  change,
+  currentWeek,
+}: {
+  change: PlanModificationData["changes"][0];
+  currentWeek?: Week;
+}) {
+  if (change.type === "replace_week") {
+    const oldMiles = currentWeek ? calculateWeekTotalMiles(currentWeek) : null;
+    return (
+      <SingleWeekDisplay
+        week={change.week}
+        label={`Week ${change.weekNumber}`}
+        oldMiles={oldMiles}
+        summary={change.summary}
+      />
+    );
+  }
+
+  if (change.type === "append_weeks" && change.weeks.length > 0) {
+    return (
+      <div className="space-y-2.5">
+        <p className="text-[11px] font-medium text-neutral-600">
+          {change.summary}
+        </p>
+        {change.weeks.map((week, i) => (
+          <SingleWeekDisplay
+            key={`${change.weekNumber}-${i}`}
+            week={week}
+            label={`New Week ${change.weekNumber + i}`}
+            oldMiles={null}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return null;
 }
 
 function DayChangeSummary({
@@ -131,62 +167,15 @@ function DayChangeSummary({
 
 export function PlanChangeCard({
   modification,
-  onStatusChange,
+  onApply,
+  onDismiss,
 }: PlanChangeCardProps) {
-  const { userData, userId } = useUser();
-  const dispatch = useAppDispatch();
-  const trackEvent = useTrackEvent();
-  const [isApplying, setIsApplying] = useState(false);
-
+  const { userData } = useUser();
   const activePlan = userData?.activePlan;
-
-  const handleApply = async () => {
-    if (!activePlan || !userId) return;
-
-    setIsApplying(true);
-    onStatusChange("applying");
-    trackEvent("plan_change_accepted", {
-      changeCount: modification.changes.length,
-      types: modification.changes.map((c) => c.type),
-    });
-
-    try {
-      const response = await fetch("/api/plan/modify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          planId: activePlan.id,
-          changes: modification.changes,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        onStatusChange("applied", result.evaluation);
-        dispatch(baseApi.util.invalidateTags(["TrainingPlan"]));
-        toast.success("Plan changes applied");
-      } else {
-        const errorMsg = result.error || "Changes rejected";
-        onStatusChange("error", result.evaluation, errorMsg);
-        toast.error(errorMsg);
-      }
-    } catch {
-      onStatusChange("error", undefined, "Failed to apply changes");
-      toast.error("Failed to apply plan changes. Please try again.");
-    } finally {
-      setIsApplying(false);
-    }
-  };
-
-  const handleDismiss = () => {
-    onStatusChange("error", undefined, "Changes dismissed");
-    trackEvent("plan_change_declined", {
-      changeCount: modification.changes.length,
-      types: modification.changes.map((c) => c.type),
-    });
-  };
+  // Loading state derives from the modification status the parent owns —
+  // no local mirror needed. Lets the parent (or an affirmative reply in
+  // the chat) drive the same state transition.
+  const isApplying = modification.status === "applying";
 
   // Find current weeks/days for comparison
   const getCurrentWeek = (weekNum: number): Week | undefined =>
@@ -215,27 +204,40 @@ export function PlanChangeCard({
 
       {/* Changes */}
       <div className="space-y-3 px-3 py-2">
-        {modification.changes.map((change, i) => (
-          <div key={i}>
-            {change.type === "replace_week" ? (
+        {modification.changes.map((change, i) => {
+          // Render the body for this change. Skip the wrapper entirely if
+          // there's no body to render (e.g. malformed append_weeks with
+          // empty weeks) — otherwise an empty <div> + separator appears.
+          let body: React.ReactNode = null;
+          if (change.type === "replace_week" || change.type === "append_weeks") {
+            body = (
               <WeekChangeSummary
                 change={change}
-                currentWeek={getCurrentWeek(change.weekNumber)}
+                currentWeek={
+                  change.type === "append_weeks"
+                    ? undefined
+                    : getCurrentWeek(change.weekNumber)
+                }
               />
-            ) : (
+            );
+          } else if (change.type === "replace_day") {
+            body = (
               <DayChangeSummary
                 change={change}
-                currentDay={getCurrentDay(
-                  change.weekNumber,
-                  change.dayOfWeek || ""
-                )}
+                currentDay={getCurrentDay(change.weekNumber, change.dayOfWeek)}
               />
-            )}
-            {i < modification.changes.length - 1 && (
-              <div className="mt-2 border-t border-neutral-100" />
-            )}
-          </div>
-        ))}
+            );
+          }
+          if (!body) return null;
+          return (
+            <div key={i}>
+              {body}
+              {i < modification.changes.length - 1 && (
+                <div className="mt-2 border-t border-neutral-100" />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Evaluation score (shown after apply) */}
@@ -272,7 +274,7 @@ export function PlanChangeCard({
       {modification.status === "proposed" && (
         <div className="flex gap-2 border-t border-neutral-200 px-3 py-2">
           <button
-            onClick={handleApply}
+            onClick={onApply}
             disabled={isApplying || !activePlan}
             className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-[#E98A15] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#d47d13] disabled:opacity-50"
           >
@@ -284,7 +286,7 @@ export function PlanChangeCard({
             Apply Changes
           </button>
           <button
-            onClick={handleDismiss}
+            onClick={onDismiss}
             disabled={isApplying}
             className="flex items-center justify-center gap-1.5 rounded-md border border-neutral-200 px-3 py-1.5 text-xs text-neutral-600 transition-colors hover:bg-neutral-100"
           >
