@@ -5,7 +5,13 @@
  */
 
 import { StravaClient } from "./client";
-import type { StravaActivity, StravaTokens, Activity, FitnessProfile } from "./types";
+import type {
+  StravaActivity,
+  StravaTokens,
+  Activity,
+  FitnessProfile,
+  StravaHRZone,
+} from "./types";
 
 // =============================================================================
 // Constants
@@ -116,8 +122,19 @@ export async function syncActivities(
   const afterDate = new Date();
   afterDate.setDate(afterDate.getDate() - weeks * 7);
 
-  // Fetch all activities
-  const stravaActivities = await client.getAllActivitiesSince(afterDate);
+  // Fetch all activities and HR zones in parallel. Zones are best-effort:
+  // they fail silently so a missing /athlete/zones response (e.g. scope
+  // not granted) doesn't break the sync.
+  const [stravaActivities, hrZones] = await Promise.all([
+    client.getAllActivitiesSince(afterDate),
+    client.getZones().then(
+      (z) => z.heart_rate?.zones,
+      (err) => {
+        console.warn("Could not fetch Strava zones:", err);
+        return undefined;
+      }
+    ),
+  ]);
 
   // Filter to running activities only
   const runningActivities = filterRunningActivities(stravaActivities);
@@ -126,7 +143,7 @@ export async function syncActivities(
   const activities = runningActivities.map((a) => transformActivity(a, userId));
 
   // Calculate fitness profile
-  const fitnessProfile = calculateFitnessProfile(activities, userId);
+  const fitnessProfile = calculateFitnessProfile(activities, userId, hrZones);
 
   return {
     activities,
@@ -160,7 +177,11 @@ export async function syncSingleActivity(
 /**
  * Calculate fitness profile from activities
  */
-export function calculateFitnessProfile(activities: Activity[], userId: string): FitnessProfile {
+export function calculateFitnessProfile(
+  activities: Activity[],
+  userId: string,
+  hrZones?: StravaHRZone[]
+): FitnessProfile {
   const now = Date.now();
   const oneDay = 24 * 60 * 60 * 1000;
 
@@ -212,11 +233,23 @@ export function calculateFitnessProfile(activities: Activity[], userId: string):
       ? recentActivities.reduce((sum, a) => sum + a.avgPace * a.distance, 0) / totalDistance
       : 0;
 
-  // Estimate threshold HR from activities with higher intensity
-  const estimatedThresholdHR = estimateThresholdHR(recentActivities);
+  // Resolve threshold HR + pace. Prefer Strava's configured HR zones
+  // (the athlete or Strava set them deliberately, so they're far more
+  // accurate than guessing from activity heuristics). Threshold HR is
+  // the floor of Zone 4 in a standard 5-zone scheme.
+  let estimatedThresholdHR: number | undefined;
+  let estimatedThresholdPace: number | undefined;
+  let thresholdSource: FitnessProfile["thresholdSource"];
 
-  // Estimate threshold pace from activities
-  const estimatedThresholdPace = estimateThresholdPace(recentActivities);
+  if (hasUsableHRZones(hrZones)) {
+    estimatedThresholdHR = hrZones![Z4_INDEX].min;
+    estimatedThresholdPace = paceAtThresholdHR(recentActivities, hrZones!);
+    thresholdSource = "strava_zones";
+  } else {
+    estimatedThresholdHR = estimateThresholdHR(recentActivities);
+    estimatedThresholdPace = estimateThresholdPace(recentActivities);
+    thresholdSource = "estimated";
+  }
 
   return {
     userId,
@@ -230,7 +263,63 @@ export function calculateFitnessProfile(activities: Activity[], userId: string):
     avgPace: Math.round(avgPace * 100) / 100,
     estimatedThresholdHR,
     estimatedThresholdPace,
+    hrZones,
+    thresholdSource,
   };
+}
+
+// Zone indices for the standard 5-zone HR scheme Strava returns.
+const Z3_INDEX = 2;
+const Z4_INDEX = 3;
+
+/**
+ * Strava returns a 5-entry zones array even when the athlete has never
+ * configured zones — and in that unconfigured state the entries are all
+ * {min: 0, max: -1} placeholders. Trust the response only if it's a 5-zone
+ * scheme with a plausible Z4 floor (athlete HR is somewhere between 60-220).
+ */
+function hasUsableHRZones(zones: StravaHRZone[] | undefined): zones is StravaHRZone[] {
+  if (!zones || zones.length !== 5) return false;
+  const z4Min = zones[Z4_INDEX].min;
+  return z4Min > 60 && z4Min < 220;
+}
+
+/**
+ * Derive threshold pace from runs whose average HR landed in Zone 4
+ * (the threshold zone). Falls back to Zone 3 if no Z4 efforts exist, then
+ * undefined. This is the user's actual pace at threshold intensity —
+ * not a guess from "top 20% fastest runs", which conflates short hard
+ * efforts with easy days on flat terrain.
+ */
+function paceAtThresholdHR(
+  activities: Activity[],
+  hrZones: StravaHRZone[]
+): number | undefined {
+  const z4 = hrZones[Z4_INDEX];
+  const z3 = hrZones[Z3_INDEX];
+
+  // Half-open interval [min, max) so a run at the Z3/Z4 boundary HR isn't
+  // counted in both zones if this filter is ever reused for a union.
+  const inZone = (z: StravaHRZone, hr: number) =>
+    hr >= z.min && (z.max === -1 || hr < z.max);
+
+  const validRuns = activities.filter(
+    (a) => a.distance >= 2 && a.avgPace > 0 && a.avgPace < 20 && a.avgHeartRate
+  );
+
+  const z4Runs = validRuns.filter((a) => inZone(z4, a.avgHeartRate!));
+  const sample = z4Runs.length >= 2
+    ? z4Runs
+    : validRuns.filter((a) => inZone(z3, a.avgHeartRate!));
+
+  if (sample.length === 0) return undefined;
+
+  // Distance-weighted average so a single short hard interval doesn't dominate.
+  const totalDistance = sample.reduce((sum, a) => sum + a.distance, 0);
+  const weightedPace =
+    sample.reduce((sum, a) => sum + a.avgPace * a.distance, 0) / totalDistance;
+
+  return Math.round(weightedPace * 100) / 100;
 }
 
 /**

@@ -144,8 +144,11 @@ export interface AthleteSnapshot {
   currentWeeklyMileage?: number;
   currentLongestRun?: number; // longest run in the last 12 weeks (miles)
   currentAvgPace?: number; // recent avg pace (min/mile)
-  estimatedThresholdPace?: number;
-  thresholdPace?: number; // resolved: manual entry > Strava estimate
+  estimatedThresholdHR?: number; // resolved: Strava Z4 floor > activity estimate
+  estimatedThresholdPace?: number; // resolved: pace at Z4 HR > activity estimate
+  thresholdPace?: number; // resolved: manual entry > Strava-derived
+  hrZones?: { min: number; max: number }[]; // 5-zone HR scheme from Strava
+  thresholdSource?: "strava_zones" | "estimated" | "manual";
 
   // From ExperienceProfile (Strava, lifetime)
   lifetimeMiles?: number;

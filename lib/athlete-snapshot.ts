@@ -54,6 +54,7 @@ export async function buildAthleteSnapshot(
   };
 
   // Merge TrainingBackground
+  let manualThresholdPace = false;
   if (!backgroundSnap.empty) {
     const bg = backgroundSnap.docs[0].data();
     snapshot.experience = bg.experience ?? "beginner";
@@ -64,6 +65,7 @@ export async function buildAthleteSnapshot(
 
     if (bg.thresholdPace) {
       snapshot.thresholdPace = bg.thresholdPace;
+      manualThresholdPace = true;
     }
 
     if (bg.goals) {
@@ -82,12 +84,22 @@ export async function buildAthleteSnapshot(
     snapshot.currentWeeklyMileage = fitness.weeklyMileage;
     snapshot.currentLongestRun = fitness.longestRun;
     snapshot.currentAvgPace = fitness.avgPace;
+    snapshot.estimatedThresholdHR = fitness.estimatedThresholdHR;
     snapshot.estimatedThresholdPace = fitness.estimatedThresholdPace;
+    snapshot.hrZones = fitness.hrZones;
+    snapshot.thresholdSource = fitness.thresholdSource;
 
-    // Resolve threshold pace: manual entry > Strava estimate
+    // Resolve threshold pace: manual entry > Strava-derived
     if (!snapshot.thresholdPace && fitness.estimatedThresholdPace) {
       snapshot.thresholdPace = fitness.estimatedThresholdPace;
     }
+  }
+
+  // If the user supplied threshold pace by hand (onboarding or later override),
+  // the source must reflect that — the Strava-derived label is misleading
+  // because the value the LLM/UI surfaces is the user's number, not Strava's.
+  if (manualThresholdPace) {
+    snapshot.thresholdSource = "manual";
   }
 
   // Merge ExperienceProfile (Strava lifetime)

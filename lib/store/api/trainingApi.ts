@@ -47,6 +47,26 @@ export const trainingApi = baseApi.injectEndpoints({
           });
 
           const docRef = await addDoc(backgroundRef, sanitizedData);
+
+          // Rebuild the athlete snapshot so it reflects the new background.
+          // Failure here shouldn't block the save — the snapshot will get
+          // rebuilt on the next Strava webhook or plan generation anyway.
+          // The endpoint uses the Clerk session for auth, so no body is needed.
+          try {
+            const res = await fetch("/api/athlete/snapshot/rebuild", {
+              method: "POST",
+            });
+            if (!res.ok) {
+              console.warn(
+                "Snapshot rebuild after background save returned",
+                res.status,
+                await res.text().catch(() => "")
+              );
+            }
+          } catch (rebuildErr) {
+            console.warn("Snapshot rebuild after background save failed:", rebuildErr);
+          }
+
           return { data: docRef.id };
         } catch (error) {
           return {
@@ -57,6 +77,7 @@ export const trainingApi = baseApi.injectEndpoints({
       invalidatesTags: (result, error, { userId }) => [
         { type: "User", id: userId },
         "TrainingBackground",
+        "AthleteSnapshot",
       ],
     }),
 

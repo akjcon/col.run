@@ -130,7 +130,13 @@ export async function POST(req: NextRequest) {
             // ask for it in that path).
             if (snap.currentLongestRun) athlete.longestRun = snap.currentLongestRun;
             else if (snap.longestRunEver) athlete.longestRun = snap.longestRunEver;
-            if (snap.estimatedThresholdPace) athlete.thresholdPace = snap.estimatedThresholdPace;
+            // Prefer the resolved threshold pace from the snapshot (manual >
+            // Strava-derived > activity estimate). Reading estimatedThresholdPace
+            // directly would clobber a manual override the user set via chat or
+            // the pace-zones editor.
+            const resolvedThresholdPace =
+              snap.thresholdPace ?? snap.estimatedThresholdPace;
+            if (resolvedThresholdPace) athlete.thresholdPace = resolvedThresholdPace;
             if (snap.lifetimeMiles) athlete.lifetimeMiles = snap.lifetimeMiles;
             if (snap.longestRunEver) athlete.longestRunEver = snap.longestRunEver;
             if (snap.peakWeeklyMileage) athlete.peakWeeklyMileage = snap.peakWeeklyMileage;

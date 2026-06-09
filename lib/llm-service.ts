@@ -80,16 +80,32 @@ function generateChatPrompt(userData: UserData): string {
     if (snapshot.currentWeeklyMileage) profileLines.push(`- Current weekly mileage: ${snapshot.currentWeeklyMileage} miles`);
     if (snapshot.peakWeeklyMileage) profileLines.push(`- Peak weekly mileage: ${snapshot.peakWeeklyMileage} miles`);
     if (snapshot.lifetimeMiles) profileLines.push(`- Lifetime miles: ${snapshot.lifetimeMiles}`);
+    const sourceLabel =
+      snapshot.thresholdSource === "manual"
+        ? "athlete-provided"
+        : snapshot.thresholdSource === "strava_zones"
+          ? "Strava HR zones — pace at Z4 HR"
+          : snapshot.thresholdSource === "estimated"
+            ? "estimated from recent activities"
+            : null;
+
     if (snapshot.thresholdPace) {
       const tp = snapshot.thresholdPace as number;
       const tpMin = Math.floor(tp);
       const tpSec = Math.round((tp - tpMin) * 60);
-      profileLines.push(`- Threshold pace: ${tpMin}:${tpSec.toString().padStart(2, "0")}/mi (used for pace zones)`);
+      const note = sourceLabel ? ` (${sourceLabel})` : " (used for pace zones)";
+      profileLines.push(`- Threshold pace: ${tpMin}:${tpSec.toString().padStart(2, "0")}/mi${note}`);
     } else if (snapshot.estimatedThresholdPace) {
       const tp = snapshot.estimatedThresholdPace as number;
       const tpMin = Math.floor(tp);
       const tpSec = Math.round((tp - tpMin) * 60);
       profileLines.push(`- Estimated threshold pace: ${tpMin}:${tpSec.toString().padStart(2, "0")}/mi (from Strava data)`);
+    }
+    if (snapshot.estimatedThresholdHR && snapshot.thresholdSource !== "manual") {
+      const source = snapshot.thresholdSource === "strava_zones"
+        ? "Strava HR zones"
+        : "activity estimate";
+      profileLines.push(`- Threshold HR: ${snapshot.estimatedThresholdHR} bpm (from ${source})`);
     }
     if (snapshot.ctl) profileLines.push(`- Current fitness (CTL): ${snapshot.ctl}`);
     if (snapshot.tsb) profileLines.push(`- Training stress balance: ${snapshot.tsb}`);

@@ -10,6 +10,7 @@ import type {
   StravaTokens,
   StravaTokenResponse,
   StravaAthleteStats,
+  StravaZones,
 } from "./types";
 
 const STRAVA_API_BASE = "https://www.strava.com/api/v3";
@@ -274,5 +275,12 @@ export class StravaClient {
    */
   async getDetailedAthlete(): Promise<StravaAthlete> {
     return this.request<StravaAthlete>("/athlete");
+  }
+
+  /**
+   * Get the athlete's HR (and power) zones as configured in Strava.
+   */
+  async getZones(): Promise<StravaZones> {
+    return this.request<StravaZones>("/athlete/zones");
   }
 }

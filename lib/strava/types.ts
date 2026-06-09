@@ -99,6 +99,22 @@ export interface Activity {
 /** Strava activity types that count as running */
 export const RUN_TYPES = new Set(["Run", "TrailRun", "VirtualRun"]);
 
+// Strava HR zones (from /athlete/zones)
+export interface StravaHRZone {
+  min: number;
+  max: number; // -1 means "no upper bound"
+}
+
+export interface StravaZones {
+  heart_rate?: {
+    custom_zones: boolean;
+    zones: StravaHRZone[];
+  };
+  power?: {
+    zones: { min: number; max: number }[];
+  };
+}
+
 // Fitness metrics (current state - last 12 weeks)
 export interface FitnessProfile {
   userId: string;
@@ -112,6 +128,11 @@ export interface FitnessProfile {
   avgPace: number; // min/mile
   estimatedThresholdHR?: number;
   estimatedThresholdPace?: number; // min/mile
+  // Raw HR zones pulled from Strava's /athlete/zones (5-zone scheme).
+  // Source for threshold HR — far more accurate than activity-based estimation
+  // because the athlete (or Strava's HRmax estimator) explicitly set them.
+  hrZones?: StravaHRZone[];
+  thresholdSource?: "strava_zones" | "estimated" | "manual";
 }
 
 // Experience profile (lifetime data - what they're capable of)

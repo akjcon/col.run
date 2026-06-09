@@ -107,18 +107,20 @@ export async function POST() {
       }
     }
 
-    // Mark sync complete + update last sync time
-    await stravaRef.update({
-      lastSyncAt: FieldValue.serverTimestamp(),
-      syncStatus: "complete",
-    });
-
-    // Rebuild athlete snapshot with all new data
+    // Rebuild athlete snapshot BEFORE flipping syncStatus. generate-plan polls
+    // syncStatus and reads the snapshot the moment it sees "complete"; if we
+    // flipped first, the plan would be generated against a stale snapshot.
     try {
       await buildAthleteSnapshot(userId);
     } catch (err) {
       console.warn("Could not rebuild athlete snapshot:", err);
     }
+
+    // Mark sync complete + update last sync time
+    await stravaRef.update({
+      lastSyncAt: FieldValue.serverTimestamp(),
+      syncStatus: "complete",
+    });
 
     return NextResponse.json({
       success: true,

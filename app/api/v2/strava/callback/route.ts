@@ -164,14 +164,17 @@ export async function GET(request: Request) {
           }
         }
 
+        // Build athlete snapshot BEFORE flipping syncStatus. generate-plan
+        // polls syncStatus and reads the snapshot the moment it sees "complete";
+        // if we flipped first, the plan would be generated against a stale
+        // snapshot that doesn't yet reflect the new Strava data.
+        await buildAthleteSnapshot(userId);
+
         // Mark sync complete + update last sync time
         await bgStravaRef.update({
           lastSyncAt: FieldValue.serverTimestamp(),
           syncStatus: "complete",
         });
-
-        // Build athlete snapshot
-        await buildAthleteSnapshot(userId);
 
         console.log(`[Strava callback] Background sync complete: ${result.syncedCount} activities`);
       } catch (err) {
